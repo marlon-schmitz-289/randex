@@ -1,0 +1,246 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* shadcn-svelte nutzt data-checked: usw., bits-ui setzt aber data-state="…" */
+@custom-variant data-checked (&[data-state="checked"]);
+@custom-variant data-unchecked (&[data-state="unchecked"]);
+@custom-variant data-active (&[data-state="active"]);
+@custom-variant data-open (&[data-state="open"]);
+@custom-variant data-closed (&[data-state="closed"]);
+
+/* Hell: Weiße Edition. Dunkel (.dark): Schwarze Edition. */
+:root {
+  --radius: 0.75rem;
+  --background: oklch(0.965 0.004 250);
+  --foreground: oklch(0.2 0.01 255);
+  --card: oklch(1 0 0);
+  --card-foreground: var(--foreground);
+  --popover: oklch(1 0 0);
+  --popover-foreground: var(--foreground);
+  --primary: oklch(0.5 0.14 240);
+  --primary-foreground: oklch(0.99 0.003 240);
+  --secondary: oklch(0.93 0.006 250);
+  --secondary-foreground: var(--foreground);
+  --muted: oklch(0.93 0.006 250);
+  --muted-foreground: oklch(0.47 0.015 255);
+  --accent: oklch(0.92 0.035 225);
+  --accent-foreground: oklch(0.3 0.06 240);
+  --destructive: oklch(0.53 0.2 27);
+  --destructive-foreground: oklch(0.99 0.003 240);
+  --border: oklch(0.86 0.008 250);
+  --input: oklch(0.8 0.01 250);
+  --ring: oklch(0.55 0.15 235);
+
+  /* SW-Menüpanel: heller Grund, anthrazitfarbener Rahmen, cyan Kopfleiste */
+  --panel: oklch(0.99 0.002 250);
+  --panel-border: oklch(0.42 0.012 255);
+  --panel-inset: oklch(0.9 0.006 250);
+  --panel-header: oklch(0.5 0.14 240);
+  --panel-header-foreground: oklch(0.99 0.003 240);
+  --stripe: oklch(0.2 0.01 255 / 0.025);
+  /* Regionskarte (Town-Map-Stil) */
+  --map-sea: oklch(0.86 0.05 230);
+  --map-sea-line: oklch(0.8 0.06 230);
+  --map-land: oklch(0.96 0.03 110);
+  --map-land-edge: oklch(0.62 0.06 140);
+  --map-road: oklch(1 0 0);
+  --map-road-edge: oklch(0.55 0.02 250);
+  --map-marker: oklch(0.99 0.003 250);
+  --map-marker-edge: oklch(0.3 0.015 255);
+}
+
+.dark {
+  --background: oklch(0.15 0.005 255);
+  --foreground: oklch(0.96 0.004 250);
+  --card: oklch(0.21 0.007 255);
+  --card-foreground: var(--foreground);
+  --popover: oklch(0.21 0.007 255);
+  --popover-foreground: var(--foreground);
+  --primary: oklch(0.78 0.13 215);
+  --primary-foreground: oklch(0.17 0.03 240);
+  --secondary: oklch(0.27 0.008 255);
+  --secondary-foreground: var(--foreground);
+  --muted: oklch(0.27 0.008 255);
+  --muted-foreground: oklch(0.72 0.012 255);
+  --accent: oklch(0.3 0.045 230);
+  --accent-foreground: oklch(0.93 0.03 215);
+  --destructive: oklch(0.66 0.19 25);
+  --destructive-foreground: oklch(0.18 0.01 255);
+  --border: oklch(0.35 0.01 255);
+  --input: oklch(0.42 0.012 255);
+  --ring: oklch(0.8 0.13 215);
+
+  --panel: oklch(0.2 0.007 255);
+  --panel-border: oklch(0.88 0.006 250);
+  --panel-inset: oklch(0.3 0.01 255);
+  --panel-header: oklch(0.78 0.13 215);
+  --panel-header-foreground: oklch(0.17 0.03 240);
+  --stripe: oklch(1 0 0 / 0.025);
+  --map-sea: oklch(0.24 0.04 245);
+  --map-sea-line: oklch(0.28 0.045 245);
+  --map-land: oklch(0.34 0.025 160);
+  --map-land-edge: oklch(0.5 0.04 160);
+  --map-road: oklch(0.82 0.01 250);
+  --map-road-edge: oklch(0.2 0.01 255);
+  --map-marker: oklch(0.92 0.005 250);
+  --map-marker-edge: oklch(0.15 0.005 255);
+}
+
+/* Typ- und Statfarben gelten in beiden Modi (wie die Badges im Spiel). Kontrast Text/Grund ≥ 4.5. */
+:root {
+  --type-fg-light: oklch(0.99 0 0);
+  --type-fg-dark: oklch(0.2 0.01 255);
+
+  --type-normal: oklch(0.707 0.004 145.5);
+  --type-fire: oklch(0.587 0.223 27.1);
+  --type-water: oklch(0.564 0.186 256.8);
+  --type-grass: oklch(0.627 0.18 140.4);
+  --type-electric: oklch(0.837 0.171 86.5);
+  --type-ice: oklch(0.792 0.129 219.2);
+  --type-fighting: oklch(0.732 0.186 53);
+  --type-poison: oklch(0.546 0.207 307.4);
+  --type-ground: oklch(0.502 0.105 54.1);
+  --type-flying: oklch(0.768 0.097 248.3);
+  --type-psychic: oklch(0.59 0.212 6.3);
+  --type-bug: oklch(0.674 0.148 116.8);
+  --type-rock: oklch(0.73 0.055 100.5);
+  --type-ghost: oklch(0.449 0.094 327);
+  --type-dragon: oklch(0.551 0.195 272.9);
+  --type-dark: oklch(0.442 0.028 15.1);
+  --type-steel: oklch(0.674 0.075 222.8);
+  --type-fairy: oklch(0.74 0.215 327.5);
+
+  --stat-hp: oklch(0.687 0.202 24.1);
+  --stat-atk: oklch(0.803 0.109 55.9);
+  --stat-def: oklch(0.907 0.127 95.6);
+  --stat-spa: oklch(0.783 0.093 266.7);
+  --stat-spd: oklch(0.836 0.118 135.7);
+  --stat-spe: oklch(0.778 0.13 0.8);
+  --stat-track: var(--muted);
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-panel: var(--panel);
+  --color-panel-border: var(--panel-border);
+  --color-panel-inset: var(--panel-inset);
+  --color-panel-header: var(--panel-header);
+  --color-panel-header-foreground: var(--panel-header-foreground);
+
+  --color-type-normal: var(--type-normal);
+  --color-type-normal-foreground: var(--type-fg-dark);
+  --color-type-fire: var(--type-fire);
+  --color-type-fire-foreground: var(--type-fg-light);
+  --color-type-water: var(--type-water);
+  --color-type-water-foreground: var(--type-fg-light);
+  --color-type-grass: var(--type-grass);
+  --color-type-grass-foreground: var(--type-fg-dark);
+  --color-type-electric: var(--type-electric);
+  --color-type-electric-foreground: var(--type-fg-dark);
+  --color-type-ice: var(--type-ice);
+  --color-type-ice-foreground: var(--type-fg-dark);
+  --color-type-fighting: var(--type-fighting);
+  --color-type-fighting-foreground: var(--type-fg-dark);
+  --color-type-poison: var(--type-poison);
+  --color-type-poison-foreground: var(--type-fg-light);
+  --color-type-ground: var(--type-ground);
+  --color-type-ground-foreground: var(--type-fg-light);
+  --color-type-flying: var(--type-flying);
+  --color-type-flying-foreground: var(--type-fg-dark);
+  --color-type-psychic: var(--type-psychic);
+  --color-type-psychic-foreground: var(--type-fg-light);
+  --color-type-bug: var(--type-bug);
+  --color-type-bug-foreground: var(--type-fg-dark);
+  --color-type-rock: var(--type-rock);
+  --color-type-rock-foreground: var(--type-fg-dark);
+  --color-type-ghost: var(--type-ghost);
+  --color-type-ghost-foreground: var(--type-fg-light);
+  --color-type-dragon: var(--type-dragon);
+  --color-type-dragon-foreground: var(--type-fg-light);
+  --color-type-dark: var(--type-dark);
+  --color-type-dark-foreground: var(--type-fg-light);
+  --color-type-steel: var(--type-steel);
+  --color-type-steel-foreground: var(--type-fg-dark);
+  --color-type-fairy: var(--type-fairy);
+  --color-type-fairy-foreground: var(--type-fg-dark);
+
+  --color-stat-hp: var(--stat-hp);
+  --color-stat-atk: var(--stat-atk);
+  --color-stat-def: var(--stat-def);
+  --color-stat-spa: var(--stat-spa);
+  --color-stat-spd: var(--stat-spd);
+  --color-stat-spe: var(--stat-spe);
+  --color-stat-track: var(--stat-track);
+
+  --font-sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html,
+  body {
+    @apply h-full bg-background text-foreground;
+    font-family: var(--font-sans);
+  }
+  body {
+    background-image: repeating-linear-gradient(
+      135deg,
+      var(--stripe) 0 2px,
+      transparent 2px 10px
+    );
+    background-attachment: fixed;
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+/* Menüpanel im Stil von Beutel/Bericht/PC-Boxen: dicker heller Rahmen, innere Kontur */
+@utility panel {
+  background-color: var(--panel);
+  color: var(--card-foreground);
+  border: 2px solid var(--panel-border);
+  border-radius: var(--radius-xl);
+  box-shadow:
+    inset 0 0 0 2px var(--panel-inset),
+    0 4px 14px oklch(0 0 0 / 0.25);
+}
+
+/* Kopfleiste eines Panels (Titel), z. B. als erstes Kind von .panel */
+@utility panel-header {
+  background-color: var(--panel-header);
+  color: var(--panel-header-foreground);
+  border-radius: calc(var(--radius-xl) - 4px) calc(var(--radius-xl) - 4px) 0 0;
+  padding: 0.375rem 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}

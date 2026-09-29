@@ -19,9 +19,10 @@ Aktueller eigener Anwendungsfall: nur **Typen** und **Attacken** randomisiert.
 ### Runs
 
 - Mehrere Runs anlegen, umbenennen, löschen, zwischen ihnen wechseln
-- Pro Run: Name, Spiel/Generation, optional Seed und Notiz
-- Die Generation bestimmt die verfügbaren Pokémon (Dex bis Gen X) und die Typenliste
-  (Fee erst ab Gen 6, Unlicht/Stahl erst ab Gen 2)
+- Pro Run: Name, Spiel (z. B. Schwarz 2, Feuerrot), optional Seed und Notiz
+- Das Spiel bestimmt die Generation und damit die verfügbaren Pokémon (Nationaldex bis Gen X),
+  Typen (Fee erst ab Gen 6, Unlicht/Stahl erst ab Gen 2), Attacken, Fähigkeiten (ab Gen 3) und Routen
+- Einstellung „Wilde Pokémon“ wie im Randomizer: keine Zuordnung, Area 1:1 oder Global 1:1
 
 ### Kategorien (pro Run togglebar)
 
@@ -32,7 +33,7 @@ Aktueller eigener Anwendungsfall: nur **Typen** und **Attacken** randomisiert.
 | Stats | KP, Angriff, Verteidigung, Sp.-Angr., Sp.-Vert., Init. (Summe automatisch) |
 | Fähigkeiten | 1–3 Fähigkeiten |
 | Entwicklungen | Ziel-Pokémon + Methode (Level, Item, frei als Text) |
-| Fundorte | Route/Ort, wo das Pokémon wild vorkommt |
+| Fundorte | automatisch aus den Encounter-Listen der Routen, Klick springt zur Route |
 | Notiz | Freitext pro Pokémon |
 
 Deaktivierte Kategorien werden ausgeblendet, eingetragene Daten bleiben beim Deaktivieren
@@ -45,6 +46,19 @@ erhalten (kein Datenverlust durch versehentliches Toggeln).
 - Filter nach eingetragenem Typ (z. B. alle Pokémon, die im Run jetzt Feuer sind)
 - Rechts: Detailansicht mit den aktiven Kategorien zum Bearbeiten
 - Tastatur: `↑` `↓` durch die Liste, Tippen fokussiert die Suche
+
+### Routen und Karte
+
+- Pro Route und Methode (Gras, Surfen, Angeln …) eintragen, welche Pokémon dort vorkommen
+- Schematische Regionskarte aller Regionen, Klick auf Route/Ort öffnet die Encounter-Liste;
+  alternativ als durchsuchbare Liste, eigene Routen per Freitext
+- Bei Area-/Global-1:1 steht pro Methode der Stand, z. B. „Gras (2/3)“ (Slots = verschiedene
+  Original-Pokémon)
+
+### Fortschritt
+
+- Aktuelles Team (bis 6 Pokémon, Spitzname, Level)
+- Orden bzw. Prüfungen, Titanen usw. des Spiels zum Abhaken
 
 ### Daten
 
@@ -68,6 +82,12 @@ erhalten (kein Datenverlust durch versehentliches Toggeln).
 ```sh
 npm install
 npm run tauri dev
+```
+
+Stammdaten (Pokémon, Attacken, Orte, Sprites) neu erzeugen:
+
+```sh
+node scripts/generate-data.mjs
 ```
 
 Build:
