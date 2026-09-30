@@ -18,7 +18,7 @@ async function getJson<T>(path: string): Promise<T> {
   return (await res.json()) as T;
 }
 
-/** Ein Promise pro Ressource; bei Fehler wird der Cache-Eintrag verworfen, damit ein Retry möglich ist. */
+/** Ein Promise pro Schlüssel; bei Fehler verworfen, damit Retry möglich ist. */
 function cached<T>(cache: Map<string, Promise<T>>, key: string, load: () => Promise<T>): Promise<T> {
   let p = cache.get(key);
   if (!p) {
@@ -31,10 +31,12 @@ function cached<T>(cache: Map<string, Promise<T>>, key: string, load: () => Prom
   return p;
 }
 
+const ABILITIES_FROM_GEN = 3;
+
 const base = new Map<string, Promise<unknown>>();
 const games = new Map<string, Promise<GameData>>();
 
-// Einzige Stelle, an der der gemeinsame Cache auf den Dateityp eingeengt wird.
+// Cache ist untypisiert, hier wird auf den Dateityp eingeengt.
 const baseFile = <T>(name: string) => cached(base, name, () => getJson<T>(`/data/${name}.json`)) as Promise<T>;
 
 export const loadGames = (): Promise<Game[]> => baseFile<Game[]>("games");
@@ -61,7 +63,7 @@ export function loadGameData(gameId: string): Promise<GameData> {
       types: ty,
       typesById: new Map(ty.map((t) => [t.id, t])),
       moves: moves.filter((m) => m.generation <= gen),
-      abilities: gen < 3 ? [] : abilities.filter((a) => a.generation <= gen),
+      abilities: gen < ABILITIES_FROM_GEN ? [] : abilities.filter((a) => a.generation <= gen),
       locations,
     };
   });
@@ -70,15 +72,17 @@ export function loadGameData(gameId: string): Promise<GameData> {
 const maps = new Map<string, Promise<RegionMap>>();
 
 /** Schematische Karte der Region, z. B. "Einall" → /data/maps/einall.json */
-export const loadRegionMap = (region: string): Promise<RegionMap> =>
-  cached(maps, region, () => getJson<RegionMap>(`/data/maps/${encodeURIComponent(region.toLowerCase())}.json`));
+export function loadRegionMap(region: string): Promise<RegionMap> {
+  const key = region.toLowerCase();
+  return cached(maps, key, () => getJson<RegionMap>(`/data/maps/${encodeURIComponent(key)}.json`));
+}
 
 /** Orden/Prüfungen des Spiels; unbekanntes Spiel → []. */
 export const loadBadges = async (gameId: string): Promise<Badge[]> =>
   (await baseFile<Record<string, Badge[]>>("badges"))[gameId] ?? [];
 
 export function categoriesForGeneration(gen: number): Category[] {
-  return CATEGORIES.filter((c) => c !== "abilities" || gen >= 3);
+  return CATEGORIES.filter((c) => c !== "abilities" || gen >= ABILITIES_FROM_GEN);
 }
 
 export const spriteUrl = (id: number): string => `/sprites/${id}.png`;

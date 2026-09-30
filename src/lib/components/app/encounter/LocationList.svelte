@@ -2,7 +2,7 @@
   import { tick, untrack } from "svelte";
   import PlusIcon from "@lucide/svelte/icons/plus";
   import { app, mutate } from "$lib/runs.svelte.ts";
-  import { addCustomLocation } from "$lib/encounters.ts";
+  import { addCustomLocation, countSpecies } from "$lib/encounters.ts";
   import { normalize } from "$lib/search.ts";
   import type { Location } from "$lib/types.ts";
   import { Button } from "$lib/components/ui/button/index.js";
@@ -19,7 +19,7 @@
     return q ? locations.filter((l) => normalize(l.name).includes(q)) : locations;
   });
 
-  // Gewählte Route (z. B. per Klick auf einen Fundort) sichtbar machen.
+  // Filter zurücksetzen und nach dem Rendern zur gewählten Route scrollen
   $effect(() => {
     const id = app.selectedLocationId;
     if (!id) return;
@@ -29,40 +29,36 @@
     void tick().then(() => listEl?.querySelector("[aria-current='true']")?.scrollIntoView({ block: "nearest" }));
   });
 
-  function count(id: string): number {
-    const byMethod = app.current?.encounters[id] ?? {};
-    return new Set(Object.values(byMethod).flat()).size;
-  }
-
   function add(e: SubmitEvent) {
     e.preventDefault();
     const name = newName.trim();
     if (!name) return;
     let id = "";
     mutate((r) => (id = addCustomLocation(r, name).id));
+    if (!id) return;
     app.selectedLocationId = id;
     newName = "";
   }
 </script>
 
 <section class="panel flex min-h-0 flex-col">
-  <h2 class="panel-header px-4 py-2 text-sm font-semibold">Routen ({locations.length})</h2>
+  <h2 class="panel-header px-4 py-2 text-sm">Routen ({locations.length})</h2>
   <div class="p-3">
     <Input type="search" placeholder="Route suchen …" aria-label="Route suchen" bind:value={query} />
   </div>
-  <ul bind:this={listEl} class="min-h-0 flex-1 overflow-y-auto px-2 pt-1 pb-2">
+  <ul bind:this={listEl} aria-label="Routen" class="min-h-0 flex-1 overflow-y-auto px-2 pt-1 pb-2">
     {#each shown as loc (loc.id)}
-      {@const n = count(loc.id)}
+      {@const n = app.current ? countSpecies(app.current, loc.id) : 0}
       <li>
         <button
           type="button"
           class="flex w-full items-center justify-between gap-2 rounded-md border-l-4 border-transparent px-3 py-1.5 text-left text-sm hover:bg-accent hover:text-accent-foreground aria-[current=true]:border-panel-header aria-[current=true]:bg-panel-header aria-[current=true]:text-panel-header-foreground"
-          aria-current={app.selectedLocationId === loc.id}
+          aria-current={app.selectedLocationId === loc.id || undefined}
           onclick={() => (app.selectedLocationId = loc.id)}
         >
           <span class="truncate">{loc.name}</span>
           {#if n}
-            <span class="shrink-0 rounded-full bg-primary px-2 text-xs text-primary-foreground" title="{n} Pokémon">
+            <span class="shrink-0 rounded-full bg-primary px-2 text-xs text-primary-foreground">
               {n}<span class="sr-only"> Pokémon</span>
             </span>
           {/if}

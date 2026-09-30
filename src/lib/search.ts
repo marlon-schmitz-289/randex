@@ -13,10 +13,7 @@ export function normalize(s: string): string {
   return s.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().trim();
 }
 
-/**
- * true, wenn für die Art ein Eintrag existiert. updateEntry entfernt leere Einträge, daher reicht
- * die Existenz; so hängt die Liste nicht von jedem Feldwert ab (kein Neuberechnen pro Tastendruck).
- */
+/** Existenz genügt, da patchEntry leere Einträge entfernt. */
 export function hasEntry(run: Run, speciesId: number): boolean {
   return run.pokemon[speciesId] !== undefined;
 }
@@ -27,7 +24,7 @@ function isSubsequence(name: string, q: string): boolean {
   return i === q.length;
 }
 
-// Normalisierte Namen einmal pro Artenliste (Liste pro Spiel gecacht, siehe data.ts).
+// Schlüssel = Artenliste aus GameData ($state.raw, daher kein Proxy).
 const nameIndex = new WeakMap<readonly Species[], string[]>();
 
 function namesOf(species: readonly Species[]): string[] {
@@ -43,7 +40,7 @@ export function searchSpecies(species: readonly Species[], run: Run | null, opts
   const names = namesOf(species);
   const q = normalize(opts.query);
   const num = /^#?\d+$/.test(q) ? Number(q.replace("#", "")) : null;
-  const ranked: { s: Species; tier: number }[] = [];
+  const tiers: Species[][] = [[], [], []];
 
   for (let i = 0; i < species.length; i++) {
     const s = species[i];
@@ -60,8 +57,7 @@ export function searchSpecies(species: readonly Species[], run: Run | null, opts
       tier = n.startsWith(q) ? 0 : n.includes(q) ? 1 : isSubsequence(n, q) ? 2 : -1;
       if (tier < 0) continue;
     }
-    ranked.push({ s, tier });
+    tiers[tier].push(s);
   }
-  // Array.sort ist stabil: gleiche Stufe bleibt in Dex-Reihenfolge.
-  return ranked.sort((a, b) => a.tier - b.tier).map((r) => r.s);
+  return tiers.flat();
 }

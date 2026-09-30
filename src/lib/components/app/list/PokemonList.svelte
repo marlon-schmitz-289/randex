@@ -65,7 +65,7 @@
 
   function typingTarget(t: EventTarget | null): boolean {
     if (!(t instanceof HTMLElement)) return false;
-    return t.isContentEditable || !!t.closest("input, textarea, select, [role='dialog'], [role='alertdialog'], [role='listbox'], [role='menu'], [role='menuitemradio'], [role='tab']");
+    return t.isContentEditable || !!t.closest("input, textarea, select, [role='dialog'], [role='alertdialog'], [role='listbox'], [role='menu'], [role='tab']");
   }
 
   function onKeydown(e: KeyboardEvent) {
@@ -111,7 +111,7 @@
       {#each FILTERS as f (f.value)}
         <ToggleGroup.Item
           value={f.value}
-          class="aria-pressed:bg-primary aria-pressed:text-primary-foreground data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+          class="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
         >{f.label}</ToggleGroup.Item>
       {/each}
     </ToggleGroup.Root>
@@ -138,32 +138,41 @@
     {#if results.length === 0}
       <p class="p-4 text-sm text-muted-foreground">Keine Treffer.</p>
     {:else}
-      <div class="relative" style="height:{results.length * ROW}px">
+      <div class="relative" style="height:{results.length * ROW}px" role="list" aria-label="Pokémon">
         {#each visible as s, i (s.id)}
           {@const selected = s.id === app.selectedSpeciesId}
           {@const entered = app.current ? hasEntry(app.current, s.id) : false}
           {@const types = app.current?.pokemon[s.id]?.types ?? []}
-          <button
-            type="button"
-            aria-current={selected ? "true" : undefined}
-            onclick={() => showSpecies(s.id)}
-            class="absolute inset-x-0 flex items-center gap-2 border-l-4 px-2 focus-visible:-outline-offset-2 text-left hover:bg-accent hover:text-accent-foreground {selected
-              ? 'border-panel-header bg-panel-header text-panel-header-foreground hover:bg-panel-header hover:text-panel-header-foreground'
-              : 'border-transparent'}"
+          <div
+            role="listitem"
+            aria-setsize={results.length}
+            aria-posinset={first + i + 1}
+            class="absolute inset-x-0"
             style="top:{(first + i) * ROW}px;height:{ROW}px"
           >
-            <Sprite id={s.id} size={40} />
-            <span class="w-11 shrink-0 text-xs tabular-nums {selected ? '' : 'text-muted-foreground'}">#{String(s.id).padStart(3, "0")}</span>
-            <span class="min-w-0 flex-1 truncate text-sm font-medium">{s.name}</span>
-            {#each types as t (t)}
-              <TypeBadge id={t} size="sm" />
-            {/each}
-            {#if entered}
-              <Check class="size-4 shrink-0" aria-label="Eingetragen" />
-            {:else}
-              <span class="size-4 shrink-0 text-center {selected ? '' : 'text-muted-foreground'}" aria-label="Fehlt">–</span>
-            {/if}
-          </button>
+            <button
+              type="button"
+              aria-current={selected ? "true" : undefined}
+              onclick={() => showSpecies(s.id)}
+              class="flex size-full items-center gap-2 border-l-4 px-2 focus-visible:-outline-offset-2 text-left hover:bg-accent hover:text-accent-foreground {selected
+                ? 'border-panel-header bg-panel-header text-panel-header-foreground hover:bg-panel-header hover:text-panel-header-foreground'
+                : 'border-transparent'}"
+            >
+              <Sprite id={s.id} size={40} />
+              <span class="w-11 shrink-0 text-xs tabular-nums {selected ? '' : 'text-muted-foreground'}">#{String(s.id).padStart(3, "0")}</span>
+              <span class="min-w-0 flex-1 truncate text-sm font-medium">{s.name}</span>
+              {#each types as t (t)}
+                <TypeBadge id={t} size="sm" />
+              {/each}
+              {#if entered}
+                <Check class="size-4 shrink-0" aria-hidden="true" />
+                <span class="sr-only">Eingetragen</span>
+              {:else}
+                <span class="size-4 shrink-0 text-center {selected ? '' : 'text-muted-foreground'}" aria-hidden="true">–</span>
+                <span class="sr-only">Fehlt</span>
+              {/if}
+            </button>
+          </div>
         {/each}
       </div>
     {/if}

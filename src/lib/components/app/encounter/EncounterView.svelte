@@ -12,7 +12,7 @@
   const selected = $derived(locations.find((l) => l.id === app.selectedLocationId) ?? null);
 
   let mode = $state<"list" | "map">("map");
-  const on = "data-[state=on]:bg-primary data-[state=on]:text-primary-foreground";
+  const itemOn = "data-[state=on]:bg-primary data-[state=on]:text-primary-foreground";
 </script>
 
 <div class="flex h-full min-h-0 flex-col gap-3">
@@ -25,8 +25,8 @@
     aria-label="Darstellung der Routen"
     class="self-start"
   >
-    <ToggleGroup.Item value="map" class={on}><MapIcon /> Karte</ToggleGroup.Item>
-    <ToggleGroup.Item value="list" class={on}><ListIcon /> Liste</ToggleGroup.Item>
+    <ToggleGroup.Item value="map" class={itemOn}><MapIcon /> Karte</ToggleGroup.Item>
+    <ToggleGroup.Item value="list" class={itemOn}><ListIcon /> Liste</ToggleGroup.Item>
   </ToggleGroup.Root>
 
   <div
@@ -49,7 +49,7 @@
         {#if mode === "map"}
           Klicke auf der Karte auf eine Route oder einen Ort.
         {:else}
-          {locations.length ? "Wähle links eine Route aus." : "Keine Routen vorhanden. Lege links eine eigene Route an."}
+          Wähle links eine Route aus.
         {/if}
       </div>
     {/if}

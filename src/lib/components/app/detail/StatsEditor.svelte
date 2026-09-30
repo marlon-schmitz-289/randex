@@ -26,7 +26,7 @@
   }
 </script>
 
-<div class="grid grid-cols-[auto_4.5rem_1fr] items-center gap-x-3 gap-y-1.5">
+<div class="grid grid-cols-[auto_4.5rem_1fr] items-center gap-x-3 gap-y-1.5" role="group" aria-label="Basiswerte">
   {#each STATS as s (s.key)}
     {@const value = stats?.[s.key] ?? 0}
     <label for="stat-{s.key}" class="text-sm">{s.label}</label>
@@ -37,7 +37,7 @@
       max={MAX}
       value={stats ? value : ""}
       class="h-7 text-right tabular-nums"
-      oninput={(e) => set(s.key, e.currentTarget.valueAsNumber)}
+      onchange={(e) => set(s.key, e.currentTarget.valueAsNumber)}
     />
     <div class="h-2.5 overflow-hidden rounded-full bg-stat-track" aria-hidden="true">
       <div class={["h-full rounded-full", s.bar]} style:width="{(value / MAX) * 100}%"></div>

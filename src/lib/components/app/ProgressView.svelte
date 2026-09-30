@@ -53,9 +53,9 @@
 
 <div class="grid h-full min-h-0 grid-cols-[minmax(20rem,26rem)_1fr] gap-3">
   <section class="panel flex min-h-0 flex-col">
-    <h2 class="panel-header px-4 py-2 text-sm font-semibold">Team ({team.length}/{TEAM_SIZE})</h2>
+    <h2 class="panel-header px-4 py-2 text-sm">Team ({team.length}/{TEAM_SIZE})</h2>
     <ul class="min-h-0 flex-1 space-y-2 overflow-y-auto p-3">
-      {#each team as m, i (i)}
+      {#each team as m, i}
         {@const name = app.data?.speciesById.get(m.speciesId)?.name ?? `#${m.speciesId}`}
         <li class="flex items-center gap-2 rounded-md border border-panel-border bg-panel-inset p-2">
           <button type="button" class="shrink-0 rounded-md" title="{name} ansehen" onclick={() => showSpecies(m.speciesId)}>
@@ -79,7 +79,11 @@
                 placeholder="Lv."
                 aria-label="Level von {name}"
                 value={m.level ?? ""}
-                onchange={(e) => editMember(i, { level: parseLevel(e.currentTarget.value) })}
+                onchange={(e) => {
+                  const level = parseLevel(e.currentTarget.value);
+                  e.currentTarget.value = level?.toString() ?? "";
+                  editMember(i, { level });
+                }}
               />
             </div>
           </div>
@@ -103,7 +107,7 @@
 
   <section class="panel flex min-h-0 flex-col">
     {#await badgesPromise then badges}
-      <h2 class="panel-header px-4 py-2 text-sm font-semibold">
+      <h2 class="panel-header px-4 py-2 text-sm">
         Orden ({badges.filter((b) => owned.has(b.id)).length}/{badges.length})
       </h2>
       <div class="min-h-0 flex-1 space-y-4 overflow-y-auto p-3">
@@ -150,9 +154,9 @@
           <p class="text-sm text-muted-foreground">Für dieses Spiel sind keine Orden hinterlegt.</p>
         {/each}
       </div>
-    {:catch}
-      <h2 class="panel-header px-4 py-2 text-sm font-semibold">Orden</h2>
-      <p class="p-4 text-sm text-muted-foreground">Orden konnten nicht geladen werden.</p>
+    {:catch e}
+      <h2 class="panel-header px-4 py-2 text-sm">Orden</h2>
+      <p class="p-4 text-sm text-muted-foreground">Orden konnten nicht geladen werden: {e instanceof Error ? e.message : e}</p>
     {/await}
   </section>
 </div>

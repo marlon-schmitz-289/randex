@@ -12,7 +12,7 @@ export function findSightings(run: Run, speciesId: number): Sighting[] {
 }
 
 export function addEncounter(run: Run, locId: string, method: EncounterMethod, speciesId: number): void {
-  // Nach der Zuweisung neu lesen: bei $state liefert erst der Lesezugriff den Proxy.
+  // Nach ??= neu lesen: erst der Lesezugriff liefert den $state-Proxy.
   run.encounters[locId] ??= {};
   const byMethod = run.encounters[locId];
   byMethod[method] ??= [];
@@ -30,8 +30,14 @@ export function removeEncounter(run: Run, locId: string, method: EncounterMethod
   if (Object.keys(byMethod).length === 0) delete run.encounters[locId];
 }
 
+export const isCustomLocation = (id: string) => id.startsWith("custom-");
+
+export const countSpecies = (run: Run, locId: string) => new Set(Object.values(run.encounters[locId] ?? {}).flat()).size;
+
 export function addCustomLocation(run: Run, name: string): Location {
-  const loc: Location = { id: `custom-${crypto.randomUUID()}`, name: name.trim(), methods: [] };
+  const trimmed = name.trim();
+  if (!trimmed) throw new Error("Ortsname fehlt");
+  const loc: Location = { id: `custom-${crypto.randomUUID()}`, name: trimmed, methods: [] };
   run.customLocations.push(loc);
   return loc;
 }

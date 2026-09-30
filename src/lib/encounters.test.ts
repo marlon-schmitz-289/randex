@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
-  addCustomLocation, addEncounter, allLocations, findSightings, methodsFor, removeCustomLocation, removeEncounter,
+  addCustomLocation, addEncounter, allLocations, countSpecies, findSightings, isCustomLocation, methodsFor, removeCustomLocation, removeEncounter,
 } from "./encounters.ts";
 import type { Location, Run } from "./types.ts";
 
@@ -60,6 +60,8 @@ test("eigene Orte: anlegen, anhängen, löschen inkl. Encounters", () => {
   assert.match(loc.id, /^custom-[0-9a-f-]{36}$/);
   assert.equal(loc.name, "Geheimhöhle");
   assert.deepEqual(loc.methods, []);
+  assert.ok(isCustomLocation(loc.id));
+  assert.ok(!isCustomLocation("route-1"));
   addEncounter(r, loc.id, "walk", 1);
   const game: Location[] = [{ id: "route-1", name: "Route 1", methods: ["walk"] }];
   assert.deepEqual(allLocations(game, r).map((l) => l.id), ["route-1", loc.id]);
@@ -67,6 +69,12 @@ test("eigene Orte: anlegen, anhängen, löschen inkl. Encounters", () => {
   assert.deepEqual(r.customLocations, []);
   assert.deepEqual(r.encounters, {});
   removeCustomLocation(r, "custom-unknown");
+});
+
+test("eigener Ort ohne Namen wird abgelehnt", () => {
+  const r = mk();
+  assert.throws(() => addCustomLocation(r, "   "), /Ortsname fehlt/);
+  assert.deepEqual(r.customLocations, []);
 });
 
 test("methodsFor vereinigt Ort und Run ohne Duplikate", () => {
@@ -77,4 +85,14 @@ test("methodsFor vereinigt Ort und Run ohne Duplikate", () => {
   addEncounter(r, "l", "gift", 1);
   addEncounter(r, "l", "headbutt", 1);
   assert.deepEqual(methodsFor(loc, r), ["walk", "surf", "headbutt", "gift"]);
+});
+
+test("countSpecies zählt Arten pro Ort über alle Methoden eindeutig", () => {
+  const r = mk();
+  assert.equal(countSpecies(r, "a"), 0);
+  addEncounter(r, "a", "walk", 1);
+  addEncounter(r, "a", "surf", 1);
+  addEncounter(r, "a", "surf", 2);
+  addEncounter(r, "b", "walk", 3);
+  assert.equal(countSpecies(r, "a"), 2);
 });

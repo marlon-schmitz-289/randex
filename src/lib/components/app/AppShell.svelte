@@ -42,7 +42,7 @@
 
 <div class="flex h-dvh flex-col">
   <header class="flex flex-wrap items-center gap-2 border-b-2 border-panel-border bg-panel px-3 py-2">
-    <span class="mr-2 text-lg font-bold tracking-tight">Randex</span>
+    <h1 class="mr-2 text-lg font-bold tracking-tight">Randex</h1>
 
     <DropdownMenu.Root>
       <DropdownMenu.Trigger>
@@ -59,10 +59,10 @@
             <DropdownMenu.Label>Runs</DropdownMenu.Label>
             <DropdownMenu.RadioGroup
               value={app.current?.id ?? ""}
-              onValueChange={(id) => id !== app.current?.id && void openRun(id)}
+              onValueChange={(id) => void openRun(id)}
             >
               {#each app.runs as r (r.id)}
-                <DropdownMenu.RadioItem value={r.id} closeOnSelect>
+                <DropdownMenu.RadioItem value={r.id}>
                   <span class="flex min-w-0 flex-col">
                     <span class="truncate">{r.name}</span>
                     <span class="text-xs text-muted-foreground">{gameName(r.gameId)}</span>
@@ -82,7 +82,7 @@
       <span class="hidden text-sm text-muted-foreground sm:inline">{gameName(app.current.gameId)}</span>
 
       <Tabs.Root value={app.view} onValueChange={(v) => isView(v) && (app.view = v)} class="mx-auto">
-        <Tabs.List>
+        <Tabs.List aria-label="Ansicht">
           <Tabs.Trigger value="pokemon" class={activeTab}><BookOpen /> Pokémon</Tabs.Trigger>
           <Tabs.Trigger value="routes" class={activeTab}><MapIcon /> Routen</Tabs.Trigger>
           <Tabs.Trigger value="progress" class={activeTab}><Trophy /> Fortschritt</Tabs.Trigger>
@@ -126,11 +126,11 @@
         <ProgressView />
       {/if}
     {:else if app.loading}
-      <p class="grid h-full place-items-center text-muted-foreground">Lade …</p>
+      <p role="status" class="grid h-full place-items-center text-muted-foreground">Lade …</p>
     {:else}
       <div class="grid h-full place-items-center">
         <section class="panel w-full max-w-md overflow-hidden">
-          <h1 class="panel-header px-4 py-2 font-semibold">{app.runs.length ? "Kein Run geöffnet" : "Noch kein Run"}</h1>
+          <h2 class="panel-header px-4 py-2">{app.runs.length ? "Kein Run geöffnet" : "Noch kein Run"}</h2>
           <div class="grid gap-4 p-4">
             <p class="text-sm text-muted-foreground">
               {app.runs.length

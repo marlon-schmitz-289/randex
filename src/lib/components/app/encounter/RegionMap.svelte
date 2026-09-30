@@ -1,6 +1,7 @@
 <script lang="ts">
   import { app } from "$lib/runs.svelte.ts";
   import { loadRegionMap } from "$lib/data.ts";
+  import { countSpecies } from "$lib/encounters.ts";
   import type { Location, MapPlace } from "$lib/types.ts";
 
   let { locations }: { locations: Location[] } = $props();
@@ -9,27 +10,31 @@
   const mapPromise = $derived(region ? loadRegionMap(region) : null);
   const known = $derived(new Set(locations.map((l) => l.id)));
 
-  const count = (id: string) => new Set(Object.values(app.current?.encounters[id] ?? {}).flat()).size;
-  const pts = (points: [number, number][]) => points.map(([x, y]) => `${x},${y}`).join(" ");
+  const PAD = 30;
 
-  function hint(p: MapPlace): string {
-    if (p.id.startsWith("deco-")) return "keine wilden Pokémon";
+  const count = (id: string) => (app.current ? countSpecies(app.current, id) : 0);
+  const pts = (points: [number, number][]) => points.map(([x, y]) => `${x},${y}`).join(" ");
+  const isDeco = (p: MapPlace) => p.id.startsWith("deco-");
+  // Städte zuletzt, damit ihre Labels nicht überdeckt werden
+  const order = (p: MapPlace) => (p.points.length > 1 ? 0 : p.kind === "city" ? 2 : 1);
+
+  function hint(p: MapPlace, n: number): string {
+    if (isDeco(p)) return "keine wilden Pokémon";
     if (!known.has(p.id)) return "nicht in diesem Spiel";
-    const n = count(p.id);
     return n ? `${n} Pokémon eingetragen` : "noch nichts eingetragen";
   }
 
-  // Tooltip fixed im Viewport: wird weder vom Panel abgeschnitten noch ragt er aus dem Fenster.
+  // fixed, damit weder Panel noch Fenster den Tooltip abschneiden
   let tip = $state<{ title: string; hint: string; x: number; y: number; below: boolean } | null>(null);
   let tipWidth = $state(0);
   const EDGE = 8;
   const tipLeft = $derived(tip ? Math.min(Math.max(tip.x - tipWidth / 2, EDGE), window.innerWidth - tipWidth - EDGE) : 0);
 
-  function showTip(e: Event, p: MapPlace) {
+  function showTip(e: Event, p: MapPlace, text: string) {
     if (!(e.currentTarget instanceof Element)) return;
     const r = e.currentTarget.getBoundingClientRect();
     const below = r.top < 64;
-    tip = { title: p.label, hint: hint(p), x: r.left + r.width / 2, y: below ? r.bottom + 8 : r.top - 8, below };
+    tip = { title: p.label, hint: text, x: r.left + r.width / 2, y: below ? r.bottom + 8 : r.top - 8, below };
   }
 
   function onkey(e: KeyboardEvent, p: MapPlace) {
@@ -37,9 +42,6 @@
     e.preventDefault();
     app.selectedLocationId = p.id;
   }
-
-  // Linien unten, Punkte darüber, Städte ganz oben (Labels lesbar).
-  const order = (p: MapPlace) => (p.points.length > 1 ? 0 : p.kind === "city" ? 2 : 1);
 </script>
 
 <svelte:window onresize={() => (tip = null)} />
@@ -64,14 +66,15 @@
 {/snippet}
 
 <section class="panel flex min-h-0 flex-col">
-  <h2 class="panel-header px-4 py-2 text-sm font-semibold">Karte {region}</h2>
+  <h2 class="panel-header px-4 py-2 text-sm">Karte {region}</h2>
   {#await mapPromise}
     <p class="p-4 text-sm text-muted-foreground">Karte wird geladen …</p>
   {:then map}
     {#if map}
+      {@const places = [...map.places].sort((a, b) => order(a) - order(b))}
       <div class="min-h-0 flex-1 p-2">
         <svg
-          viewBox="-30 -30 {map.width + 60} {map.height + 60}"
+          viewBox="{-PAD} {-PAD} {map.width + 2 * PAD} {map.height + 2 * PAD}"
           class="size-full"
           role="group"
           aria-label="Karte {region}"
@@ -85,10 +88,10 @@
               <feDropShadow dx="0" dy="4" stdDeviation="4" flood-opacity="0.25" />
             </filter>
           </defs>
-          <rect x="-30" y="-30" width={map.width + 60} height={map.height + 60} rx="12" class="sea" />
-          <rect x="-30" y="-30" width={map.width + 60} height={map.height + 60} rx="12" fill="url(#map-waves)" />
+          <rect x={-PAD} y={-PAD} width={map.width + 2 * PAD} height={map.height + 2 * PAD} rx="12" class="sea" />
+          <rect x={-PAD} y={-PAD} width={map.width + 2 * PAD} height={map.height + 2 * PAD} rx="12" fill="url(#map-waves)" />
           <g filter="url(#map-shadow)">
-            <!-- Dicke runde Konturen machen aus den groben Polygonen weiche Küsten -->
+            <!-- Breite runde Konturen ergeben weiche Küsten -->
             {#each map.land as poly, i (i)}
               <polygon points={pts(poly)} class="coast" />
             {/each}
@@ -96,40 +99,37 @@
               <polygon points={pts(poly)} class="land" />
             {/each}
           </g>
-          {#each [...map.places].sort((a, b) => order(a) - order(b)) as p (p.id)}
+          {#each places as p (p.id)}
             {@const active = known.has(p.id)}
-            {@const cls = [
-              "place",
-              p.kind,
-              active ? "active" : p.id.startsWith("deco-") ? "deco" : "inactive",
-              app.selectedLocationId === p.id && "selected",
-              count(p.id) > 0 && "filled",
-            ]}
+            {@const selected = app.selectedLocationId === p.id}
+            {@const n = count(p.id)}
+            {@const h = hint(p, n)}
+            {@const cls = ["place", p.kind, active ? "active" : isDeco(p) ? "deco" : "inactive", selected && "selected", n > 0 && "filled"]}
             {#if active}
               <g
                 class={cls}
                 role="button"
                 tabindex="0"
-                aria-label="{p.label}, {hint(p)}"
-                aria-current={app.selectedLocationId === p.id || undefined}
+                aria-label="{p.label}, {h}"
+                aria-current={selected || undefined}
                 onclick={() => (app.selectedLocationId = p.id)}
                 onkeydown={(e) => onkey(e, p)}
-                onpointerenter={(e) => showTip(e, p)}
+                onpointerenter={(e) => showTip(e, p, h)}
                 onpointerleave={() => (tip = null)}
-                onfocus={(e) => showTip(e, p)}
+                onfocus={(e) => showTip(e, p, h)}
                 onblur={() => (tip = null)}
               >
                 {@render shape(p)}
               </g>
             {:else}
-              <g class={cls} role="img" aria-label="{p.label}, {hint(p)}" onpointerenter={(e) => showTip(e, p)} onpointerleave={() => (tip = null)}>
+              <g class={cls} role="img" aria-label="{p.label}, {h}" onpointerenter={(e) => showTip(e, p, h)} onpointerleave={() => (tip = null)}>
                 {@render shape(p)}
               </g>
             {/if}
           {/each}
         </svg>
       </div>
-      <div class="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-panel-border px-4 py-2 text-xs text-muted-foreground">
+      <div aria-hidden="true" class="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-panel-border px-4 py-2 text-xs text-muted-foreground">
         <span class="flex items-center gap-1.5"><span class="legend filled"></span>Pokémon eingetragen</span>
         <span class="flex items-center gap-1.5"><span class="legend selected"></span>ausgewählt</span>
         <span class="flex items-center gap-1.5"><span class="legend opacity-40"></span>nicht in diesem Spiel</span>
@@ -144,8 +144,9 @@
 {#if tip}
   <div
     bind:clientWidth={tipWidth}
-    role="tooltip"
+    aria-hidden="true"
     class={[
+      !tipWidth && "invisible",
       "pointer-events-none fixed z-50 max-w-64 rounded-md border border-panel-border bg-popover px-2.5 py-1.5 text-popover-foreground shadow-lg",
       !tip.below && "-translate-y-full",
     ]}
@@ -231,8 +232,6 @@
   }
   .cave .marker {
     stroke-linejoin: round;
-  }
-  .cave .marker {
     fill: var(--muted-foreground);
   }
 
@@ -251,6 +250,11 @@
   .active:hover .casing,
   .active:focus-visible .casing {
     stroke: var(--ring);
+  }
+  .active:focus-visible :is(circle, rect).hit {
+    stroke: var(--ring);
+    stroke-width: 2;
+    stroke-dasharray: 4 3;
   }
 
   .filled .marker {

@@ -15,9 +15,9 @@
 
   const clampLevel = (v: number) => Math.min(100, Math.max(1, Math.round(v) || 1));
 
+  // Nur beim Hinzufügen sortieren: Zeilen sind per Index gekeyt, Umsortieren verschöbe den Fokus.
   function setLevelMoves(list: LevelMove[]) {
-    const sorted = [...list].sort((a, b) => a.level - b.level);
-    updateEntry(speciesId, { levelMoves: sorted.length ? sorted : undefined });
+    updateEntry(speciesId, { levelMoves: list.length ? list : undefined });
   }
 
   function setTmMoves(list: string[]) {
@@ -26,8 +26,8 @@
 </script>
 
 <div class="flex flex-col gap-4">
-  <section class="flex flex-col gap-2" aria-label="Level-Attacken">
-    <h3 class="text-sm font-semibold text-muted-foreground">Level-Up</h3>
+  <section class="flex flex-col gap-2" aria-labelledby="moves-level">
+    <h3 id="moves-level" class="text-sm font-semibold text-muted-foreground">Level-Up</h3>
     {#each levelMoves as lm, i (i)}
       <div class="flex items-center gap-2">
         <Input
@@ -43,6 +43,7 @@
         <NamePicker
           items={moves}
           value={lm.move}
+          label="Attacke {i + 1}"
           onSelect={(move) => setLevelMoves(levelMoves.map((m, j) => (j === i ? { ...m, move } : m)))}
         />
         <Button
@@ -68,14 +69,15 @@
         items={moves}
         value=""
         placeholder="Attacke hinzufügen …"
-        onSelect={(move) => setLevelMoves([...levelMoves, { level: clampLevel(newLevel), move }])}
+        onSelect={(move) =>
+          setLevelMoves([...levelMoves, { level: clampLevel(newLevel), move }].sort((a, b) => a.level - b.level))}
       />
       <span class="size-8 shrink-0"></span>
     </div>
   </section>
 
-  <section class="flex flex-col gap-2" aria-label="TM/VM-Attacken">
-    <h3 class="text-sm font-semibold text-muted-foreground">TM/VM</h3>
+  <section class="flex flex-col gap-2" aria-labelledby="moves-tm">
+    <h3 id="moves-tm" class="text-sm font-semibold text-muted-foreground">TM/VM</h3>
     {#if tmMoves.length}
       <ul class="flex flex-wrap gap-1.5">
         {#each tmMoves as move, i (i)}

@@ -13,14 +13,17 @@
     allowFreeText = false,
     exclude = [],
     placeholder = "Pokémon wählen",
+    label: ariaLabel,
   }: {
     value?: number | string | null;
     onSelect: (v: number | string) => void;
     allowFreeText?: boolean;
     exclude?: number[];
     placeholder?: string;
+    label?: string;
   } = $props();
 
+  // reicht zum Tippen-und-Wählen
   const MAX = 60;
   let open = $state(false);
   let query = $state("");
@@ -39,16 +42,22 @@
   function pick(v: number | string) {
     onSelect(v);
     open = false;
-    query = "";
   }
 </script>
 
-<Popover.Root bind:open>
+<Popover.Root bind:open onOpenChange={(o) => o && (query = "")}>
   <Popover.Trigger>
     {#snippet child({ props })}
-      <Button {...props} variant="outline" role="combobox" aria-expanded={open} class="w-full justify-between">
-        <span class="truncate {label ? '' : 'text-muted-foreground'}">{label || placeholder}</span>
-        <ChevronsUpDown class="size-4 shrink-0 opacity-50" />
+      <Button
+        {...props}
+        variant="outline"
+        role="combobox"
+        aria-expanded={open}
+        aria-label={ariaLabel && `${ariaLabel}: ${label || placeholder}`}
+        class="w-full min-w-0 justify-between font-normal"
+      >
+        <span class={["truncate", !label && "text-muted-foreground"]}>{label || placeholder}</span>
+        <ChevronsUpDown class="shrink-0 opacity-50" />
       </Button>
     {/snippet}
   </Popover.Trigger>

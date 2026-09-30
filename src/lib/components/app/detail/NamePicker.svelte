@@ -2,7 +2,7 @@
   import { normalize } from "$lib/search.ts";
 
   type Indexed = { name: string; key: string }[];
-  // Pro Liste (per loadGameData gecacht) einmal, statt pro Picker-Instanz.
+  // Index pro Liste einmal (Listen sind pro Spiel gecacht).
   const indexCache = new WeakMap<readonly { name: string }[], Indexed>();
 
   function indexFor(items: readonly { name: string }[]): Indexed {
@@ -28,11 +28,13 @@
     value,
     onSelect,
     placeholder = "Auswählen …",
+    label,
   }: {
     items: { name: string }[];
     value: string;
     onSelect: (name: string) => void;
     placeholder?: string;
+    label?: string;
   } = $props();
 
   const LIMIT = 50;
@@ -42,28 +44,28 @@
 
   const index = $derived(indexFor(items));
   const q = $derived(normalize(query));
-  // ponytail: nur die ersten 50 Treffer, reicht zum Tippen-und-Wählen
-  const results = $derived.by(() => {
-    if (!q) return index.slice(0, LIMIT).map((i) => i.name);
+  const matches = $derived.by(() => {
+    if (!q) return index.map((i) => i.name);
     const prefix: string[] = [];
     const sub: string[] = [];
     for (const i of index) {
       if (i.key.startsWith(q)) prefix.push(i.name);
       else if (i.key.includes(q)) sub.push(i.name);
     }
-    return [...prefix, ...sub].slice(0, LIMIT);
+    return [...prefix, ...sub];
   });
+  // ponytail: nur 50 Treffer, danach Suche eingrenzen (siehe Hinweiszeile).
+  const results = $derived(matches.slice(0, LIMIT));
   const freeText = $derived(query.trim());
   const exact = $derived(index.some((i) => i.key === q));
 
   function pick(name: string) {
     onSelect(name);
     open = false;
-    query = "";
   }
 </script>
 
-<Popover.Root bind:open>
+<Popover.Root bind:open onOpenChange={(o) => o && (query = "")}>
   <Popover.Trigger>
     {#snippet child({ props })}
       <Button
@@ -71,10 +73,11 @@
         variant="outline"
         role="combobox"
         aria-expanded={open}
+        aria-label={label && `${label}: ${value || placeholder}`}
         class="w-full min-w-0 justify-between font-normal"
       >
         <span class={["truncate", !value && "text-muted-foreground"]}>{value || placeholder}</span>
-        <ChevronsUpDownIcon class="opacity-50" />
+        <ChevronsUpDownIcon class="shrink-0 opacity-50" />
       </Button>
     {/snippet}
   </Popover.Trigger>
@@ -84,13 +87,18 @@
       <Command.List>
         <Command.Empty>Keine Treffer.</Command.Empty>
         {#if freeText && !exact}
-          <Command.Item value={"\u0000" + freeText} onSelect={() => pick(freeText)}>
+          <Command.Item value="free-text" onSelect={() => pick(freeText)}>
             <PlusIcon />„{freeText}“ übernehmen
           </Command.Item>
         {/if}
         {#each results as name (name)}
           <Command.Item value={name} onSelect={() => pick(name)}>{name}</Command.Item>
         {/each}
+        {#if matches.length > LIMIT}
+          <p class="px-2 py-1.5 text-xs text-muted-foreground">
+            {matches.length - LIMIT} weitere Treffer – Suche eingrenzen
+          </p>
+        {/if}
       </Command.List>
     </Command.Root>
   </Popover.Content>

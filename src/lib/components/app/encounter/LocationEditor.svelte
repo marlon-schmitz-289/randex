@@ -3,7 +3,7 @@
   import XIcon from "@lucide/svelte/icons/x";
   import Trash2Icon from "@lucide/svelte/icons/trash-2";
   import { app, mutate, showSpecies } from "$lib/runs.svelte.ts";
-  import { addEncounter, methodsFor, removeCustomLocation, removeEncounter } from "$lib/encounters.ts";
+  import { addEncounter, countSpecies, isCustomLocation, methodsFor, removeCustomLocation, removeEncounter } from "$lib/encounters.ts";
   import { ENCOUNTER_METHODS, ENCOUNTER_METHOD_LABELS } from "$lib/types.ts";
   import type { EncounterMethod, Location } from "$lib/types.ts";
   import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
@@ -13,20 +13,20 @@
 
   let { location }: { location: Location } = $props();
 
-  // Ohne Daten (z. B. Legenden: Arceus) bieten wir die üblichen Methoden an.
+  // Fallback für Orte ohne Methodendaten (z. B. Legenden: Arceus)
   const DEFAULTS: EncounterMethod[] = ["walk", "surf", "old-rod", "good-rod", "super-rod"];
 
   let added = $state<EncounterMethod[]>([]);
   let confirmOpen = $state(false);
 
-  const isCustom = $derived(location.id.startsWith("custom-"));
+  const isCustom = $derived(isCustomLocation(location.id));
   const methods = $derived.by(() => {
     const base = app.current ? methodsFor(location, app.current) : [];
     const shown = new Set<EncounterMethod>([...(base.length ? base : DEFAULTS), ...added]);
     return ENCOUNTER_METHODS.filter((m) => shown.has(m));
   });
   const missing = $derived(ENCOUNTER_METHODS.filter((m) => !methods.includes(m)));
-  const entryCount = $derived(Object.values(app.current?.encounters[location.id] ?? {}).flat().length);
+  const entryCount = $derived(app.current ? countSpecies(app.current, location.id) : 0);
 
   function speciesName(id: number): string {
     return app.data?.speciesById.get(id)?.name ?? `#${id}`;
@@ -42,9 +42,9 @@
   }
 </script>
 
-<section class="panel flex min-h-0 flex-col">
+<section class="panel flex min-h-0 flex-col" aria-labelledby="location-editor-title">
   <div class="panel-header flex items-center justify-between gap-2 px-4 py-2">
-    <h2 class="truncate text-sm font-semibold">{location.name}</h2>
+    <h2 id="location-editor-title" class="truncate text-sm font-semibold">{location.name}</h2>
     {#if isCustom}
       <Button variant="ghost" size="xs" onclick={() => (entryCount ? (confirmOpen = true) : removeLocation())}>
         <Trash2Icon /> Route löschen
@@ -63,7 +63,7 @@
               class={["ml-1 tabular-nums", ids.length > max ? "text-destructive" : ids.length === max ? "text-primary" : "text-muted-foreground"]}
               title={ids.length > max ? "Mehr eingetragen, als es hier Slots gibt" : `${max} verschiedene Pokémon`}
             >
-              ({ids.length}/{max})
+              ({ids.length}/{max}){#if ids.length > max}<span class="sr-only">, zu viele</span>{:else if ids.length === max}<span class="sr-only">, voll</span>{/if}
             </span>
           {/if}
         </h3>

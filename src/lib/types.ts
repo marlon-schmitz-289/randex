@@ -90,7 +90,7 @@ export interface Location {
 export interface RegionMap {
   width: number;
   height: number;
-  /** Landmassen als Polygone (Umriss, nur zur Orientierung). */
+  /** Landmassen als Polygone (nur Umriss). */
   land: [number, number][][];
   places: MapPlace[];
 }
@@ -118,14 +118,12 @@ export interface Badge {
 
 // ---------- Run-Daten (App-Data-Dir/runs/<id>.json) ----------
 
+// Muss mit SCHEMA_VERSION in src-tauri/src/lib.rs übereinstimmen.
 export const SCHEMA_VERSION = 1;
 
-export type Category = "types" | "moves" | "stats" | "abilities" | "evolutions" | "locations" | "note";
-
 /** Reihenfolge für Toggles und Detailansicht. */
-export const CATEGORIES: readonly Category[] = [
-  "types", "moves", "stats", "abilities", "evolutions", "locations", "note",
-];
+export const CATEGORIES = ["types", "moves", "stats", "abilities", "evolutions", "locations", "note"] as const;
+export type Category = (typeof CATEGORIES)[number];
 
 export const CATEGORY_LABELS: Record<Category, string> = {
   types: "Typen",
@@ -180,7 +178,6 @@ export type Encounters = Record<string, Partial<Record<EncounterMethod, number[]
 
 export interface Run {
   schemaVersion: number;
-  /** crypto.randomUUID() */
   id: string;
   name: string;
   gameId: string;
@@ -194,7 +191,7 @@ export interface Run {
   customLocations: Location[];
   /** Randomizer-Einstellung für wilde Pokémon; fehlt = aus. */
   wildMatching?: WildMatching;
-  /** Aktuelles Team, max. 6. Fehlt in älteren Runs. */
+  /** Fehlt in älteren Runs. */
   team?: TeamMember[];
   /** Erhaltene Orden (Badge.id des Spiels). Fehlt in älteren Runs. */
   badges?: string[];
@@ -219,7 +216,6 @@ export interface TeamMember {
 
 export const TEAM_SIZE = 6;
 
-/** Rückgabe von list_runs */
 export interface RunSummary {
   id: string;
   name: string;
@@ -227,7 +223,6 @@ export interface RunSummary {
   updatedAt: number;
 }
 
-/** Fundort eines Pokémon (Rückwärtssuche) */
 export interface Sighting {
   locationId: string;
   method: EncounterMethod;

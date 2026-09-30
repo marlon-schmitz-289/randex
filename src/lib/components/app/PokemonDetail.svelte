@@ -2,13 +2,12 @@
   import CheckIcon from "@lucide/svelte/icons/check";
   import MapPinIcon from "@lucide/svelte/icons/map-pin";
   import XIcon from "@lucide/svelte/icons/x";
-  import type { Snippet } from "svelte";
   import { Button } from "$lib/components/ui/button/index.js";
   import { Textarea } from "$lib/components/ui/textarea/index.js";
   import { allLocations, findSightings } from "$lib/encounters.ts";
   import { app, showLocation, updateEntry } from "$lib/runs.svelte.ts";
   import { CATEGORY_LABELS, ENCOUNTER_METHOD_LABELS } from "$lib/types.ts";
-  import type { Category, EncounterMethod, PokemonEntry, TypeId } from "$lib/types.ts";
+  import type { EncounterMethod, PokemonEntry, TypeId } from "$lib/types.ts";
   import EvolutionsEditor from "./detail/EvolutionsEditor.svelte";
   import MovesEditor from "./detail/MovesEditor.svelte";
   import NamePicker from "./detail/NamePicker.svelte";
@@ -23,13 +22,12 @@
   const entry: PokemonEntry = $derived((id !== null && app.current?.pokemon[id]) || {});
   const types = $derived(entry.types ?? []);
   const abilities = $derived(entry.abilities ?? []);
-  /** Typen des Spiels plus gespeicherte aus einem anderen Spiel (z. B. Fee nach Wechsel auf Gen 5), damit sie abwählbar bleiben. */
+  /** Auch gespeicherte Typen aus anderen Spielen (z. B. Fee in Gen 5), damit sie abwählbar bleiben. */
   const typeChoices = $derived([
     ...(app.data?.types.map((t) => t.id) ?? []),
     ...types.filter((t) => !app.data?.typesById.has(t)),
   ]);
 
-  /** Fundorte gruppiert nach Ort, in Reihenfolge der Ortsliste. */
   const sightings = $derived.by(() => {
     if (id === null || !app.current || !app.data) return [];
     const byLoc = new Map<string, EncounterMethod[]>();
@@ -41,24 +39,19 @@
       .map((l) => ({ location: l, methods: byLoc.get(l.id) ?? [] }));
   });
 
+  function update(patch: Partial<PokemonEntry>) {
+    if (id !== null) updateEntry(id, patch);
+  }
+
   function toggleType(t: TypeId) {
-    if (id === null) return;
     const next = types.includes(t) ? types.filter((x) => x !== t) : [...types, t];
-    updateEntry(id, { types: next.length ? next : undefined });
+    update({ types: next.length ? next : undefined });
   }
 
   function setAbilities(list: string[]) {
-    if (id === null) return;
-    updateEntry(id, { abilities: list.length ? list : undefined });
+    update({ abilities: list.length ? list : undefined });
   }
 </script>
-
-{#snippet section(category: Category, body: Snippet)}
-  <section class="panel overflow-hidden" aria-labelledby="detail-{category}">
-    <h2 id="detail-{category}" class="panel-header text-sm">{CATEGORY_LABELS[category]}</h2>
-    <div class="p-4">{@render body()}</div>
-  </section>
-{/snippet}
 
 {#snippet typesBody()}
   <div class="flex flex-wrap gap-2" role="group" aria-label="Typen (höchstens zwei)">
@@ -96,6 +89,7 @@
         <NamePicker
           items={app.data?.abilities ?? []}
           value={ability}
+          label="Fähigkeit {i + 1}"
           onSelect={(name) => setAbilities(abilities.map((a, j) => (j === i ? name : a)))}
         />
         <Button
@@ -151,7 +145,7 @@
     placeholder="Notizen zu diesem Pokémon …"
     aria-label="Notiz"
     class="min-h-24"
-    oninput={(e) => id !== null && updateEntry(id, { note: e.currentTarget.value || undefined })}
+    oninput={(e) => update({ note: e.currentTarget.value || undefined })}
   />
 {/snippet}
 
@@ -185,24 +179,26 @@
       </header>
 
       {#each app.activeCategories as category (category)}
-        {#if category === "types"}
-          {@render section(category, typesBody)}
-        {:else if category === "moves"}
-          {#snippet movesBody()}<MovesEditor speciesId={species.id} {entry} />{/snippet}
-          {@render section(category, movesBody)}
-        {:else if category === "stats"}
-          {#snippet statsBody()}<StatsEditor speciesId={species.id} {entry} />{/snippet}
-          {@render section(category, statsBody)}
-        {:else if category === "abilities"}
-          {@render section(category, abilitiesBody)}
-        {:else if category === "evolutions"}
-          {#snippet evolutionsBody()}<EvolutionsEditor speciesId={species.id} {entry} />{/snippet}
-          {@render section(category, evolutionsBody)}
-        {:else if category === "locations"}
-          {@render section(category, locationsBody)}
-        {:else}
-          {@render section(category, noteBody)}
-        {/if}
+        <section class="panel overflow-hidden" aria-labelledby="detail-{category}">
+          <h2 id="detail-{category}" class="panel-header text-sm">{CATEGORY_LABELS[category]}</h2>
+          <div class="p-4">
+            {#if category === "types"}
+              {@render typesBody()}
+            {:else if category === "moves"}
+              <MovesEditor speciesId={species.id} {entry} />
+            {:else if category === "stats"}
+              <StatsEditor speciesId={species.id} {entry} />
+            {:else if category === "abilities"}
+              {@render abilitiesBody()}
+            {:else if category === "evolutions"}
+              <EvolutionsEditor speciesId={species.id} {entry} />
+            {:else if category === "locations"}
+              {@render locationsBody()}
+            {:else}
+              {@render noteBody()}
+            {/if}
+          </div>
+        </section>
       {/each}
     </div>
   {/if}

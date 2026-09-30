@@ -9,11 +9,11 @@
 
   let { speciesId, entry }: { speciesId: number; entry: PokemonEntry } = $props();
 
-  const METHODS: { value: Evolution["method"]; label: string; placeholder: string }[] = [
-    { value: "level", label: "Level", placeholder: "z. B. 16" },
-    { value: "item", label: "Item", placeholder: "z. B. Feuerstein" },
-    { value: "other", label: "Sonstiges", placeholder: "z. B. Tausch, Freundschaft" },
-  ];
+  const METHODS: Record<Evolution["method"], { label: string; placeholder: string }> = {
+    level: { label: "Level", placeholder: "z. B. 16" },
+    item: { label: "Item", placeholder: "z. B. Feuerstein" },
+    other: { label: "Sonstiges", placeholder: "z. B. Tausch, Freundschaft" },
+  };
 
   const evolutions = $derived(entry.evolutions ?? []);
 
@@ -25,15 +25,16 @@
     setAll(evolutions.map((e, j) => (j === i ? { ...e, ...p } : e)));
   }
 
-  const isMethod = (v: string): v is Evolution["method"] => METHODS.some((m) => m.value === v);
+  const isMethod = (v: string): v is Evolution["method"] => Object.hasOwn(METHODS, v);
 </script>
 
 <div class="flex flex-col gap-2">
   {#each evolutions as evo, i (i)}
-    {@const method = METHODS.find((m) => m.value === evo.method) ?? METHODS[0]}
+    {@const method = METHODS[evo.method]}
     <div class="grid grid-cols-[minmax(0,1fr)_8rem_minmax(0,1fr)_auto] items-center gap-2">
       <SpeciesPicker
         value={evo.target}
+        label="Entwicklung {i + 1} Ziel"
         allowFreeText
         exclude={[speciesId]}
         onSelect={(target) => patch(i, { target })}
@@ -41,17 +42,19 @@
       <Select.Root
         type="single"
         value={evo.method}
-        onValueChange={(v) => isMethod(v) && patch(i, { method: v })}
+        onValueChange={(v) => isMethod(v) && patch(i, { method: v, value: "" })}
       >
         <Select.Trigger class="w-full" aria-label="Methode für Entwicklung {i + 1}">{method.label}</Select.Trigger>
         <Select.Content>
-          {#each METHODS as m (m.value)}
-            <Select.Item value={m.value} label={m.label} />
+          {#each Object.entries(METHODS) as [value, m] (value)}
+            <Select.Item {value} label={m.label} />
           {/each}
         </Select.Content>
       </Select.Root>
       <Input
         type={evo.method === "level" ? "number" : "text"}
+        min={1}
+        max={100}
         value={evo.value}
         placeholder={method.placeholder}
         aria-label="{method.label} für Entwicklung {i + 1}"

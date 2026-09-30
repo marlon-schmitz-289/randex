@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
-import type { Game, Location, RegionMap } from "./types.ts";
+import { existsSync, readFileSync } from "node:fs";
+import type { Badge, Game, Location, RegionMap } from "./types.ts";
 
 const read = <T>(path: string): T => JSON.parse(readFileSync(new URL(`../../static/data/${path}`, import.meta.url), "utf8")) as T;
 const games = read<Game[]>("games.json");
@@ -25,3 +25,24 @@ for (const region of new Set(games.map((g) => g.region))) {
     assert.deepEqual(missing, [], `fehlen auf der Karte`);
   });
 }
+
+test("Orte: je Spiel eindeutige ids, keine eigenen (custom-)", () => {
+  for (const g of games) {
+    const ids = read<Location[]>(`locations/${g.id}.json`).map((l) => l.id);
+    assert.equal(new Set(ids).size, ids.length, `doppelte Orte in ${g.id}`);
+    assert.ok(!ids.some((id) => id.startsWith("custom-")), `custom-id in ${g.id}`);
+  }
+});
+
+test("badges.json: nur bekannte Spiele, eindeutige ids, Bilder vorhanden", () => {
+  const badges = read<Record<string, Badge[]>>("badges.json");
+  const known = new Set(games.map((g) => g.id));
+  for (const [gameId, list] of Object.entries(badges)) {
+    assert.ok(known.has(gameId), `unbekanntes Spiel: ${gameId}`);
+    assert.equal(new Set(list.map((b) => b.id)).size, list.length, `doppelte Orden in ${gameId}`);
+    for (const b of list) {
+      assert.ok(b.name.trim() && b.leader.trim() && b.place.trim(), `unvollständig: ${gameId}/${b.id}`);
+      if (b.sprite) assert.ok(existsSync(new URL(`../../static${b.sprite}`, import.meta.url)), `Bild fehlt: ${b.sprite}`);
+    }
+  }
+});

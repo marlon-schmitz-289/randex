@@ -35,13 +35,13 @@
   --input: oklch(0.8 0.01 250);
   --ring: oklch(0.55 0.15 235);
 
-  /* SW-Menüpanel: heller Grund, anthrazitfarbener Rahmen, cyan Kopfleiste */
   --panel: oklch(0.99 0.002 250);
   --panel-border: oklch(0.42 0.012 255);
   --panel-inset: oklch(0.9 0.006 250);
   --panel-header: oklch(0.5 0.14 240);
   --panel-header-foreground: oklch(0.99 0.003 240);
   --stripe: oklch(0.2 0.01 255 / 0.025);
+  --panel-shadow: oklch(0 0 0 / 0.12);
   /* Regionskarte (Town-Map-Stil) */
   --map-sea: oklch(0.86 0.05 230);
   --map-sea-line: oklch(0.8 0.06 230);
@@ -80,6 +80,7 @@
   --panel-header: oklch(0.78 0.13 215);
   --panel-header-foreground: oklch(0.17 0.03 240);
   --stripe: oklch(1 0 0 / 0.025);
+  --panel-shadow: oklch(0 0 0 / 0.25);
   --map-sea: oklch(0.24 0.04 245);
   --map-sea-line: oklch(0.28 0.045 245);
   --map-land: oklch(0.34 0.025 160);
@@ -90,7 +91,7 @@
   --map-marker-edge: oklch(0.15 0.005 255);
 }
 
-/* Typ- und Statfarben gelten in beiden Modi (wie die Badges im Spiel). Kontrast Text/Grund ≥ 4.5. */
+/* Typ-/Statfarben gelten in beiden Modi; Kontrast Text/Grund ≥ 4.5 */
 :root {
   --type-fg-light: oklch(0.99 0 0);
   --type-fg-dark: oklch(0.2 0.01 255);
@@ -205,7 +206,7 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
   }
   html,
   body {
@@ -226,7 +227,7 @@
   }
 }
 
-/* Menüpanel im Stil von Beutel/Bericht/PC-Boxen: dicker heller Rahmen, innere Kontur */
+/* Menüpanel wie Beutel/PC-Boxen */
 @utility panel {
   background-color: var(--panel);
   color: var(--card-foreground);
@@ -234,10 +235,10 @@
   border-radius: var(--radius-xl);
   box-shadow:
     inset 0 0 0 2px var(--panel-inset),
-    0 4px 14px oklch(0 0 0 / 0.25);
+    0 4px 14px var(--panel-shadow);
 }
 
-/* Kopfleiste eines Panels (Titel), z. B. als erstes Kind von .panel */
+/* Titelleiste eines Panels */
 @utility panel-header {
   background-color: var(--panel-header);
   color: var(--panel-header-foreground);
