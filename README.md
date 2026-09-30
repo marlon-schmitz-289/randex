@@ -63,12 +63,12 @@ erhalten (kein Datenverlust durch versehentliches Toggeln).
 ### Daten
 
 - Stammdaten (Pokémon-Namen, Dex-Nr., Sprites, Attacken-, Fähigkeiten-, Typenlisten) werden
-  **einmalig** z. B. aus PokeAPI per Script erzeugt und als statisches JSON mitgeliefert —
+  aus PokeAPI per Script erzeugt und als statisches JSON mitgeliefert —
   keine Netzwerkzugriffe zur Laufzeit
 - Namen auf **Deutsch** (PokeAPI liefert deutsche Namen)
 - Attacken/Fähigkeiten per Autocomplete aus diesen Listen, Freitext als Fallback
   (Randomizer können Custom-Sachen haben)
-- Run-Daten lokal als JSON (eine Datei pro Run im App-Data-Ordner, oder `tauri-plugin-store`)
+- Run-Daten lokal als JSON (eine Datei pro Run im App-Data-Ordner)
 - Export/Import eines Runs als JSON
 
 ## Nicht-Ziele
@@ -84,10 +84,18 @@ npm install
 npm run tauri dev
 ```
 
-Stammdaten (Pokémon, Attacken, Orte, Sprites) neu erzeugen:
+Prüfen (wie CI):
 
 ```sh
-node scripts/generate-data.mjs
+npm run check && npm test
+cd src-tauri && cargo clippy --all-targets -- -D warnings && cargo test
+```
+
+Stammdaten (Pokémon, Attacken, Orte, Sprites) neu erzeugen. Braucht Netzwerk, lädt fehlende
+Sprites nach; `static/data/maps/` und `badges.json` sind handgepflegt und bleiben unberührt:
+
+```sh
+npm run generate
 ```
 
 Build:
@@ -96,10 +104,4 @@ Build:
 npm run tauri build
 ```
 
-## Konventionen
-
-- Stack und Aufbau wie `../open-claude` (Tauri v2, SvelteKit mit `adapter-static`, Svelte 5,
-  Tailwind v4, shadcn-svelte, `@lucide/svelte`)
-- UI-Texte auf Deutsch
-- Commits: kein `Co-Authored-By` oder sonstige Signaturen/Footer. Titelzeile ≤ 50 Zeichen,
-  danach Stichpunkte
+Architektur: `docs/ARCHITECTURE.md`, Regeln für Code und Commits: `CLAUDE.md`.
