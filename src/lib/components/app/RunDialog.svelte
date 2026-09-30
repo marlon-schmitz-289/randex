@@ -30,7 +30,7 @@
   const allowed = $derived(game ? categoriesForGeneration(game.generation) : []);
   const valid = $derived(name.trim() !== "" && game !== undefined);
 
-  // Formular bei jedem Öffnen aus dem Run (oder leer) befüllen.
+  // Bei jedem Öffnen neu befüllen; untrack, damit run-Änderungen laufende Eingaben nicht überschreiben.
   $effect(() => {
     if (!open) return;
     untrack(() => {
@@ -56,15 +56,10 @@
       gameId,
       seed: seed.trim() || undefined,
       note: note.trim() || undefined,
-      enabledCategories: categories,
+      enabledCategories: categories.filter((c) => allowed.includes(c)),
       wildMatching: matching === "off" ? undefined : matching,
     };
-    if (run) {
-      await updateRunMeta(input);
-      open = false;
-    } else if (await createRun(input)) {
-      open = false;
-    }
+    if (await (run ? updateRunMeta(input) : createRun(input))) open = false;
     busy = false;
   }
 </script>
@@ -87,7 +82,7 @@
       <div class="grid gap-1.5">
         <Label for="run-game">Spiel</Label>
         <Select.Root type="single" bind:value={gameId}>
-          <Select.Trigger id="run-game" class="w-full">
+          <Select.Trigger id="run-game" class="w-full" aria-required="true">
             {game ? `${game.name} (${game.region})` : "Spiel wählen"}
           </Select.Trigger>
           <Select.Content class="max-h-80">

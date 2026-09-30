@@ -1,4 +1,4 @@
-// Prevents additional console window on Windows in release, DO NOT REMOVE!!
+// Blendet in Release-Builds das Konsolenfenster unter Windows aus.
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {

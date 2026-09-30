@@ -1,7 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
-import { open, save } from "@tauri-apps/plugin-dialog";
 import { toast } from "svelte-sonner";
 import { categoriesForGeneration, loadGameData, loadGames, type GameData } from "./data.ts";
+import { applyPatch, patchEntry } from "./entry.ts";
 import { SCHEMA_VERSION } from "./types.ts";
 import type { Category, Game, PokemonEntry, Run, RunSummary, View, WildMatching } from "./types.ts";
 
@@ -25,7 +25,7 @@ function rememberRun(id: string | null): void {
     if (id) localStorage.setItem(LAST_RUN_KEY, id);
     else localStorage.removeItem(LAST_RUN_KEY);
   } catch {
-    // localStorage nicht verfügbar: nur Komfortfunktion
+    // localStorage nicht verfügbar, nur Komfort
   }
 }
 
@@ -34,14 +34,6 @@ function lastRunId(): string | null {
     return localStorage.getItem(LAST_RUN_KEY);
   } catch {
     return null;
-  }
-}
-
-/** Setzt gesetzte Felder, entfernt Felder mit undefined. */
-function applyPatch<T extends object>(target: T, patch: Partial<T>): void {
-  for (const [k, v] of Object.entries(patch)) {
-    if (v === undefined) delete (target as Record<string, unknown>)[k];
-    else (target as Record<string, unknown>)[k] = v;
   }
 }
 
@@ -55,9 +47,9 @@ class App {
   selectedSpeciesId = $state<number | null>(null);
   selectedLocationId = $state<string | null>(null);
   readonly activeCategories: Category[] = $derived.by(() => {
-    if (!this.current || !this.data) return [];
-    const allowed = categoriesForGeneration(this.data.game.generation);
-    return allowed.filter((c) => this.current?.enabledCategories.includes(c));
+    const { current, data } = this;
+    if (!current || !data) return [];
+    return categoriesForGeneration(data.game.generation).filter((c) => current.enabledCategories.includes(c));
   });
 }
 
@@ -69,8 +61,9 @@ let dirty = false;
 let chain: Promise<void> = Promise.resolve();
 let hooked = false;
 
-async function refreshList(): Promise<void> {
-  app.runs = await invoke<RunSummary[]>("list_runs");
+function listRun(run: Run): void {
+  const summary = { id: run.id, name: run.name, gameId: run.gameId, updatedAt: run.updatedAt };
+  app.runs = [summary, ...app.runs.filter((r) => r.id !== run.id)].sort((a, b) => b.updatedAt - a.updatedAt);
 }
 
 function persist(): Promise<void> {
@@ -80,10 +73,9 @@ function persist(): Promise<void> {
     const run = $state.snapshot(app.current) as Run;
     try {
       await invoke("save_run", { run });
-      const summary = { id: run.id, name: run.name, gameId: run.gameId, updatedAt: run.updatedAt };
-      const rest = app.runs.filter((r) => r.id !== run.id);
-      app.runs = [summary, ...rest].sort((a, b) => b.updatedAt - a.updatedAt);
+      listRun(run);
     } catch (e) {
+      // Kein Auto-Retry (Toast-Flut); nächste Änderung oder Fenster-Verstecken speichert erneut.
       dirty = true;
       toast.error(`Speichern fehlgeschlagen: ${errText(e)}`);
     }
@@ -99,14 +91,25 @@ export async function flushSave(): Promise<void> {
 
 /** Einzige Schreibstelle für den aktuellen Run. */
 export function mutate(fn: (run: Run) => void): void {
-  if (!app.current) return;
+  const run = app.current;
+  if (!run) return;
   try {
-    fn(app.current);
+    fn(run);
   } catch (e) {
     toast.error(errText(e));
-    return;
   }
-  app.current.updatedAt = Date.now();
+  // Auch nach Fehler speichern: fn kann den Run schon teilweise geändert haben.
+  run.updatedAt = Date.now();
+  scheduleSave();
+}
+
+function cancelSave(): void {
+  if (timer) clearTimeout(timer);
+  timer = null;
+  dirty = false;
+}
+
+function scheduleSave(): void {
   dirty = true;
   if (timer) clearTimeout(timer);
   timer = setTimeout(() => void flushSave(), SAVE_DELAY_MS);
@@ -119,11 +122,14 @@ function resetSelection(): void {
 }
 
 export async function openRun(id: string): Promise<void> {
+  // Sonst lädt load_run den alten Stand und verwirft ungespeicherte Änderungen.
+  if (id === app.current?.id) return;
   app.loading = true;
   try {
-    await flushSave();
     const run = await invoke<Run>("load_run", { id });
     const data = await loadGameData(run.gameId);
+    // Erst direkt vor dem Wechsel speichern, sonst gehen Änderungen während des Ladens verloren.
+    await flushSave();
     app.current = run;
     app.data = data;
     resetSelection();
@@ -147,7 +153,7 @@ export async function initRuns(): Promise<void> {
     .then((g) => (app.games = g))
     .catch((e: unknown) => toast.error(`Spieleliste konnte nicht geladen werden: ${errText(e)}`));
   try {
-    await refreshList();
+    app.runs = await invoke<RunSummary[]>("list_runs");
   } catch (e) {
     toast.error(`Runs konnten nicht geladen werden: ${errText(e)}`);
     return;
@@ -159,7 +165,6 @@ export async function initRuns(): Promise<void> {
 export async function createRun(input: RunInput): Promise<Run | null> {
   app.loading = true;
   try {
-    await flushSave();
     const data = await loadGameData(input.gameId);
     const now = Date.now();
     const run: Run = {
@@ -178,13 +183,13 @@ export async function createRun(input: RunInput): Promise<Run | null> {
     if (input.note) run.note = input.note;
     if (input.wildMatching) run.wildMatching = input.wildMatching;
     await invoke("save_run", { run });
+    await flushSave();
     app.current = run;
     app.data = data;
-    dirty = false;
     resetSelection();
     rememberRun(run.id);
-    await refreshList();
-    return app.current;
+    listRun(run);
+    return run;
   } catch (e) {
     toast.error(`Run konnte nicht angelegt werden: ${errText(e)}`);
     return null;
@@ -193,47 +198,50 @@ export async function createRun(input: RunInput): Promise<Run | null> {
   }
 }
 
-export async function updateRunMeta(patch: Partial<RunInput>): Promise<void> {
-  if (!app.current) return;
+/** Optionale Felder mit undefined werden entfernt. */
+export async function updateRunMeta(input: RunInput): Promise<boolean> {
+  const run = app.current;
+  if (!run) return false;
   try {
-    if (patch.gameId && patch.gameId !== app.current.gameId) {
-      app.data = await loadGameData(patch.gameId);
-    }
-    mutate((r) => applyPatch(r, patch));
+    const data = input.gameId === run.gameId ? null : await loadGameData(input.gameId);
+    if (app.current?.id !== run.id) return false;
+    if (data) app.data = data;
+    mutate((r) => applyPatch(r, input));
+    return true;
   } catch (e) {
     toast.error(`Run konnte nicht geändert werden: ${errText(e)}`);
+    return false;
   }
 }
 
 export async function deleteRun(id: string): Promise<void> {
+  const isCurrent = app.current?.id === id;
+  const wasDirty = isCurrent && dirty;
+  if (isCurrent) {
+    // Kein Speichern mehr, das die gelöschte Datei wieder anlegt.
+    cancelSave();
+    await chain;
+  }
   try {
-    if (app.current?.id === id) {
-      if (timer) clearTimeout(timer);
-      timer = null;
-      dirty = false;
-      await chain;
-    }
     await invoke("delete_run", { id });
-    await refreshList();
-    if (app.current?.id === id) {
-      app.current = null;
-      app.data = null;
-      resetSelection();
-      rememberRun(null);
-      if (app.runs[0]) await openRun(app.runs[0].id);
-    }
   } catch (e) {
+    if (wasDirty && app.current?.id === id) scheduleSave();
     toast.error(`Run konnte nicht gelöscht werden: ${errText(e)}`);
+    return;
+  }
+  app.runs = app.runs.filter((r) => r.id !== id);
+  if (app.current?.id === id) {
+    cancelSave();
+    app.current = null;
+    app.data = null;
+    resetSelection();
+    rememberRun(null);
+    if (app.runs[0]) await openRun(app.runs[0].id);
   }
 }
 
 export function updateEntry(speciesId: number, patch: Partial<PokemonEntry>): void {
-  mutate((r) => {
-    const entry: PokemonEntry = r.pokemon[speciesId] ?? {};
-    applyPatch(entry, patch);
-    if (Object.keys(entry).length) r.pokemon[speciesId] = entry;
-    else delete r.pokemon[speciesId];
-  });
+  mutate((r) => patchEntry(r.pokemon, speciesId, patch));
 }
 
 export function showLocation(locId: string): void {
@@ -250,13 +258,7 @@ export async function exportCurrentRun(): Promise<void> {
   if (!app.current) return;
   try {
     await flushSave();
-    const path = await save({
-      defaultPath: `${app.current.name}.json`,
-      filters: [{ name: "Randex-Run", extensions: ["json"] }],
-    });
-    if (!path) return;
-    await invoke("export_run", { run: $state.snapshot(app.current), path });
-    toast.success("Run exportiert");
+    if (await invoke<boolean>("export_run", { run: $state.snapshot(app.current) })) toast.success("Run exportiert");
   } catch (e) {
     toast.error(`Export fehlgeschlagen: ${errText(e)}`);
   }
@@ -264,15 +266,14 @@ export async function exportCurrentRun(): Promise<void> {
 
 export async function importRunFromFile(): Promise<void> {
   try {
-    const path = await open({ multiple: false, filters: [{ name: "Randex-Run", extensions: ["json"] }] });
-    if (!path) return;
-    await flushSave();
-    const run = await invoke<Run>("import_run", { path });
+    const run = await invoke<Run | null>("import_run");
+    if (!run) return;
+    // Unbekanntes Spiel vor dem Speichern ablehnen.
     await loadGameData(run.gameId);
-    // Immer neue ID: keine Kollision, keine fremden (z. B. unter Windows reservierten) Dateinamen.
+    // Neue ID: keine Kollision, keine fremden Dateinamen.
     run.id = crypto.randomUUID();
     await invoke("save_run", { run });
-    await refreshList();
+    listRun(run);
     await openRun(run.id);
   } catch (e) {
     toast.error(`Import fehlgeschlagen: ${errText(e)}`);
