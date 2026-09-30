@@ -1,8 +1,15 @@
 name: CI
 
 on:
+  push:
+    branches: [main]
   pull_request:
   workflow_dispatch:
+  workflow_call:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -35,8 +42,9 @@ jobs:
         with:
           workspaces: src-tauri
 
-      - run: npm run check
-      - run: npm test
+      # Frontend ist OS-unabhängig, einmal reicht
+      - if: matrix.os == 'ubuntu-22.04'
+        run: npm run check && npm test && npm run build
 
       - name: cargo clippy
         working-directory: src-tauri
