@@ -202,6 +202,8 @@ fn import_run(app: tauri::AppHandle) -> Result<Option<Value>, String> {
 pub fn run() {
     let result = tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_process::init())
         .invoke_handler(tauri::generate_handler![
             list_runs, load_run, save_run, delete_run, export_run, import_run
         ])

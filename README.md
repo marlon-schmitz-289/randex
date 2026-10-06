@@ -64,7 +64,7 @@ erhalten (kein Datenverlust durch versehentliches Toggeln).
 
 - Stammdaten (Pokémon-Namen, Dex-Nr., Sprites, Attacken-, Fähigkeiten-, Typenlisten) werden
   aus PokeAPI per Script erzeugt und als statisches JSON mitgeliefert —
-  keine Netzwerkzugriffe zur Laufzeit
+  keine Netzwerkzugriffe zur Laufzeit außer der Update-Prüfung beim Start (GitHub-Releases)
 - Namen auf **Deutsch** (PokeAPI liefert deutsche Namen)
 - Attacken/Fähigkeiten per Autocomplete aus diesen Listen, Freitext als Fallback
   (Randomizer können Custom-Sachen haben)

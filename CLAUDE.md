@@ -28,7 +28,7 @@ Projektbeschreibung, Funktionen und Nicht-Ziele: `README.md`. Stack und Aufbau o
 - Stammdaten einmal laden und im Speicher halten; kein wiederholtes Parsen von JSON.
 - Sprites lazy laden (`loading="lazy"`), feste Größen gegen Layout-Sprünge.
 - Speichern entprellt, nicht bei jedem Tastendruck auf die Platte.
-- Kein Netzwerk zur Laufzeit.
+- Kein Netzwerk zur Laufzeit, einzige Ausnahme: Update-Prüfung beim Start.
 
 ## UI
 

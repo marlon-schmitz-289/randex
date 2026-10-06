@@ -1,5 +1,10 @@
 <script lang="ts">
   import { mode, toggleMode } from "mode-watcher";
+  import { onMount } from "svelte";
+  import { toast } from "svelte-sonner";
+  import { check, type Update } from "@tauri-apps/plugin-updater";
+  import { relaunch } from "@tauri-apps/plugin-process";
+  import RefreshCw from "@lucide/svelte/icons/refresh-cw";
   import ChevronDown from "@lucide/svelte/icons/chevron-down";
   import Download from "@lucide/svelte/icons/download";
   import MapIcon from "@lucide/svelte/icons/map";
@@ -37,6 +42,24 @@
   let deleteOpen = $state(false);
 
   const gameName = (id: string) => app.games.find((g) => g.id === id)?.name ?? id;
+  // Neue Version aus GitHub-Releases; Fehler (offline, Dev-Build) still ignorieren.
+  let update = $state<Update | null>(null);
+  let updating = $state(false);
+  onMount(() => {
+    check().then((u) => (update = u), () => {});
+  });
+
+  async function installUpdate(u: Update) {
+    updating = true;
+    try {
+      await u.downloadAndInstall();
+      await relaunch();
+    } catch (e) {
+      toast.error(`Update fehlgeschlagen: ${String(e)}`);
+      updating = false;
+    }
+  }
+
   const isView = (v: string): v is View => v === "pokemon" || v === "routes" || v === "progress";
 </script>
 
@@ -100,6 +123,20 @@
       </Button>
     {:else}
       <span class="mx-auto"></span>
+    {/if}
+
+    {#if update}
+      {@const u = update}
+      <Button
+        variant="ghost"
+        class="text-primary"
+        disabled={updating}
+        title="Update installieren und neu starten"
+        onclick={() => void installUpdate(u)}
+      >
+        <RefreshCw class={updating ? "animate-spin" : ""} />
+        {updating ? "Aktualisiere …" : `Update ${u.version}`}
+      </Button>
     {/if}
 
     <Button

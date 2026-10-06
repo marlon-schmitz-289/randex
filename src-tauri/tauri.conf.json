@@ -34,8 +34,17 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
+    "createUpdaterArtifacts": true,
     "macOS": {
       "signingIdentity": "-"
+    }
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDNFMkI2ODExMjdBNzQ2MjMKUldRalJxY25FV2dyUGtpUmF6UnY4SWRPWEpkTm1lbzE3N3RIcUh6TnNtbFRwbkVCaE1HNS80S24K",
+      "endpoints": [
+        "https://github.com/marlon-schmitz-289/randex/releases/latest/download/latest.json"
+      ]
     }
   }
 }
