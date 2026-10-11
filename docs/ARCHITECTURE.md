@@ -23,6 +23,7 @@ existiert (Species, Typen, Attacken, Fähigkeiten) plus die Orte des Spiels. Fä
 | `data/moves.json`, `data/abilities.json` | `Move[]`, `Ability[]`, nach name |
 | `data/types.json` | `TypeInfo[]` (ohne unknown/shadow/stellar) |
 | `data/locations/<gameId>.json` | `Location[]`, existiert für jedes Spiel |
+| `data/original/<gameId>.json` | `OriginalData` für Runs ohne Randomizer: Typen/Fähigkeiten/Stats nach Generation, Level- und TM/VM-Attacken der Version-Group, Entwicklungen, Fundorte mit Level |
 | `data/maps/<region>.json` | `RegionMap` (schematisch, von Hand gezeichnet; `src/lib/maps.test.ts` prüft Vollständigkeit) |
 | `data/badges.json` | `Record<gameId, Badge[]>` (von Hand gepflegt) |
 | `data/field-moves.json` | `Record<gameId, FieldMove[]>` (von Hand gepflegt; `badge` → `Badge.id` desselben Spiels) |
@@ -33,7 +34,11 @@ Erzeugt von `npm run generate` (`scripts/generate-data.mjs`; PokeAPI, deutsche N
 `maps/`, `badges.json` und `field-moves.json` fasst es nicht an).
 PokeAPI-Encounter-Methoden werden auf `ENCOUNTER_METHODS` gemappt, Unbekanntes → `other`.
 Orte = PokeAPI-Locations (Areas zusammengefasst) mit Encountern im Spiel; Spiele ohne Encounter-Daten
-bekommen alle Orte ihrer Region (ohne `methods`).
+bekommen alle Orte ihrer Region (ohne `methods`). Dazu kommt jeder im Spiel sichtbare Nicht-`deco-`-Ort
+der Regionskarte (Kartenlabel als Name, `methods: []`), damit jeder Kartenort auswählbar ist.
+Handgepflegte Ergänzungen in `scripts/encounters/<gameId>.json` (Format siehe README dort) ersetzen je
+(Ort, Methode) die PokeAPI-Einträge; `methods`/`slots` und `original/` werden aus dem gemergten Stand
+berechnet, ungültige Ergänzungen brechen den Generator ab.
 `Location.slots` = Anzahl verschiedener Original-Species je Methode (für Area-/Global-1:1).
 
 ## Run-Speicherung (Rust, `src-tauri/src/lib.rs`)
@@ -70,27 +75,30 @@ categoriesForGeneration(gen: number): Category[]  // ohne "abilities" bei gen < 
 loadRegionMap(region: string): Promise<RegionMap> // "Einall" → /data/maps/einall.json
 loadBadges(gameId: string): Promise<Badge[]>      // unbekanntes Spiel → []
 loadFieldMoves(gameId: string): Promise<FieldMove[]> // unbekanntes Spiel → []
+loadOriginal(gameId: string): Promise<Original>   // OriginalData + movesById + speciesEncounters, gecacht
 spriteUrl(speciesId: number): string              // "/sprites/<id>.png"
 
 // search.ts
 type EntryFilter = "all" | "entered" | "missing"
-interface SearchOptions { query: string; filter: EntryFilter; type: TypeId | null }
+interface SearchOptions { query: string; filter: EntryFilter; type: TypeId | null;
+  typesOf?: (speciesId: number) => readonly TypeId[] | undefined }  // Quelle für den Typfilter
 normalize(s: string): string                      // klein, ohne Diakritika
 hasEntry(run: Run, speciesId: number): boolean    // Eintrag existiert (updateEntry entfernt leere)
-searchSpecies(species: Species[], run: Run, opts: SearchOptions): Species[]
+searchSpecies(species: Species[], run: Run | null, opts: SearchOptions): Species[]
   // Nummer ("25", "#025") → id; Name: Präfix > Teilstring > Teilfolge; sonst Dex-Reihenfolge
 
 // encounters.ts (mutieren den übergebenen Run; im UI nur über mutate() aufrufen)
-findSightings(run: Run, speciesId: number): Sighting[]
+// Lesende Helfer nehmen Encounters, im UI app.encounters (Run oder Originaldaten)
+findSightings(encounters: Encounters, speciesId: number): Sighting[]
 addEncounter(run: Run, locationId: string, method: EncounterMethod, speciesId: number): void
 removeEncounter(run: Run, locationId: string, method: EncounterMethod, speciesId: number): void
   // räumt leere Arrays/Objekte weg
 addCustomLocation(run: Run, name: string): Location          // id "custom-<uuid>", methods []
 removeCustomLocation(run: Run, locationId: string): void      // löscht auch encounters[id]
 isCustomLocation(id: string): boolean
-countSpecies(run: Run, locationId: string): number          // verschiedene Species über alle Methoden
+countSpecies(encounters: Encounters, locationId: string): number          // verschiedene Species über alle Methoden
 allLocations(gameLocations: Location[], run: Run): Location[] // Spielorte + eigene (hinten)
-methodsFor(location: Location, run: Run): EncounterMethod[]   // location.methods ∪ benutzte
+methodsFor(location: Location, encounters: Encounters): EncounterMethod[]   // location.methods ∪ benutzte
 
 // entry.ts
 applyPatch<T>(target: T, patch: Partial<T>): void  // undefined löscht Feld
@@ -99,14 +107,16 @@ patchEntry(pokemon: Run["pokemon"], speciesId: number, patch: Partial<PokemonEnt
 // runs.svelte.ts – Runes-State; Funktionen fangen Fehler selbst ab (toast.error), werfen nie
 const app: {
   runs: RunSummary[]; current: Run | null /* deep $state */; data: GameData | null /* $state.raw */;
-  loading: boolean; readonly activeCategories: Category[] /* enabled ∩ categoriesForGeneration */;
+  original: Original | null /* $state.raw, nur bei run.randomized === false */;
+  loading: boolean; readonly activeCategories: Category[] /* enabled ∩ categoriesForGeneration; ohne Randomizer alle */;
+  readonly encounters: Encounters /* original.speciesEncounters ?? current.encounters */;
   view: View; selectedSpeciesId: number | null; selectedLocationId: string | null }
 interface RunInput { name: string; gameId: string; seed?: string; note?: string;
-  enabledCategories: Category[]; wildMatching?: WildMatching }
+  enabledCategories: Category[]; wildMatching?: WildMatching; randomized?: false }
 initRuns(): Promise<void>                // list_runs, öffnet zuletzt benutzten (localStorage "randex.lastRunId")
-openRun(id: string): Promise<void>       // flushSave, load_run, loadGameData, Auswahl zurücksetzen
+openRun(id: string): Promise<void>       // flushSave, load_run, loadGameData (+ loadOriginal ohne Randomizer), Auswahl zurücksetzen
 createRun(input: RunInput): Promise<Run | null>   // speichert sofort und öffnet
-updateRunMeta(input: RunInput): Promise<boolean>  // optionale Felder mit undefined werden entfernt; Spielwechsel lädt GameData neu
+updateRunMeta(input: RunInput): Promise<boolean>  // optionale Felder mit undefined werden entfernt; lädt GameData/Original passend zu Spiel und Randomizer-Schalter
 deleteRun(id: string): Promise<void>
 mutate(fn: (run: Run) => void): void     // einzige Schreibstelle für app.current; setzt updatedAt, speichert entprellt (500 ms)
 updateEntry(speciesId: number, patch: Partial<PokemonEntry>): void  // via mutate; undefined löscht Feld
@@ -127,13 +137,13 @@ Alle Komponenten lesen/schreiben über `app` und die Funktionen aus `runs.svelte
 | --- | --- |
 | `src/routes/+page.svelte` | – (rendert `AppShell`, ruft `initRuns()`) |
 | `AppShell.svelte` | – Kopfzeile, Run-Wechsler, Export/Import/Löschen, Ansicht Pokémon ⇄ Routen ⇄ Fortschritt, Hell/Dunkel (`mode-watcher`), Leerzustand ohne Run |
-| `RunDialog.svelte` | `open: boolean` (bindable), `run?: Run` (fehlt = Anlegen) – Name, Spiel (nach Gen gruppiert), Seed, Notiz, Kategorie-Toggles (nur `categoriesForGeneration`) |
-| `list/PokemonList.svelte` | – Suche, Filter, Typfilter, ↑↓, Tippen fokussiert Suche (nur ohne Fokus in Eingabefeld/Dialog) |
+| `RunDialog.svelte` | `open: boolean` (bindable), `run?: Run` (fehlt = Anlegen) – Name, Spiel (nach Gen gruppiert), Seed, Schalter „Randomizer-Run“, Notiz; nur mit Randomizer: Wilde Pokémon, Kategorie-Toggles (nur `categoriesForGeneration`) |
+| `list/PokemonList.svelte` | – Suche, Filter (nur mit Randomizer), Typfilter (Run- oder Originaltypen), ↑↓, Tippen fokussiert Suche (nur ohne Fokus in Eingabefeld/Dialog) |
 | `list/TypeBadge.svelte` | `id: TypeId`, `size?: "sm" \| "md"`, `class?` |
 | `list/Sprite.svelte` | `id: number`, `size?: number` (px, Standard 40), `class?` – lazy, feste Größe, Platzhalter bei Fehler |
 | `list/SpeciesPicker.svelte` | `value?: number \| string \| null`, `onSelect: (v: number \| string) => void`, `allowFreeText?: boolean`, `exclude?: number[]`, `placeholder?: string` – Popover + Command über `app.data.species` |
-| `PokemonDetail.svelte`, `detail/*` | – Editoren je `app.activeCategories`; Fundorte = `findSightings`, Klick → `showLocation` |
+| `PokemonDetail.svelte`, `detail/*` | – Editoren je `app.activeCategories`, ohne Randomizer stattdessen `detail/OriginalSection` (schreibgeschützt); Fundorte = `findSightings(app.encounters)`, Klick → `showLocation` |
 | `detail/NamePicker.svelte` | `items: { name: string }[]`, `value: string`, `onSelect: (name: string) => void` – Autocomplete Attacken/Fähigkeiten, Freitext |
-| `encounter/EncounterView.svelte`, `encounter/*` | – Ortsliste (Suche, `app.selectedLocationId`), Editor pro Methode, `SpeciesPicker` (`allowFreeText=false`), Methode hinzufügen, eigene Orte anlegen/löschen; Klick auf Pokémon → `showSpecies` |
+| `encounter/EncounterView.svelte`, `encounter/*` | – Ortsliste (Suche, `app.selectedLocationId`), Editor pro Methode, `SpeciesPicker` (`allowFreeText=false`), Methode hinzufügen, eigene Orte anlegen/löschen; ohne Randomizer schreibgeschützt mit Level aus `app.original`; Klick auf Pokémon → `showSpecies` |
 | `encounter/RegionMap.svelte` | – schematische Regionskarte (`loadRegionMap`), Klick auf Ort → Encounter-Liste |
 | `ProgressView.svelte` | – Team (bis 6), Orden (`loadBadges`) und Feldfähigkeiten (`loadFieldMoves`) zum Abhaken |

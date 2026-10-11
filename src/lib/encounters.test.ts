@@ -46,12 +46,12 @@ test("findSightings: Rückwärtssuche über Orte und Methoden", () => {
   addEncounter(r, "a", "walk", 7);
   addEncounter(r, "b", "gift", 7);
   addEncounter(r, "b", "walk", 8);
-  assert.deepEqual(findSightings(r, 7), [
+  assert.deepEqual(findSightings(r.encounters, 7), [
     { locationId: "a", method: "walk" },
     { locationId: "a", method: "surf" },
     { locationId: "b", method: "gift" },
   ]);
-  assert.deepEqual(findSightings(r, 1), []);
+  assert.deepEqual(findSightings(r.encounters, 1), []);
 });
 
 test("eigene Orte: anlegen, anhängen, löschen inkl. Encounters", () => {
@@ -80,19 +80,19 @@ test("eigener Ort ohne Namen wird abgelehnt", () => {
 test("methodsFor vereinigt Ort und Run ohne Duplikate", () => {
   const r = mk();
   const loc: Location = { id: "l", name: "L", methods: ["walk", "surf"] };
-  assert.deepEqual(methodsFor(loc, r), ["walk", "surf"]);
+  assert.deepEqual(methodsFor(loc, r.encounters), ["walk", "surf"]);
   addEncounter(r, "l", "surf", 1);
   addEncounter(r, "l", "gift", 1);
   addEncounter(r, "l", "headbutt", 1);
-  assert.deepEqual(methodsFor(loc, r), ["walk", "surf", "headbutt", "gift"]);
+  assert.deepEqual(methodsFor(loc, r.encounters), ["walk", "surf", "headbutt", "gift"]);
 });
 
 test("countSpecies zählt Arten pro Ort über alle Methoden eindeutig", () => {
   const r = mk();
-  assert.equal(countSpecies(r, "a"), 0);
+  assert.equal(countSpecies(r.encounters, "a"), 0);
   addEncounter(r, "a", "walk", 1);
   addEncounter(r, "a", "surf", 1);
   addEncounter(r, "a", "surf", 2);
   addEncounter(r, "b", "walk", 3);
-  assert.equal(countSpecies(r, "a"), 2);
+  assert.equal(countSpecies(r.encounters, "a"), 2);
 });

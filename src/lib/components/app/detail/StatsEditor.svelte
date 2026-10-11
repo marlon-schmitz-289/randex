@@ -1,11 +1,7 @@
-<script lang="ts">
-  import { Input } from "$lib/components/ui/input/index.js";
-  import { updateEntry } from "$lib/runs.svelte.ts";
-  import type { PokemonEntry, Stats } from "$lib/types.ts";
+<script lang="ts" module>
+  import type { Stats } from "$lib/types.ts";
 
-  let { speciesId, entry }: { speciesId: number; entry: PokemonEntry } = $props();
-
-  const STATS: { key: keyof Stats; label: string; bar: string }[] = [
+  export const STATS: { key: keyof Stats; label: string; bar: string }[] = [
     { key: "hp", label: "KP", bar: "bg-stat-hp" },
     { key: "atk", label: "Angriff", bar: "bg-stat-atk" },
     { key: "def", label: "Verteidigung", bar: "bg-stat-def" },
@@ -13,7 +9,15 @@
     { key: "spd", label: "Sp.-Verteidigung", bar: "bg-stat-spd" },
     { key: "spe", label: "Initiative", bar: "bg-stat-spe" },
   ];
-  const MAX = 255;
+  export const MAX = 255;
+</script>
+
+<script lang="ts">
+  import { Input } from "$lib/components/ui/input/index.js";
+  import { updateEntry } from "$lib/runs.svelte.ts";
+  import type { PokemonEntry } from "$lib/types.ts";
+
+  let { speciesId, entry }: { speciesId: number; entry: PokemonEntry } = $props();
 
   const stats = $derived(entry.stats);
   const total = $derived(stats ? STATS.reduce((sum, s) => sum + stats[s.key], 0) : 0);

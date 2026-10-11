@@ -48,7 +48,7 @@
   </div>
   <ul bind:this={listEl} aria-label="Routen" class="min-h-0 flex-1 overflow-y-auto px-2 pt-1 pb-2">
     {#each shown as loc (loc.id)}
-      {@const n = app.current ? countSpecies(app.current, loc.id) : 0}
+      {@const n = countSpecies(app.encounters, loc.id)}
       <li>
         <button
           type="button"
@@ -66,14 +66,16 @@
       </li>
     {:else}
       <li class="px-3 py-2 text-sm text-muted-foreground">
-        {query.trim() ? "Keine Treffer." : "Keine Routen für dieses Spiel. Lege unten eine eigene an."}
+        {query.trim() ? "Keine Treffer." : app.original ? "Keine Routen für dieses Spiel." : "Keine Routen für dieses Spiel. Lege unten eine eigene an."}
       </li>
     {/each}
   </ul>
-  <form class="flex gap-2 border-t border-panel-border p-3" onsubmit={add}>
-    <Input placeholder="Eigene Route …" aria-label="Name der eigenen Route" bind:value={newName} />
-    <Button type="submit" size="icon" aria-label="Route hinzufügen" disabled={!newName.trim()}>
-      <PlusIcon />
-    </Button>
-  </form>
+  {#if !app.original}
+    <form class="flex gap-2 border-t border-panel-border p-3" onsubmit={add}>
+      <Input placeholder="Eigene Route …" aria-label="Name der eigenen Route" bind:value={newName} />
+      <Button type="submit" size="icon" aria-label="Route hinzufügen" disabled={!newName.trim()}>
+        <PlusIcon />
+      </Button>
+    </form>
+  {/if}
 </section>

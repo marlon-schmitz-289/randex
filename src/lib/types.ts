@@ -92,7 +92,19 @@ export interface RegionMap {
   height: number;
   /** Landmassen als Polygone (nur Umriss). */
   land: [number, number][][];
+  /**
+   * Gelände wie auf den Stadtkarten der Spiele, flach gefüllte Polygone auf dem Land (unter Routen und Orten).
+   * Gezeichnet in Array-Reihenfolge, Späteres liegt oben: große Flächen zuerst, Seen/Flüsse in Bergen danach.
+   */
+  terrain?: MapTerrain[];
   places: MapPlace[];
+}
+
+export interface MapTerrain {
+  /** water = Seen/Flüsse im Land (das Meer ist der Hintergrund); sand = Wüste/Strand; snow = Schnee/Eis */
+  kind: "mountain" | "forest" | "water" | "sand" | "snow";
+  /** Umriss, mindestens 3 Punkte, innerhalb von width/height */
+  points: [number, number][];
 }
 
 export interface MapPlace {
@@ -100,8 +112,14 @@ export interface MapPlace {
   id: string;
   label: string;
   kind: "city" | "route" | "water" | "cave" | "landmark";
-  /** 1 Punkt = Markierung, ab 2 Punkten = Linie (Route/Seeweg). */
+  /**
+   * 1 Punkt = Markierung, ab 2 Punkten = Linie (Route/Seeweg). Beide Linienenden schließen an (≤ 6 Einheiten)
+   * an einen Ein-Punkt-Ort, an die Linie eines anderen Ortes oder an den Kartenrand an. Echte Sackgassen
+   * enden an einem "deco-<slug>"-Ort (z. B. dem Haus oder der Landmarke am Ende).
+   */
   points: [number, number][];
+  /** Nur in diesen Spielen (Game.id); fehlt = in allen Spielen der Region. */
+  games?: string[];
 }
 
 /** static/data/badges.json – Record<gameId, Badge[]>, in Spielreihenfolge. */
@@ -126,6 +144,34 @@ export interface FieldMove {
   how: string;
   /** Badge.id desselben Spiels, die zur Nutzung nötig ist bzw. sie freischaltet */
   badge?: string;
+}
+
+/**
+ * static/data/original/<gameId>.json – Originaldaten des Spiels für Runs ohne Randomizer (nur Arten, die im
+ * Spiel vorkommen; Regionalform des Spiels, sonst Standardform, sonst die Form mit Learnset).
+ * Typen/Fähigkeiten/Stats wie in der Generation.
+ */
+export interface OriginalData {
+  /** Move-ID → "TM24"/"VM03"/"TR05" (nur Attacken mit Nummer) */
+  machines: Record<number, string>;
+  /** tmMoves sind Lehrer-Attacken (Legenden: Arceus) */
+  tutor?: true;
+  pokemon: Record<number, OriginalPokemon>;
+  /** locationId → Methode → [speciesId, minLevel, maxLevel]; {} = keine Encounter-Daten in PokeAPI */
+  encounters: Record<string, Partial<Record<EncounterMethod, [number, number, number][]>>>;
+}
+
+export interface OriginalPokemon {
+  types: TypeId[];
+  /** Deutsche Namen [Slot 1, Slot 2, versteckt], fehlender Slot = ""; vor Gen 3 leer */
+  abilities: string[];
+  /** Gen 1: spa = spd = Spezial */
+  stats: Stats;
+  /** [Level, Move-ID]; Level 0 = bei Entwicklung */
+  levelMoves: [number, number][];
+  /** Move-IDs, nach Label sortiert (Label in OriginalData.machines); Legenden: Arceus: Lehrer-Attacken */
+  tmMoves: number[];
+  evolutions: (Evolution & { target: number })[];
 }
 
 // ---------- Run-Daten (App-Data-Dir/runs/<id>.json) ----------
@@ -195,6 +241,8 @@ export interface Run {
   gameId: string;
   seed?: string;
   note?: string;
+  /** Nur `false` wird gespeichert; fehlt = Randomizer-Run. */
+  randomized?: false;
   /** Deaktivierte Kategorien behalten ihre Daten. */
   enabledCategories: Category[];
   /** Schlüssel = Species-ID (in JSON als String) */

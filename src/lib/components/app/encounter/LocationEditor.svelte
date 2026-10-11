@@ -21,12 +21,15 @@
 
   const isCustom = $derived(isCustomLocation(location.id));
   const methods = $derived.by(() => {
-    const base = app.current ? methodsFor(location, app.current) : [];
+    const base = methodsFor(location, app.encounters);
     const shown = new Set<EncounterMethod>([...(base.length ? base : DEFAULTS), ...added]);
     return ENCOUNTER_METHODS.filter((m) => shown.has(m));
   });
   const missing = $derived(ENCOUNTER_METHODS.filter((m) => !methods.includes(m)));
-  const entryCount = $derived(app.current ? countSpecies(app.current, location.id) : 0);
+  const entryCount = $derived(app.current ? countSpecies(app.current.encounters, location.id) : 0);
+  // Ohne Randomizer: Original-Fundorte mit Level, schreibgeschützt
+  const original = $derived(app.original?.encounters[location.id]);
+  const originalMethods = $derived(ENCOUNTER_METHODS.filter((m) => original?.[m]?.length));
 
   function speciesName(id: number): string {
     return app.data?.speciesById.get(id)?.name ?? `#${id}`;
@@ -52,62 +55,89 @@
     {/if}
   </div>
   <div class="min-h-0 flex-1 space-y-4 overflow-y-auto p-4">
-    {#each methods as method (method)}
-      {@const ids = app.current?.encounters[location.id]?.[method] ?? []}
-      {@const max = app.current?.wildMatching ? location.slots?.[method] : undefined}
-      <div class="space-y-2">
-        <h3 class="text-sm font-semibold">
-          {ENCOUNTER_METHOD_LABELS[method]}
-          {#if max}
-            <span
-              class={["ml-1 tabular-nums", ids.length > max ? "text-destructive" : ids.length === max ? "text-primary" : "text-muted-foreground"]}
-              title={ids.length > max ? "Mehr eingetragen, als es hier Slots gibt" : `${max} verschiedene Pokémon`}
-            >
-              ({ids.length}/{max}){#if ids.length > max}<span class="sr-only">, zu viele</span>{:else if ids.length === max}<span class="sr-only">, voll</span>{/if}
-            </span>
-          {/if}
-        </h3>
-        <ul class="flex flex-wrap gap-2">
-          {#each ids as id (id)}
-            <li class="flex items-center rounded-full border border-panel-border bg-secondary text-secondary-foreground">
-              <button
-                type="button"
-                class="flex items-center gap-1 rounded-l-full py-0.5 pr-1 pl-1 text-sm hover:bg-accent"
-                onclick={() => showSpecies(id)}
+    {#if app.original}
+      {#each originalMethods as method (method)}
+        <div class="space-y-2">
+          <h3 class="text-sm font-semibold">{ENCOUNTER_METHOD_LABELS[method]}</h3>
+          <ul class="flex flex-wrap gap-2">
+            {#each original?.[method] ?? [] as [id, min, max] (id)}
+              <li>
+                <button
+                  type="button"
+                  class="flex items-center gap-1 rounded-full border border-panel-border bg-secondary py-0.5 pr-3 pl-1 text-sm text-secondary-foreground hover:bg-accent"
+                  onclick={() => showSpecies(id)}
+                >
+                  <Sprite {id} size={32} />
+                  {speciesName(id)}
+                  <span class="text-xs text-muted-foreground tabular-nums">Lv. {min === max ? min : `${min}–${max}`}</span>
+                </button>
+              </li>
+            {/each}
+          </ul>
+        </div>
+      {:else}
+        <p class="text-sm text-muted-foreground">
+          Hier gibt es keine wilden Pokémon.
+        </p>
+      {/each}
+    {:else}
+      {#each methods as method (method)}
+        {@const ids = app.current?.encounters[location.id]?.[method] ?? []}
+        {@const max = app.current?.wildMatching ? location.slots?.[method] : undefined}
+        <div class="space-y-2">
+          <h3 class="text-sm font-semibold">
+            {ENCOUNTER_METHOD_LABELS[method]}
+            {#if max}
+              <span
+                class={["ml-1 tabular-nums", ids.length > max ? "text-destructive" : ids.length === max ? "text-primary" : "text-muted-foreground"]}
+                title={ids.length > max ? "Mehr eingetragen, als es hier Slots gibt" : `${max} verschiedene Pokémon`}
               >
-                <Sprite {id} size={32} />
-                {speciesName(id)}
-              </button>
-              <button
-                type="button"
-                class="rounded-r-full p-1.5 hover:bg-destructive hover:text-destructive-foreground"
-                aria-label="{speciesName(id)} entfernen"
-                onclick={() => mutate((r) => removeEncounter(r, location.id, method, id))}
-              >
-                <XIcon class="size-3.5" />
-              </button>
-            </li>
-          {:else}
-            <li class="text-sm text-muted-foreground">Noch nichts eingetragen.</li>
+                ({ids.length}/{max}){#if ids.length > max}<span class="sr-only">, zu viele</span>{:else if ids.length === max}<span class="sr-only">, voll</span>{/if}
+              </span>
+            {/if}
+          </h3>
+          <ul class="flex flex-wrap gap-2">
+            {#each ids as id (id)}
+              <li class="flex items-center rounded-full border border-panel-border bg-secondary text-secondary-foreground">
+                <button
+                  type="button"
+                  class="flex items-center gap-1 rounded-l-full py-0.5 pr-1 pl-1 text-sm hover:bg-accent"
+                  onclick={() => showSpecies(id)}
+                >
+                  <Sprite {id} size={32} />
+                  {speciesName(id)}
+                </button>
+                <button
+                  type="button"
+                  class="rounded-r-full p-1.5 hover:bg-destructive hover:text-destructive-foreground"
+                  aria-label="{speciesName(id)} entfernen"
+                  onclick={() => mutate((r) => removeEncounter(r, location.id, method, id))}
+                >
+                  <XIcon class="size-3.5" />
+                </button>
+              </li>
+            {:else}
+              <li class="text-sm text-muted-foreground">Noch nichts eingetragen.</li>
+            {/each}
+          </ul>
+          <SpeciesPicker
+            allowFreeText={false}
+            exclude={ids}
+            placeholder="Pokémon hinzufügen …"
+            onSelect={(v) => add(method, v)}
+          />
+        </div>
+      {/each}
+      {#if missing.length}
+        <div class="flex flex-wrap items-center gap-2 border-t border-panel-border pt-3">
+          <span class="text-sm text-muted-foreground">Methode hinzufügen:</span>
+          {#each missing as m (m)}
+            <Button variant="outline" size="xs" onclick={() => (added = [...added, m])}>
+              <PlusIcon /> {ENCOUNTER_METHOD_LABELS[m]}
+            </Button>
           {/each}
-        </ul>
-        <SpeciesPicker
-          allowFreeText={false}
-          exclude={ids}
-          placeholder="Pokémon hinzufügen …"
-          onSelect={(v) => add(method, v)}
-        />
-      </div>
-    {/each}
-    {#if missing.length}
-      <div class="flex flex-wrap items-center gap-2 border-t border-panel-border pt-3">
-        <span class="text-sm text-muted-foreground">Methode hinzufügen:</span>
-        {#each missing as m (m)}
-          <Button variant="outline" size="xs" onclick={() => (added = [...added, m])}>
-            <PlusIcon /> {ENCOUNTER_METHOD_LABELS[m]}
-          </Button>
-        {/each}
-      </div>
+        </div>
+      {/if}
     {/if}
   </div>
 </section>

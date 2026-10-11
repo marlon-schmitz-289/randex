@@ -137,6 +137,9 @@ fn validate_import(run: &Value) -> Result<(), String> {
             return Err(format!("Feld „{key}“ ist keine Liste"));
         }
     }
+    if run.get("randomized").is_some_and(|v| !v.is_boolean()) {
+        return Err("Feld „randomized“ ist kein Wahrheitswert".into());
+    }
     match run.get("schemaVersion").and_then(Value::as_u64) {
         Some(v) if v <= SCHEMA_VERSION => Ok(()),
         Some(_) => Err("Run stammt aus einer neueren Version von Randex".into()),
@@ -304,6 +307,11 @@ mod tests {
         assert!(validate_import(&r).is_err());
         let mut r = run("a", 1);
         r["fieldMoves"] = json!({"cut": true});
+        assert!(validate_import(&r).is_err());
+        let mut r = run("a", 1);
+        r["randomized"] = json!(false);
+        assert!(validate_import(&r).is_ok());
+        r["randomized"] = json!("nein");
         assert!(validate_import(&r).is_err());
         let mut r = run("a", 1);
         r.as_object_mut().unwrap().remove("schemaVersion");

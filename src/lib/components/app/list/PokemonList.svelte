@@ -29,9 +29,15 @@
 
   // Typfilter aus einem anderen Spiel (z. B. Fee nach Wechsel auf Gen 5) gilt als „Alle Typen“.
   const activeType = $derived(type !== "all" && app.data?.typesById.has(type) ? type : null);
-  const results = $derived(
-    app.data ? searchSpecies(app.data.species, app.current, { query, filter, type: activeType }) : [],
-  );
+  // Ohne Randomizer nur Arten mit Originaldaten; eigenes $derived, damit der Namensindex (WeakMap) stabil bleibt.
+  const species = $derived.by(() => {
+    const { data, original } = app;
+    if (!data) return [];
+    return original ? data.species.filter((s) => original.pokemon[s.id]) : data.species;
+  });
+  const typesOf = (id: number) => (app.original ? app.original.pokemon[id]?.types : app.current?.pokemon[id]?.types);
+  const activeFilter = $derived(app.original ? "all" : filter);
+  const results = $derived(searchSpecies(species, app.current, { query, filter: activeFilter, type: activeType, typesOf }));
   const isFilter = (v: string): v is EntryFilter => FILTERS.some((f) => f.value === v);
   const first = $derived(Math.max(0, Math.floor(scrollTop / ROW) - OVERSCAN));
   const last = $derived(Math.min(results.length, Math.ceil((scrollTop + viewH) / ROW) + OVERSCAN));
@@ -39,7 +45,7 @@
 
   // Neues Spiel/neue Filter (nicht jede Eingabe): zur Auswahl springen, sonst an den Anfang.
   $effect(() => {
-    void [query, filter, activeType, app.data];
+    void [query, activeFilter, activeType, species];
     untrack(() => {
       if (!listEl) return;
       const i = results.findIndex((s) => s.id === app.selectedSpeciesId);
@@ -100,21 +106,23 @@
     />
   </div>
   <div class="flex flex-wrap items-center gap-2">
-    <ToggleGroup.Root
-      type="single"
-      variant="outline"
-      size="sm"
-      value={filter}
-      onValueChange={(v) => (filter = isFilter(v) ? v : "all")}
-      aria-label="Filter"
-    >
-      {#each FILTERS as f (f.value)}
-        <ToggleGroup.Item
-          value={f.value}
-          class="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
-        >{f.label}</ToggleGroup.Item>
-      {/each}
-    </ToggleGroup.Root>
+    {#if !app.original}
+      <ToggleGroup.Root
+        type="single"
+        variant="outline"
+        size="sm"
+        value={filter}
+        onValueChange={(v) => (filter = isFilter(v) ? v : "all")}
+        aria-label="Filter"
+      >
+        {#each FILTERS as f (f.value)}
+          <ToggleGroup.Item
+            value={f.value}
+            class="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+          >{f.label}</ToggleGroup.Item>
+        {/each}
+      </ToggleGroup.Root>
+    {/if}
     <Select.Root type="single" value={activeType ?? "all"} onValueChange={(v) => (type = app.data?.typesById.get(v)?.id ?? "all")}>
       <Select.Trigger size="sm" class="w-32" aria-label="Typfilter">
         {activeType ? (app.data?.typesById.get(activeType)?.name ?? activeType) : "Alle Typen"}
@@ -142,7 +150,7 @@
         {#each visible as s, i (s.id)}
           {@const selected = s.id === app.selectedSpeciesId}
           {@const entered = app.current ? hasEntry(app.current, s.id) : false}
-          {@const types = app.current?.pokemon[s.id]?.types ?? []}
+          {@const types = typesOf(s.id) ?? []}
           <div
             role="listitem"
             aria-setsize={results.length}
@@ -164,12 +172,14 @@
               {#each types as t (t)}
                 <TypeBadge id={t} size="sm" />
               {/each}
-              {#if entered}
-                <Check class="size-4 shrink-0" aria-hidden="true" />
-                <span class="sr-only">Eingetragen</span>
-              {:else}
-                <span class="size-4 shrink-0 text-center {selected ? '' : 'text-muted-foreground'}" aria-hidden="true">–</span>
-                <span class="sr-only">Fehlt</span>
+              {#if !app.original}
+                {#if entered}
+                  <Check class="size-4 shrink-0" aria-hidden="true" />
+                  <span class="sr-only">Eingetragen</span>
+                {:else}
+                  <span class="size-4 shrink-0 text-center {selected ? '' : 'text-muted-foreground'}" aria-hidden="true">–</span>
+                  <span class="sr-only">Fehlt</span>
+                {/if}
               {/if}
             </button>
           </div>

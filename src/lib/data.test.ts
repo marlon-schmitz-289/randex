@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { categoriesForGeneration, loadGameData, loadRegionMap } from "./data.ts";
+import { categoriesForGeneration, loadGameData, loadOriginal, loadRegionMap } from "./data.ts";
 
 const files: Record<string, unknown> = {
   "/data/games.json": [
@@ -15,6 +15,11 @@ const files: Record<string, unknown> = {
   "/data/locations/black.json": [],
   "/data/locations/nope.json": [],
   "/data/maps/einall.json": { width: 1, height: 1, land: [], places: [] },
+  "/data/original/red.json": {
+    machines: { 1: "TM01" },
+    pokemon: {},
+    encounters: { "kanto-route-1": { walk: [[16, 2, 5], [19, 2, 4]], "old-rod": [[129, 5, 5]] } },
+  },
 };
 const calls: string[] = [];
 let failNext = false;
@@ -56,4 +61,14 @@ test("Cache: ein Fetch pro Datei, Schreibweise egal, Retry nach Fehler", async (
   await loadRegionMap("Einall");
   await loadRegionMap("einall");
   assert.equal(calls.length, n + 1);
+});
+
+test("loadOriginal: Species-Encounter aus den Tripeln, Move-Namen, Cache, Retry nach Fehler", async () => {
+  failNext = true;
+  await assert.rejects(loadOriginal("red"), /HTTP 500/);
+  const o = await loadOriginal("red");
+  assert.equal(await loadOriginal("red"), o);
+  assert.equal(calls.filter((c) => c === "/data/original/red.json").length, 2);
+  assert.deepEqual(o.speciesEncounters, { "kanto-route-1": { walk: [16, 19], "old-rod": [129] } });
+  assert.equal(o.movesById.get(1), "Pfund");
 });

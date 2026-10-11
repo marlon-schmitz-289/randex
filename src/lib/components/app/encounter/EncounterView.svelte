@@ -38,7 +38,7 @@
     {#if mode === "list"}
       <LocationList {locations} />
     {:else}
-      <RegionMap {locations} />
+      <RegionMap />
     {/if}
     {#if selected}
       {#key selected.id}

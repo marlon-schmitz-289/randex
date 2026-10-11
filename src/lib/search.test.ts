@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { hasEntry, normalize, searchSpecies } from "./search.ts";
-import type { Run, Species } from "./types.ts";
+import type { Run, Species, TypeId } from "./types.ts";
 
 const species: Species[] = [
   { id: 1, name: "Bisasam", generation: 1 },
@@ -55,12 +55,20 @@ test("Akzente und Groß-/Kleinschreibung", () => {
 
 test("Filter entered/missing und Typ", () => {
   const r = run({ 25: { types: ["electric"] }, 26: { note: "n" } });
+  const typed = { ...all, typesOf: (id: number) => r.pokemon[id]?.types };
   assert.deepEqual(ids(searchSpecies(species, r, { ...all, filter: "entered" })), [25, 26]);
   assert.deepEqual(ids(searchSpecies(species, r, { ...all, filter: "missing" })), [1, 172, 250, 669]);
-  assert.deepEqual(ids(searchSpecies(species, r, { ...all, type: "electric" })), [25]);
-  assert.deepEqual(ids(searchSpecies(species, r, { query: "chu", filter: "entered", type: "electric" })), [25]);
+  assert.deepEqual(ids(searchSpecies(species, r, { ...typed, type: "electric" })), [25]);
+  assert.deepEqual(ids(searchSpecies(species, r, { ...typed, query: "chu", filter: "entered", type: "electric" })), [25]);
   assert.deepEqual(searchSpecies(species, r, { query: "25", filter: "missing", type: null }), []);
-  assert.deepEqual(searchSpecies(species, r, { ...all, type: "fire" }), []);
+  assert.deepEqual(searchSpecies(species, r, { ...typed, type: "fire" }), []);
+});
+
+test("Typfilter nutzt typesOf statt Run-Einträgen (Originaldaten)", () => {
+  const original: Record<number, TypeId[]> = { 25: ["electric"], 26: ["electric"], 669: ["fairy"] };
+  const opts = { ...all, type: "electric", typesOf: (id: number) => original[id] } as const;
+  assert.deepEqual(ids(searchSpecies(species, run({}), opts)), [25, 26]);
+  assert.deepEqual(ids(searchSpecies(species, null, opts)), [25, 26]);
 });
 
 test("ohne Run: Typfilter/entered leer, missing alles", () => {

@@ -1,9 +1,9 @@
 import { invoke } from "@tauri-apps/api/core";
 import { toast } from "svelte-sonner";
-import { categoriesForGeneration, loadGameData, loadGames, type GameData } from "./data.ts";
+import { categoriesForGeneration, loadGameData, loadGames, loadOriginal, type GameData, type Original } from "./data.ts";
 import { applyPatch, patchEntry } from "./entry.ts";
 import { SCHEMA_VERSION } from "./types.ts";
-import type { Category, Game, PokemonEntry, Run, RunSummary, View, WildMatching } from "./types.ts";
+import type { Category, Encounters, Game, PokemonEntry, Run, RunSummary, View, WildMatching } from "./types.ts";
 
 export interface RunInput {
   name: string;
@@ -12,6 +12,7 @@ export interface RunInput {
   note?: string;
   enabledCategories: Category[];
   wildMatching?: WildMatching;
+  randomized?: false;
 }
 
 const LAST_RUN_KEY = "randex.lastRunId";
@@ -42,6 +43,8 @@ class App {
   games = $state.raw<Game[]>([]);
   current = $state<Run | null>(null);
   data = $state.raw<GameData | null>(null);
+  /** Nur bei Runs ohne Randomizer gesetzt. */
+  original = $state.raw<Original | null>(null);
   loading = $state(false);
   view = $state<View>("pokemon");
   selectedSpeciesId = $state<number | null>(null);
@@ -49,8 +52,11 @@ class App {
   readonly activeCategories: Category[] = $derived.by(() => {
     const { current, data } = this;
     if (!current || !data) return [];
-    return categoriesForGeneration(data.game.generation).filter((c) => current.enabledCategories.includes(c));
+    const all = categoriesForGeneration(data.game.generation);
+    return this.original ? all : all.filter((c) => current.enabledCategories.includes(c));
   });
+  /** Ohne Randomizer die Original-Fundorte, sonst die eingetragenen. */
+  readonly encounters: Encounters = $derived(this.original?.speciesEncounters ?? this.current?.encounters ?? {});
 }
 
 export const app = new App();
@@ -115,6 +121,14 @@ function scheduleSave(): void {
   timer = setTimeout(() => void flushSave(), SAVE_DELAY_MS);
 }
 
+async function loadRunData(run: { gameId: string; randomized?: false }) {
+  const [data, original] = await Promise.all([
+    loadGameData(run.gameId),
+    run.randomized === false ? loadOriginal(run.gameId) : null,
+  ]);
+  return { data, original };
+}
+
 function resetSelection(): void {
   app.selectedSpeciesId = null;
   app.selectedLocationId = null;
@@ -127,11 +141,12 @@ export async function openRun(id: string): Promise<void> {
   app.loading = true;
   try {
     const run = await invoke<Run>("load_run", { id });
-    const data = await loadGameData(run.gameId);
+    const { data, original } = await loadRunData(run);
     // Erst direkt vor dem Wechsel speichern, sonst gehen Änderungen während des Ladens verloren.
     await flushSave();
     app.current = run;
     app.data = data;
+    app.original = original;
     resetSelection();
     rememberRun(id);
   } catch (e) {
@@ -165,7 +180,7 @@ export async function initRuns(): Promise<void> {
 export async function createRun(input: RunInput): Promise<Run | null> {
   app.loading = true;
   try {
-    const data = await loadGameData(input.gameId);
+    const { data, original } = await loadRunData(input);
     const now = Date.now();
     const run: Run = {
       schemaVersion: SCHEMA_VERSION,
@@ -182,10 +197,12 @@ export async function createRun(input: RunInput): Promise<Run | null> {
     if (input.seed) run.seed = input.seed;
     if (input.note) run.note = input.note;
     if (input.wildMatching) run.wildMatching = input.wildMatching;
+    if (input.randomized === false) run.randomized = false;
     await invoke("save_run", { run });
     await flushSave();
     app.current = run;
     app.data = data;
+    app.original = original;
     resetSelection();
     rememberRun(run.id);
     listRun(run);
@@ -203,9 +220,11 @@ export async function updateRunMeta(input: RunInput): Promise<boolean> {
   const run = app.current;
   if (!run) return false;
   try {
-    const data = input.gameId === run.gameId ? null : await loadGameData(input.gameId);
+    // Gecacht: lädt nur nach, wenn Spiel oder Randomizer-Einstellung wechselt.
+    const { data, original } = await loadRunData(input);
     if (app.current?.id !== run.id) return false;
-    if (data) app.data = data;
+    app.data = data;
+    app.original = original;
     mutate((r) => applyPatch(r, input));
     return true;
   } catch (e) {
@@ -234,6 +253,7 @@ export async function deleteRun(id: string): Promise<void> {
     cancelSave();
     app.current = null;
     app.data = null;
+    app.original = null;
     resetSelection();
     rememberRun(null);
     if (app.runs[0]) await openRun(app.runs[0].id);
@@ -269,7 +289,7 @@ export async function importRunFromFile(): Promise<void> {
     const run = await invoke<Run | null>("import_run");
     if (!run) return;
     // Unbekanntes Spiel vor dem Speichern ablehnen.
-    await loadGameData(run.gameId);
+    await loadRunData(run);
     // Neue ID: keine Kollision, keine fremden Dateinamen.
     run.id = crypto.randomUUID();
     await invoke("save_run", { run });

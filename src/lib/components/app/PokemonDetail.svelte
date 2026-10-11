@@ -11,6 +11,7 @@
   import EvolutionsEditor from "./detail/EvolutionsEditor.svelte";
   import MovesEditor from "./detail/MovesEditor.svelte";
   import NamePicker from "./detail/NamePicker.svelte";
+  import OriginalSection from "./detail/OriginalSection.svelte";
   import StatsEditor from "./detail/StatsEditor.svelte";
   import Sprite from "./list/Sprite.svelte";
   import TypeBadge from "./list/TypeBadge.svelte";
@@ -21,6 +22,12 @@
   const species = $derived(id === null ? undefined : app.data?.speciesById.get(id));
   const entry: PokemonEntry = $derived((id !== null && app.current?.pokemon[id]) || {});
   const types = $derived(entry.types ?? []);
+  const original = $derived(id === null ? undefined : app.original?.pokemon[id]);
+  const headerTypes = $derived(app.original ? (original?.types ?? []) : types);
+  // Ohne Originaldaten zur Art bleiben nur Fundorte und Notiz.
+  const categories = $derived(
+    app.original && !original ? app.activeCategories.filter((c) => c === "locations" || c === "note") : app.activeCategories,
+  );
   const abilities = $derived(entry.abilities ?? []);
   /** Auch gespeicherte Typen aus anderen Spielen (z. B. Fee in Gen 5), damit sie abwählbar bleiben. */
   const typeChoices = $derived([
@@ -31,7 +38,7 @@
   const sightings = $derived.by(() => {
     if (id === null || !app.current || !app.data) return [];
     const byLoc = new Map<string, EncounterMethod[]>();
-    for (const s of findSightings(app.current, id)) {
+    for (const s of findSightings(app.encounters, id)) {
       byLoc.set(s.locationId, [...(byLoc.get(s.locationId) ?? []), s.method]);
     }
     return allLocations(app.data.locations, app.current)
@@ -132,10 +139,12 @@
         </li>
       {/each}
     </ul>
-  {:else}
+  {:else if !app.original}
     <p class="text-sm text-muted-foreground">
       Noch keine Fundorte. Trage das Pokémon in der Routenansicht bei einem Ort ein.
     </p>
+  {:else}
+    <p class="text-sm text-muted-foreground">In diesem Spiel nicht wild anzutreffen.</p>
   {/if}
 {/snippet}
 
@@ -166,9 +175,9 @@
             <Sprite id={species.id} size={96} class="[image-rendering:pixelated]" />
           </div>
           <div class="flex flex-col gap-2">
-            {#if types.length}
+            {#if headerTypes.length}
               <div class="flex gap-1.5">
-                {#each types as t (t)}
+                {#each headerTypes as t (t)}
                   <TypeBadge id={t} size="md" />
                 {/each}
               </div>
@@ -178,11 +187,18 @@
         </div>
       </header>
 
-      {#each app.activeCategories as category (category)}
+      {#if app.original && !original}
+        <p class="panel p-4 text-sm text-muted-foreground">
+          Für dieses Spiel liefert PokeAPI keine Daten zu diesem Pokémon (kommt vermutlich nicht vor).
+        </p>
+      {/if}
+      {#each categories as category (category)}
         <section class="panel overflow-hidden" aria-labelledby="detail-{category}">
           <h2 id="detail-{category}" class="panel-header text-sm">{CATEGORY_LABELS[category]}</h2>
           <div class="p-4">
-            {#if category === "types"}
+            {#if original && category !== "locations" && category !== "note"}
+              <OriginalSection {category} pokemon={original} />
+            {:else if category === "types"}
               {@render typesBody()}
             {:else if category === "moves"}
               <MovesEditor speciesId={species.id} {entry} />

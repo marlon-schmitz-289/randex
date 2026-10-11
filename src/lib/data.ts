@@ -1,5 +1,7 @@
 import { CATEGORIES } from "./types.ts";
-import type { Ability, Badge, Category, FieldMove, Game, Location, Move, RegionMap, Species, TypeInfo } from "./types.ts";
+import type {
+  Ability, Badge, Category, Encounters, FieldMove, Game, Location, Move, OriginalData, RegionMap, Species, TypeInfo,
+} from "./types.ts";
 
 export interface GameData {
   game: Game;
@@ -84,6 +86,31 @@ export const loadBadges = async (gameId: string): Promise<Badge[]> =>
 /** Feldfähigkeiten (VMs, PokéMobil, Reit-Pokémon …) des Spiels; unbekanntes Spiel → []. */
 export const loadFieldMoves = async (gameId: string): Promise<FieldMove[]> =>
   (await baseFile<Record<string, FieldMove[]>>("field-moves"))[gameId] ?? [];
+
+export interface Original extends OriginalData {
+  movesById: Map<number, string>;
+  /** Nur Species-IDs, gleiche Form wie Run.encounters → Helfer in encounters.ts funktionieren unverändert */
+  speciesEncounters: Encounters;
+}
+
+const originals = new Map<string, Promise<Original>>();
+
+/** Originaldaten des Spiels (Runs ohne Randomizer), pro gameId gecacht. */
+export function loadOriginal(gameId: string): Promise<Original> {
+  return cached(originals, gameId, async () => {
+    const [data, moves] = await Promise.all([
+      getJson<OriginalData>(`/data/original/${encodeURIComponent(gameId)}.json`),
+      baseFile<Move[]>("moves"),
+    ]);
+    const speciesEncounters: Encounters = Object.fromEntries(
+      Object.entries(data.encounters).map(([loc, byMethod]) => [
+        loc,
+        Object.fromEntries(Object.entries(byMethod).map(([m, list]) => [m, list.map(([id]) => id)])),
+      ]),
+    );
+    return { ...data, movesById: new Map(moves.map((m) => [m.id, m.name])), speciesEncounters };
+  });
+}
 
 export function categoriesForGeneration(gen: number): Category[] {
   return CATEGORIES.filter((c) => c !== "abilities" || gen >= ABILITIES_FROM_GEN);

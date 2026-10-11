@@ -1,9 +1,9 @@
 import { ENCOUNTER_METHODS } from "./types.ts";
-import type { EncounterMethod, Location, Run, Sighting } from "./types.ts";
+import type { EncounterMethod, Encounters, Location, Run, Sighting } from "./types.ts";
 
-export function findSightings(run: Run, speciesId: number): Sighting[] {
+export function findSightings(encounters: Encounters, speciesId: number): Sighting[] {
   const out: Sighting[] = [];
-  for (const [locationId, byMethod] of Object.entries(run.encounters)) {
+  for (const [locationId, byMethod] of Object.entries(encounters)) {
     for (const method of ENCOUNTER_METHODS) {
       if (byMethod[method]?.includes(speciesId)) out.push({ locationId, method });
     }
@@ -32,7 +32,8 @@ export function removeEncounter(run: Run, locId: string, method: EncounterMethod
 
 export const isCustomLocation = (id: string) => id.startsWith("custom-");
 
-export const countSpecies = (run: Run, locId: string) => new Set(Object.values(run.encounters[locId] ?? {}).flat()).size;
+export const countSpecies = (encounters: Encounters, locId: string) =>
+  new Set(Object.values(encounters[locId] ?? {}).flat()).size;
 
 export function addCustomLocation(run: Run, name: string): Location {
   const trimmed = name.trim();
@@ -51,9 +52,9 @@ export function allLocations(gameLocations: readonly Location[], run: Run): Loca
   return [...gameLocations, ...run.customLocations];
 }
 
-/** Methoden des Ortes plus im Run zusätzlich benutzte (in Standardreihenfolge). */
-export function methodsFor(location: Location, run: Run): EncounterMethod[] {
-  const used = run.encounters[location.id] ?? {};
+/** Methoden des Ortes plus in den Encounters zusätzlich benutzte (in Standardreihenfolge). */
+export function methodsFor(location: Location, encounters: Encounters): EncounterMethod[] {
+  const used = encounters[location.id] ?? {};
   const extra = ENCOUNTER_METHODS.filter((m) => used[m] && !location.methods.includes(m));
   return [...location.methods, ...extra];
 }

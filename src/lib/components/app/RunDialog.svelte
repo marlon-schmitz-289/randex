@@ -19,6 +19,7 @@
   let note = $state("");
   let categories = $state<Category[]>([]);
   let matching = $state<WildMatching | "off">("off");
+  let randomized = $state(true);
   let busy = $state(false);
 
   const groups = $derived.by(() => {
@@ -40,6 +41,7 @@
       note = run?.note ?? "";
       categories = [...(run?.enabledCategories ?? DEFAULT_CATEGORIES)];
       matching = run?.wildMatching ?? "off";
+      randomized = run?.randomized !== false;
     });
   });
 
@@ -58,6 +60,7 @@
       note: note.trim() || undefined,
       enabledCategories: categories.filter((c) => allowed.includes(c)),
       wildMatching: matching === "off" ? undefined : matching,
+      randomized: randomized ? undefined : (false as const),
     };
     if (await (run ? updateRunMeta(input) : createRun(input))) open = false;
     busy = false;
@@ -111,29 +114,39 @@
       </div>
 
       <div class="grid gap-1.5">
-        <Label for="run-matching">Wilde Pokémon</Label>
-        <Select.Root type="single" bind:value={matching}>
-          <Select.Trigger id="run-matching" class="w-full">
-            {matching === "off" ? "Keine Zuordnung" : WILD_MATCHING_LABELS[matching]}
-          </Select.Trigger>
-          <Select.Content>
-            <Select.Item value="off" label="Keine Zuordnung">Keine Zuordnung</Select.Item>
-            {#each Object.entries(WILD_MATCHING_LABELS) as [value, label] (value)}
-              <Select.Item {value} {label}>{label}</Select.Item>
-            {/each}
-          </Select.Content>
-        </Select.Root>
-        <p class="text-xs text-muted-foreground">
-          Wie im Randomizer eingestellt. Bei 1:1 zeigen die Routen pro Methode, wie viele Pokémon es dort gibt (z. B. 2/3).
-        </p>
+        <div class="flex items-center gap-2">
+          <Switch id="run-randomized" bind:checked={randomized} />
+          <Label for="run-randomized">Randomizer-Run</Label>
+        </div>
+        <p class="text-xs text-muted-foreground">Aus: Originaldaten des Spiels nachschlagen statt eintragen.</p>
       </div>
+
+      {#if randomized}
+        <div class="grid gap-1.5">
+          <Label for="run-matching">Wilde Pokémon</Label>
+          <Select.Root type="single" bind:value={matching}>
+            <Select.Trigger id="run-matching" class="w-full">
+              {matching === "off" ? "Keine Zuordnung" : WILD_MATCHING_LABELS[matching]}
+            </Select.Trigger>
+            <Select.Content>
+              <Select.Item value="off" label="Keine Zuordnung">Keine Zuordnung</Select.Item>
+              {#each Object.entries(WILD_MATCHING_LABELS) as [value, label] (value)}
+                <Select.Item {value} {label}>{label}</Select.Item>
+              {/each}
+            </Select.Content>
+          </Select.Root>
+          <p class="text-xs text-muted-foreground">
+            Wie im Randomizer eingestellt. Bei 1:1 zeigen die Routen pro Methode, wie viele Pokémon es dort gibt (z. B. 2/3).
+          </p>
+        </div>
+      {/if}
 
       <div class="grid gap-1.5">
         <Label for="run-note">Notiz <span class="text-muted-foreground">(optional)</span></Label>
         <Textarea id="run-note" bind:value={note} rows={2} />
       </div>
 
-      {#if allowed.length}
+      {#if randomized && allowed.length}
         <fieldset class="grid gap-2">
           <legend class="mb-2 text-sm font-medium">Kategorien</legend>
           <div class="grid grid-cols-2 gap-x-4 gap-y-2">

@@ -23,6 +23,7 @@ Aktueller eigener Anwendungsfall: nur **Typen** und **Attacken** randomisiert.
 - Das Spiel bestimmt die Generation und damit die verfügbaren Pokémon (Nationaldex bis Gen X),
   Typen (Fee erst ab Gen 6, Unlicht/Stahl erst ab Gen 2), Attacken, Fähigkeiten (ab Gen 3) und Routen
 - Einstellung „Wilde Pokémon“ wie im Randomizer: keine Zuordnung, Area 1:1 oder Global 1:1
+- Schalter „Randomizer-Run“: aus = Originaldaten nachschlagen statt eintragen (siehe unten)
 
 ### Kategorien (pro Run togglebar)
 
@@ -38,6 +39,26 @@ Aktueller eigener Anwendungsfall: nur **Typen** und **Attacken** randomisiert.
 
 Deaktivierte Kategorien werden ausgeblendet, eingetragene Daten bleiben beim Deaktivieren
 erhalten (kein Datenverlust durch versehentliches Toggeln).
+
+### Ohne Randomizer
+
+Für normale Runs zeigt Randex statt der Eingabe die Originaldaten des Spiels (schreibgeschützt):
+
+- Typen und Fähigkeiten so, wie sie in der Generation des Spiels waren (z. B. Piepi in Gen 1–5 Normal),
+  Base Stats (Gen 1: Spezial)
+- Level-Up- und TM/VM-Attacken der jeweiligen Edition (Legenden: Arceus: Lehrer-Attacken)
+- Entwicklungen mit Bedingung (Level, Item, Tausch, Freundschaft …)
+- Fundorte pro Route und Methode mit Level; die Liste zeigt nur Pokémon, die im Spiel vorkommen
+
+Bekannte Grenzen (Datenlage in PokeAPI):
+
+- Fundorte für Strahlender Diamant/Leuchtende Perle, Legenden: Arceus, Karmesin/Purpur und Omega
+  Rubin/Alpha Saphir sind von Hand aus PokéWiki/Serebii ergänzt (`scripts/encounters/`); Tausch,
+  Massenaufläufe und Tera-Raids fehlen
+- Eine Form pro Art: in Alola, Galar, Hisui und Paldea die Regionalform, sonst die Standardform
+  (z. B. Rattfratz in Sonne/Mond als Alola-Form, Mauzi in Schwert/Schild als Galar-Form)
+- Lehrer-Attacken in Legenden: Arceus nur lückenhaft
+- TMs in Strahlender Diamant/Leuchtende Perle ohne Nummer
 
 ### Pokémon-Liste
 
@@ -69,6 +90,7 @@ erhalten (kein Datenverlust durch versehentliches Toggeln).
 - Namen auf **Deutsch** (PokeAPI liefert deutsche Namen)
 - Attacken/Fähigkeiten per Autocomplete aus diesen Listen, Freitext als Fallback
   (Randomizer können Custom-Sachen haben)
+- Originaldaten für Runs ohne Randomizer: eine Datei pro Spiel in `static/data/original/`
 - Run-Daten lokal als JSON (eine Datei pro Run im App-Data-Ordner)
 - Export/Import eines Runs als JSON
 
@@ -77,6 +99,7 @@ erhalten (kein Datenverlust durch versehentliches Toggeln).
 - Kein Parsen von ROMs oder Randomizer-Logs (evtl. später: Import der `.log`-Datei des UPR ZX)
 - Kein Online-Sync, keine Accounts
 - Kein Schadensrechner
+- Keine vollständige Pokédex-Datenbank (Formen, Fangraten, Attackendetails)
 
 ## Entwicklung
 
@@ -93,7 +116,9 @@ cd src-tauri && cargo clippy --all-targets -- -D warnings && cargo test
 ```
 
 Stammdaten (Pokémon, Attacken, Orte, Sprites) neu erzeugen. Braucht Netzwerk, lädt fehlende
-Sprites nach; `static/data/maps/`, `badges.json` und `field-moves.json` sind handgepflegt und bleiben unberührt:
+Sprites nach; `static/data/maps/`, `badges.json` und `field-moves.json` sind handgepflegt und bleiben unberührt.
+Fehlende oder falsche Encounter-Daten der PokeAPI werden in `scripts/encounters/<gameId>.json` ergänzt
+(Format und Quellen: `scripts/encounters/README.md`):
 
 ```sh
 npm run generate

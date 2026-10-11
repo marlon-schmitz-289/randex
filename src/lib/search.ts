@@ -6,6 +6,8 @@ export interface SearchOptions {
   query: string;
   filter: EntryFilter;
   type: TypeId | null;
+  /** Typen für den Typfilter (Run-Einträge oder Originaldaten); fehlt = Typfilter findet nichts. */
+  typesOf?: (speciesId: number) => readonly TypeId[] | undefined;
 }
 
 /** Kleinschreibung ohne Diakritika. */
@@ -44,10 +46,8 @@ export function searchSpecies(species: readonly Species[], run: Run | null, opts
 
   for (let i = 0; i < species.length; i++) {
     const s = species[i];
-    if (run) {
-      if (opts.filter !== "all" && hasEntry(run, s.id) !== (opts.filter === "entered")) continue;
-      if (opts.type && !run.pokemon[s.id]?.types?.includes(opts.type)) continue;
-    } else if (opts.type || opts.filter === "entered") continue;
+    if (opts.filter !== "all" && (run !== null && hasEntry(run, s.id)) !== (opts.filter === "entered")) continue;
+    if (opts.type && !opts.typesOf?.(s.id)?.includes(opts.type)) continue;
 
     let tier = 0;
     if (num !== null) {
