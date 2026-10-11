@@ -20,7 +20,6 @@
 
   function hint(p: MapPlace, n: number): string {
     if (isDeco(p)) return "keine wilden Pokémon";
-    if (!known.has(p.id)) return "nicht in diesem Spiel";
     return n ? `${n} Pokémon eingetragen` : "noch nichts eingetragen";
   }
 
@@ -71,7 +70,7 @@
     <p class="p-4 text-sm text-muted-foreground">Karte wird geladen …</p>
   {:then map}
     {#if map}
-      {@const places = [...map.places].sort((a, b) => order(a) - order(b))}
+      {@const places = map.places.filter((p) => known.has(p.id) || isDeco(p)).sort((a, b) => order(a) - order(b))}
       <div class="min-h-0 flex-1 p-2">
         <svg
           viewBox="{-PAD} {-PAD} {map.width + 2 * PAD} {map.height + 2 * PAD}"
@@ -104,7 +103,7 @@
             {@const selected = app.selectedLocationId === p.id}
             {@const n = count(p.id)}
             {@const h = hint(p, n)}
-            {@const cls = ["place", p.kind, active ? "active" : isDeco(p) ? "deco" : "inactive", selected && "selected", n > 0 && "filled"]}
+            {@const cls = ["place", p.kind, active ? "active" : "deco", selected && "selected", n > 0 && "filled"]}
             {#if active}
               <g
                 class={cls}
@@ -132,7 +131,6 @@
       <div aria-hidden="true" class="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-panel-border px-4 py-2 text-xs text-muted-foreground">
         <span class="flex items-center gap-1.5"><span class="legend filled"></span>Pokémon eingetragen</span>
         <span class="flex items-center gap-1.5"><span class="legend selected"></span>ausgewählt</span>
-        <span class="flex items-center gap-1.5"><span class="legend opacity-40"></span>nicht in diesem Spiel</span>
         <span class="ml-auto">■ Stadt · ● Ort · ◆ Höhle</span>
       </div>
     {/if}
@@ -235,7 +233,6 @@
     fill: var(--muted-foreground);
   }
 
-  .inactive,
   .deco:not(.city) {
     opacity: 0.4;
   }
