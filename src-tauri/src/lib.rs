@@ -132,7 +132,7 @@ fn validate_import(run: &Value) -> Result<(), String> {
     require(run, &["enabledCategories", "customLocations"], Value::is_array, "keine Liste")?;
     require(run, &["pokemon", "encounters"], Value::is_object, "kein Objekt")?;
     // Optional (neuer als schemaVersion 1), aber wenn vorhanden, dann Liste
-    for key in ["team", "badges"] {
+    for key in ["team", "badges", "fieldMoves"] {
         if run.get(key).is_some_and(|v| !v.is_array()) {
             return Err(format!("Feld „{key}“ ist keine Liste"));
         }
@@ -301,6 +301,9 @@ mod tests {
         r["team"] = json!([{"speciesId": 25}]);
         assert!(validate_import(&r).is_ok());
         r["badges"] = json!("alle");
+        assert!(validate_import(&r).is_err());
+        let mut r = run("a", 1);
+        r["fieldMoves"] = json!({"cut": true});
         assert!(validate_import(&r).is_err());
         let mut r = run("a", 1);
         r.as_object_mut().unwrap().remove("schemaVersion");

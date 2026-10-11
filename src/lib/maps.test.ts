@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
-import type { Badge, Game, Location, RegionMap } from "./types.ts";
+import type { Badge, FieldMove, Game, Location, RegionMap } from "./types.ts";
 
 const read = <T>(path: string): T => JSON.parse(readFileSync(new URL(`../../static/data/${path}`, import.meta.url), "utf8")) as T;
 const games = read<Game[]>("games.json");
@@ -43,6 +43,20 @@ test("badges.json: nur bekannte Spiele, eindeutige ids, Bilder vorhanden", () =>
     for (const b of list) {
       assert.ok(b.name.trim() && b.leader.trim() && b.place.trim(), `unvollständig: ${gameId}/${b.id}`);
       if (b.sprite) assert.ok(existsSync(new URL(`../../static${b.sprite}`, import.meta.url)), `Bild fehlt: ${b.sprite}`);
+    }
+  }
+});
+
+test("field-moves.json: jedes Spiel, eindeutige ids, vollständig, Orden existieren", () => {
+  const fieldMoves = read<Record<string, FieldMove[]>>("field-moves.json");
+  const badges = read<Record<string, Badge[]>>("badges.json");
+  assert.deepEqual(Object.keys(fieldMoves).sort(), games.map((g) => g.id).sort());
+  for (const [gameId, list] of Object.entries(fieldMoves)) {
+    assert.equal(new Set(list.map((f) => f.id)).size, list.length, `doppelte ids in ${gameId}`);
+    const badgeIds = new Set((badges[gameId] ?? []).map((b) => b.id));
+    for (const f of list) {
+      assert.ok(f.name.trim() && f.place.trim() && f.how.trim(), `unvollständig: ${gameId}/${f.id}`);
+      if (f.badge) assert.ok(badgeIds.has(f.badge), `unbekannter Orden: ${gameId}/${f.id} → ${f.badge}`);
     }
   }
 });

@@ -59,6 +59,7 @@ erhalten (kein Datenverlust durch versehentliches Toggeln).
 
 - Aktuelles Team (bis 6 Pokémon, Spitzname, Level)
 - Orden bzw. Prüfungen, Titanen usw. des Spiels zum Abhaken
+- Feldfähigkeiten (VMs, PokéMobil, Geheimtechniken, Reit-Pokémon, Koraidon/Miraidon, Rotom-Rad) mit Fundort zum Abhaken
 
 ### Daten
 
@@ -92,7 +93,7 @@ cd src-tauri && cargo clippy --all-targets -- -D warnings && cargo test
 ```
 
 Stammdaten (Pokémon, Attacken, Orte, Sprites) neu erzeugen. Braucht Netzwerk, lädt fehlende
-Sprites nach; `static/data/maps/` und `badges.json` sind handgepflegt und bleiben unberührt:
+Sprites nach; `static/data/maps/`, `badges.json` und `field-moves.json` sind handgepflegt und bleiben unberührt:
 
 ```sh
 npm run generate

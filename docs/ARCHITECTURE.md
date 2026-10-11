@@ -25,11 +25,12 @@ existiert (Species, Typen, Attacken, Fähigkeiten) plus die Orte des Spiels. Fä
 | `data/locations/<gameId>.json` | `Location[]`, existiert für jedes Spiel |
 | `data/maps/<region>.json` | `RegionMap` (schematisch, von Hand gezeichnet; `src/lib/maps.test.ts` prüft Vollständigkeit) |
 | `data/badges.json` | `Record<gameId, Badge[]>` (von Hand gepflegt) |
+| `data/field-moves.json` | `Record<gameId, FieldMove[]>` (von Hand gepflegt; `badge` → `Badge.id` desselben Spiels) |
 | `sprites/<speciesId>.png` | 96×96 Front-Sprite |
 | `badges/<n>.png` | Orden-Bilder (PokeAPI-Nummerierung) |
 
 Erzeugt von `npm run generate` (`scripts/generate-data.mjs`; PokeAPI, deutsche Namen, Fallback englisch;
-`maps/` und `badges.json` fasst es nicht an).
+`maps/`, `badges.json` und `field-moves.json` fasst es nicht an).
 PokeAPI-Encounter-Methoden werden auf `ENCOUNTER_METHODS` gemappt, Unbekanntes → `other`.
 Orte = PokeAPI-Locations (Areas zusammengefasst) mit Encountern im Spiel; Spiele ohne Encounter-Daten
 bekommen alle Orte ihrer Region (ohne `methods`).
@@ -68,6 +69,7 @@ loadGameData(gameId: string): Promise<GameData>   // Basisdateien 1× laden, pro
 categoriesForGeneration(gen: number): Category[]  // ohne "abilities" bei gen < 3
 loadRegionMap(region: string): Promise<RegionMap> // "Einall" → /data/maps/einall.json
 loadBadges(gameId: string): Promise<Badge[]>      // unbekanntes Spiel → []
+loadFieldMoves(gameId: string): Promise<FieldMove[]> // unbekanntes Spiel → []
 spriteUrl(speciesId: number): string              // "/sprites/<id>.png"
 
 // search.ts
@@ -134,4 +136,4 @@ Alle Komponenten lesen/schreiben über `app` und die Funktionen aus `runs.svelte
 | `detail/NamePicker.svelte` | `items: { name: string }[]`, `value: string`, `onSelect: (name: string) => void` – Autocomplete Attacken/Fähigkeiten, Freitext |
 | `encounter/EncounterView.svelte`, `encounter/*` | – Ortsliste (Suche, `app.selectedLocationId`), Editor pro Methode, `SpeciesPicker` (`allowFreeText=false`), Methode hinzufügen, eigene Orte anlegen/löschen; Klick auf Pokémon → `showSpecies` |
 | `encounter/RegionMap.svelte` | – schematische Regionskarte (`loadRegionMap`), Klick auf Ort → Encounter-Liste |
-| `ProgressView.svelte` | – Team (bis 6) und Orden (`loadBadges`) zum Abhaken |
+| `ProgressView.svelte` | – Team (bis 6), Orden (`loadBadges`) und Feldfähigkeiten (`loadFieldMoves`) zum Abhaken |

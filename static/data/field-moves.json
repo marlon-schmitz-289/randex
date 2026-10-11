@@ -1,0 +1,1733 @@
+{
+  "red": [
+    {
+      "id": "cut",
+      "name": "VM01 Zerschneider",
+      "place": "M.S. Anne (Orania City)",
+      "how": "Vom Kapitän",
+      "badge": "cascade"
+    },
+    {
+      "id": "flash",
+      "name": "VM05 Blitz",
+      "place": "Route 2",
+      "how": "Von Prof. Eichs Assistent, ab 10 gefangenen Arten (Zugang über Digdas Höhle)",
+      "badge": "boulder"
+    },
+    {
+      "id": "fly",
+      "name": "VM02 Fliegen",
+      "place": "Route 16",
+      "how": "Mädchen im Haus hinter dem Zerschneider-Baum",
+      "badge": "thunder"
+    },
+    {
+      "id": "surf",
+      "name": "VM03 Surfer",
+      "place": "Safari-Zone",
+      "how": "Geheimes Haus im hintersten Gebiet",
+      "badge": "soul"
+    },
+    {
+      "id": "strength",
+      "name": "VM04 Stärke",
+      "place": "Fuchsania City",
+      "how": "Vom Safari-Zonen-Wärter gegen die Goldzähne",
+      "badge": "rainbow"
+    }
+  ],
+  "blue": [
+    {
+      "id": "cut",
+      "name": "VM01 Zerschneider",
+      "place": "M.S. Anne (Orania City)",
+      "how": "Vom Kapitän",
+      "badge": "cascade"
+    },
+    {
+      "id": "flash",
+      "name": "VM05 Blitz",
+      "place": "Route 2",
+      "how": "Von Prof. Eichs Assistent, ab 10 gefangenen Arten (Zugang über Digdas Höhle)",
+      "badge": "boulder"
+    },
+    {
+      "id": "fly",
+      "name": "VM02 Fliegen",
+      "place": "Route 16",
+      "how": "Mädchen im Haus hinter dem Zerschneider-Baum",
+      "badge": "thunder"
+    },
+    {
+      "id": "surf",
+      "name": "VM03 Surfer",
+      "place": "Safari-Zone",
+      "how": "Geheimes Haus im hintersten Gebiet",
+      "badge": "soul"
+    },
+    {
+      "id": "strength",
+      "name": "VM04 Stärke",
+      "place": "Fuchsania City",
+      "how": "Vom Safari-Zonen-Wärter gegen die Goldzähne",
+      "badge": "rainbow"
+    }
+  ],
+  "yellow": [
+    {
+      "id": "cut",
+      "name": "VM01 Zerschneider",
+      "place": "M.S. Anne (Orania City)",
+      "how": "Vom Kapitän",
+      "badge": "cascade"
+    },
+    {
+      "id": "flash",
+      "name": "VM05 Blitz",
+      "place": "Route 2",
+      "how": "Von Prof. Eichs Assistent, ab 10 gefangenen Arten (Zugang über Digdas Höhle)",
+      "badge": "boulder"
+    },
+    {
+      "id": "fly",
+      "name": "VM02 Fliegen",
+      "place": "Route 16",
+      "how": "Mädchen im Haus hinter dem Zerschneider-Baum",
+      "badge": "thunder"
+    },
+    {
+      "id": "surf",
+      "name": "VM03 Surfer",
+      "place": "Safari-Zone",
+      "how": "Geheimes Haus im hintersten Gebiet",
+      "badge": "soul"
+    },
+    {
+      "id": "strength",
+      "name": "VM04 Stärke",
+      "place": "Fuchsania City",
+      "how": "Vom Safari-Zonen-Wärter gegen die Goldzähne",
+      "badge": "rainbow"
+    }
+  ],
+  "gold": [
+    {
+      "id": "flash",
+      "name": "VM05 Blitz",
+      "place": "Knofensa-Turm (Viola City)",
+      "how": "Vom Weisen Marek im 2. OG nach den Kämpfen",
+      "badge": "zephyr"
+    },
+    {
+      "id": "rock-smash",
+      "name": "TM08 Zertrümmerer",
+      "place": "Route 36",
+      "how": "Von einem Mann, nachdem der Mogelbaum bekämpft wurde"
+    },
+    {
+      "id": "cut",
+      "name": "VM01 Zerschneider",
+      "place": "Steineichenwald",
+      "how": "Vom Köhler, nachdem man sein Porenta zurückgebracht hat",
+      "badge": "hive"
+    },
+    {
+      "id": "surf",
+      "name": "VM03 Surfer",
+      "place": "Teak City",
+      "how": "Von einem alten Mann im Tanztheater nach den Kämpfen gegen die Kimono-Girls",
+      "badge": "fog"
+    },
+    {
+      "id": "fly",
+      "name": "VM02 Fliegen",
+      "place": "Anemonia City",
+      "how": "Von Hartwigs Frau nach dem Sieg über Hartwig",
+      "badge": "storm"
+    },
+    {
+      "id": "strength",
+      "name": "VM04 Stärke",
+      "place": "Oliviana City",
+      "how": "Von einem Matrosen im Café neben dem Pokémon-Center",
+      "badge": "plain"
+    },
+    {
+      "id": "whirlpool",
+      "name": "VM06 Whirlpool",
+      "place": "Mahagonia City",
+      "how": "Von Siegfried nach dem Rocket-Versteck",
+      "badge": "glacier"
+    },
+    {
+      "id": "waterfall",
+      "name": "VM07 Kaskade",
+      "place": "Eispfad",
+      "how": "Als Item in der Höhle",
+      "badge": "rising"
+    }
+  ],
+  "silver": [
+    {
+      "id": "flash",
+      "name": "VM05 Blitz",
+      "place": "Knofensa-Turm (Viola City)",
+      "how": "Vom Weisen Marek im 2. OG nach den Kämpfen",
+      "badge": "zephyr"
+    },
+    {
+      "id": "rock-smash",
+      "name": "TM08 Zertrümmerer",
+      "place": "Route 36",
+      "how": "Von einem Mann, nachdem der Mogelbaum bekämpft wurde"
+    },
+    {
+      "id": "cut",
+      "name": "VM01 Zerschneider",
+      "place": "Steineichenwald",
+      "how": "Vom Köhler, nachdem man sein Porenta zurückgebracht hat",
+      "badge": "hive"
+    },
+    {
+      "id": "surf",
+      "name": "VM03 Surfer",
+      "place": "Teak City",
+      "how": "Von einem alten Mann im Tanztheater nach den Kämpfen gegen die Kimono-Girls",
+      "badge": "fog"
+    },
+    {
+      "id": "fly",
+      "name": "VM02 Fliegen",
+      "place": "Anemonia City",
+      "how": "Von Hartwigs Frau nach dem Sieg über Hartwig",
+      "badge": "storm"
+    },
+    {
+      "id": "strength",
+      "name": "VM04 Stärke",
+      "place": "Oliviana City",
+      "how": "Von einem Matrosen im Café neben dem Pokémon-Center",
+      "badge": "plain"
+    },
+    {
+      "id": "whirlpool",
+      "name": "VM06 Whirlpool",
+      "place": "Mahagonia City",
+      "how": "Von Siegfried nach dem Rocket-Versteck",
+      "badge": "glacier"
+    },
+    {
+      "id": "waterfall",
+      "name": "VM07 Kaskade",
+      "place": "Eispfad",
+      "how": "Als Item in der Höhle",
+      "badge": "rising"
+    }
+  ],
+  "crystal": [
+    {
+      "id": "flash",
+      "name": "VM05 Blitz",
+      "place": "Knofensa-Turm (Viola City)",
+      "how": "Vom Weisen Marek im 2. OG nach den Kämpfen",
+      "badge": "zephyr"
+    },
+    {
+      "id": "rock-smash",
+      "name": "TM08 Zertrümmerer",
+      "place": "Route 36",
+      "how": "Von einem Mann, nachdem der Mogelbaum bekämpft wurde"
+    },
+    {
+      "id": "cut",
+      "name": "VM01 Zerschneider",
+      "place": "Steineichenwald",
+      "how": "Vom Köhler, nachdem man sein Porenta zurückgebracht hat",
+      "badge": "hive"
+    },
+    {
+      "id": "surf",
+      "name": "VM03 Surfer",
+      "place": "Teak City",
+      "how": "Von einem alten Mann im Tanztheater nach den Kämpfen gegen die Kimono-Girls",
+      "badge": "fog"
+    },
+    {
+      "id": "fly",
+      "name": "VM02 Fliegen",
+      "place": "Anemonia City",
+      "how": "Von Hartwigs Frau nach dem Sieg über Hartwig",
+      "badge": "storm"
+    },
+    {
+      "id": "strength",
+      "name": "VM04 Stärke",
+      "place": "Oliviana City",
+      "how": "Von einem Matrosen im Café neben dem Pokémon-Center",
+      "badge": "plain"
+    },
+    {
+      "id": "whirlpool",
+      "name": "VM06 Whirlpool",
+      "place": "Mahagonia City",
+      "how": "Von Siegfried nach dem Rocket-Versteck",
+      "badge": "glacier"
+    },
+    {
+      "id": "waterfall",
+      "name": "VM07 Kaskade",
+      "place": "Eispfad",
+      "how": "Als Item in der Höhle",
+      "badge": "rising"
+    }
+  ],
+  "ruby": [
+    {
+      "id": "cut",
+      "name": "VM01 Zerschneider",
+      "place": "Metarost City",
+      "how": "Im Haus des Zerschneiders",
+      "badge": "stone"
+    },
+    {
+      "id": "flash",
+      "name": "VM05 Blitz",
+      "place": "Granithöhle",
+      "how": "Von einem Wanderer am Eingang",
+      "badge": "knuckle"
+    },
+    {
+      "id": "rock-smash",
+      "name": "VM06 Zertrümmerer",
+      "place": "Malvenfroh City",
+      "how": "Von einem Mann in einem Haus",
+      "badge": "dynamo"
+    },
+    {
+      "id": "strength",
+      "name": "VM04 Stärke",
+      "place": "Metaflurtunnel",
+      "how": "Vom Freund von Heike, nachdem der Tunnel freigelegt wurde",
+      "badge": "heat"
+    },
+    {
+      "id": "surf",
+      "name": "VM03 Surfer",
+      "place": "Blütenburg City",
+      "how": "Von Heikos Vater nach dem 5. Orden",
+      "badge": "balance"
+    },
+    {
+      "id": "fly",
+      "name": "VM02 Fliegen",
+      "place": "Route 119",
+      "how": "Vom Rivalen nach dem Kampf",
+      "badge": "feather"
+    },
+    {
+      "id": "dive",
+      "name": "VM08 Taucher",
+      "place": "Moosbach City",
+      "how": "Von Troy",
+      "badge": "mind"
+    },
+    {
+      "id": "waterfall",
+      "name": "VM07 Kaskade",
+      "place": "Urzeithöhle",
+      "how": "In der Urzeithöhle",
+      "badge": "rain"
+    }
+  ],
+  "sapphire": [
+    {
+      "id": "cut",
+      "name": "VM01 Zerschneider",
+      "place": "Metarost City",
+      "how": "Im Haus des Zerschneiders",
+      "badge": "stone"
+    },
+    {
+      "id": "flash",
+      "name": "VM05 Blitz",
+      "place": "Granithöhle",
+      "how": "Von einem Wanderer am Eingang",
+      "badge": "knuckle"
+    },
+    {
+      "id": "rock-smash",
+      "name": "VM06 Zertrümmerer",
+      "place": "Malvenfroh City",
+      "how": "Von einem Mann in einem Haus",
+      "badge": "dynamo"
+    },
+    {
+      "id": "strength",
+      "name": "VM04 Stärke",
+      "place": "Metaflurtunnel",
+      "how": "Vom Freund von Heike, nachdem der Tunnel freigelegt wurde",
+      "badge": "heat"
+    },
+    {
+      "id": "surf",
+      "name": "VM03 Surfer",
+      "place": "Blütenburg City",
+      "how": "Von Heikos Vater nach dem 5. Orden",
+      "badge": "balance"
+    },
+    {
+      "id": "fly",
+      "name": "VM02 Fliegen",
+      "place": "Route 119",
+      "how": "Vom Rivalen nach dem Kampf",
+      "badge": "feather"
+    },
+    {
+      "id": "dive",
+      "name": "VM08 Taucher",
+      "place": "Moosbach City",
+      "how": "Von Troy",
+      "badge": "mind"
+    },
+    {
+      "id": "waterfall",
+      "name": "VM07 Kaskade",
+      "place": "Urzeithöhle",
+      "how": "In der Urzeithöhle",
+      "badge": "rain"
+    }
+  ],
+  "emerald": [
+    {
+      "id": "cut",
+      "name": "VM01 Zerschneider",
+      "place": "Metarost City",
+      "how": "Im Haus des Zerschneiders",
+      "badge": "stone"
+    },
+    {
+      "id": "flash",
+      "name": "VM05 Blitz",
+      "place": "Granithöhle",
+      "how": "Von einem Wanderer am Eingang",
+      "badge": "knuckle"
+    },
+    {
+      "id": "rock-smash",
+      "name": "VM06 Zertrümmerer",
+      "place": "Malvenfroh City",
+      "how": "Von einem Mann in einem Haus",
+      "badge": "dynamo"
+    },
+    {
+      "id": "strength",
+      "name": "VM04 Stärke",
+      "place": "Metaflurtunnel",
+      "how": "Vom Freund von Heike, nachdem der Tunnel freigelegt wurde",
+      "badge": "heat"
+    },
+    {
+      "id": "surf",
+      "name": "VM03 Surfer",
+      "place": "Blütenburg City",
+      "how": "Von Heikos Vater nach dem 5. Orden",
+      "badge": "balance"
+    },
+    {
+      "id": "fly",
+      "name": "VM02 Fliegen",
+      "place": "Route 119",
+      "how": "Vom Rivalen nach dem Kampf",
+      "badge": "feather"
+    },
+    {
+      "id": "dive",
+      "name": "VM08 Taucher",
+      "place": "Moosbach City",
+      "how": "Von Troy",
+      "badge": "mind"
+    },
+    {
+      "id": "waterfall",
+      "name": "VM07 Kaskade",
+      "place": "Xeneroville",
+      "how": "Von Wassili",
+      "badge": "rain"
+    }
+  ],
+  "firered": [
+    {
+      "id": "cut",
+      "name": "VM01 Zerschneider",
+      "place": "M.S. Anne (Orania City)",
+      "how": "Vom Kapitän",
+      "badge": "cascade"
+    },
+    {
+      "id": "flash",
+      "name": "VM05 Blitz",
+      "place": "Route 2",
+      "how": "Von Prof. Eichs Assistent, ab 10 gefangenen Arten",
+      "badge": "boulder"
+    },
+    {
+      "id": "fly",
+      "name": "VM02 Fliegen",
+      "place": "Route 16",
+      "how": "Mädchen im Haus hinter dem Zerschneider-Baum",
+      "badge": "thunder"
+    },
+    {
+      "id": "surf",
+      "name": "VM03 Surfer",
+      "place": "Safari-Zone",
+      "how": "Geheimes Haus im hintersten Gebiet",
+      "badge": "soul"
+    },
+    {
+      "id": "strength",
+      "name": "VM04 Stärke",
+      "place": "Fuchsania City",
+      "how": "Vom Safari-Zonen-Wärter gegen das Goldene Gebiss",
+      "badge": "rainbow"
+    },
+    {
+      "id": "rock-smash",
+      "name": "VM06 Zertrümmerer",
+      "place": "Gluttherme (Glühweg, Eiland 1)",
+      "how": "Von einem alten Mann in der Therme",
+      "badge": "marsh"
+    },
+    {
+      "id": "waterfall",
+      "name": "VM07 Kaskade",
+      "place": "Eiskaskadenhöhle (Eiland 4)",
+      "how": "Im Höhleninneren; erst nach der Top Vier erreichbar",
+      "badge": "volcano"
+    }
+  ],
+  "leafgreen": [
+    {
+      "id": "cut",
+      "name": "VM01 Zerschneider",
+      "place": "M.S. Anne (Orania City)",
+      "how": "Vom Kapitän",
+      "badge": "cascade"
+    },
+    {
+      "id": "flash",
+      "name": "VM05 Blitz",
+      "place": "Route 2",
+      "how": "Von Prof. Eichs Assistent, ab 10 gefangenen Arten",
+      "badge": "boulder"
+    },
+    {
+      "id": "fly",
+      "name": "VM02 Fliegen",
+      "place": "Route 16",
+      "how": "Mädchen im Haus hinter dem Zerschneider-Baum",
+      "badge": "thunder"
+    },
+    {
+      "id": "surf",
+      "name": "VM03 Surfer",
+      "place": "Safari-Zone",
+      "how": "Geheimes Haus im hintersten Gebiet",
+      "badge": "soul"
+    },
+    {
+      "id": "strength",
+      "name": "VM04 Stärke",
+      "place": "Fuchsania City",
+      "how": "Vom Safari-Zonen-Wärter gegen das Goldene Gebiss",
+      "badge": "rainbow"
+    },
+    {
+      "id": "rock-smash",
+      "name": "VM06 Zertrümmerer",
+      "place": "Gluttherme (Glühweg, Eiland 1)",
+      "how": "Von einem alten Mann in der Therme",
+      "badge": "marsh"
+    },
+    {
+      "id": "waterfall",
+      "name": "VM07 Kaskade",
+      "place": "Eiskaskadenhöhle (Eiland 4)",
+      "how": "Im Höhleninneren; erst nach der Top Vier erreichbar",
+      "badge": "volcano"
+    }
+  ],
+  "diamond": [
+    {
+      "id": "rock-smash",
+      "name": "VM06 Zertrümmerer",
+      "place": "Erzelingen-Tor",
+      "how": "Von einem Wanderer am Eingang",
+      "badge": "coal"
+    },
+    {
+      "id": "cut",
+      "name": "VM01 Zerschneider",
+      "place": "Ewigenau",
+      "how": "Von Cynthia",
+      "badge": "forest"
+    },
+    {
+      "id": "fly",
+      "name": "VM02 Fliegen",
+      "place": "Schleiede",
+      "how": "Im Lagerhaus von Team Galaktik",
+      "badge": "cobble"
+    },
+    {
+      "id": "defog",
+      "name": "VM05 Auflockern",
+      "place": "Großmoor (Weideburg)",
+      "how": "Areal 6, vom Jungen mit den grünen Haaren",
+      "badge": "fen"
+    },
+    {
+      "id": "surf",
+      "name": "VM03 Surfer",
+      "place": "Elyses",
+      "how": "Von Cynthias Großmutter nach dem Sieg über Team Galaktik",
+      "badge": "relic"
+    },
+    {
+      "id": "strength",
+      "name": "VM04 Stärke",
+      "place": "Turm der Ruhenden (Route 209)",
+      "how": "4. Etage, von der linken Frau",
+      "badge": "mine"
+    },
+    {
+      "id": "rock-climb",
+      "name": "VM08 Kraxler",
+      "place": "Route 217",
+      "how": "Oberhalb vom unteren Haus",
+      "badge": "icicle"
+    },
+    {
+      "id": "waterfall",
+      "name": "VM07 Kaskade",
+      "place": "Sonnewik",
+      "how": "Von Jasmin nach dem Sieg über Volkner",
+      "badge": "beacon"
+    }
+  ],
+  "pearl": [
+    {
+      "id": "rock-smash",
+      "name": "VM06 Zertrümmerer",
+      "place": "Erzelingen-Tor",
+      "how": "Von einem Wanderer am Eingang",
+      "badge": "coal"
+    },
+    {
+      "id": "cut",
+      "name": "VM01 Zerschneider",
+      "place": "Ewigenau",
+      "how": "Von Cynthia",
+      "badge": "forest"
+    },
+    {
+      "id": "fly",
+      "name": "VM02 Fliegen",
+      "place": "Schleiede",
+      "how": "Im Lagerhaus von Team Galaktik",
+      "badge": "cobble"
+    },
+    {
+      "id": "defog",
+      "name": "VM05 Auflockern",
+      "place": "Großmoor (Weideburg)",
+      "how": "Areal 6, vom Jungen mit den grünen Haaren",
+      "badge": "fen"
+    },
+    {
+      "id": "surf",
+      "name": "VM03 Surfer",
+      "place": "Elyses",
+      "how": "Von Cynthias Großmutter nach dem Sieg über Team Galaktik",
+      "badge": "relic"
+    },
+    {
+      "id": "strength",
+      "name": "VM04 Stärke",
+      "place": "Turm der Ruhenden (Route 209)",
+      "how": "4. Etage, von der linken Frau",
+      "badge": "mine"
+    },
+    {
+      "id": "rock-climb",
+      "name": "VM08 Kraxler",
+      "place": "Route 217",
+      "how": "Oberhalb vom unteren Haus",
+      "badge": "icicle"
+    },
+    {
+      "id": "waterfall",
+      "name": "VM07 Kaskade",
+      "place": "Sonnewik",
+      "how": "Von Jasmin nach dem Sieg über Volkner",
+      "badge": "beacon"
+    }
+  ],
+  "platinum": [
+    {
+      "id": "rock-smash",
+      "name": "VM06 Zertrümmerer",
+      "place": "Erzelingen-Tor",
+      "how": "Von einem Wanderer am Eingang",
+      "badge": "coal"
+    },
+    {
+      "id": "cut",
+      "name": "VM01 Zerschneider",
+      "place": "Ewigenau",
+      "how": "Von Cynthia",
+      "badge": "forest"
+    },
+    {
+      "id": "defog",
+      "name": "VM05 Auflockern",
+      "place": "Trostu-Ruinen (Trostu)",
+      "how": "Im letzten Raum der Ruine",
+      "badge": "relic"
+    },
+    {
+      "id": "fly",
+      "name": "VM02 Fliegen",
+      "place": "Schleiede",
+      "how": "Im Lagerhaus von Team Galaktik",
+      "badge": "cobble"
+    },
+    {
+      "id": "surf",
+      "name": "VM03 Surfer",
+      "place": "Elyses",
+      "how": "Von Cynthias Großmutter nach dem Sieg über Team Galaktik",
+      "badge": "fen"
+    },
+    {
+      "id": "strength",
+      "name": "VM04 Stärke",
+      "place": "Eiseninsel",
+      "how": "Von Urs vor dem Höhleneingang",
+      "badge": "mine"
+    },
+    {
+      "id": "rock-climb",
+      "name": "VM08 Kraxler",
+      "place": "Route 217",
+      "how": "Oberhalb vom unteren Haus",
+      "badge": "icicle"
+    },
+    {
+      "id": "waterfall",
+      "name": "VM07 Kaskade",
+      "place": "Sonnewik",
+      "how": "Von Jasmin nach dem Sieg über Volkner",
+      "badge": "beacon"
+    }
+  ],
+  "heartgold": [
+    {
+      "id": "flash",
+      "name": "TM70 Blitz",
+      "place": "Knofensa-Turm (Viola City)",
+      "how": "Vom Weisen Marek; in HGSS eine TM"
+    },
+    {
+      "id": "rock-smash",
+      "name": "VM06 Zertrümmerer",
+      "place": "Route 36",
+      "how": "Von einem Mann nahe dem Mogelbaum",
+      "badge": "zephyr"
+    },
+    {
+      "id": "cut",
+      "name": "VM01 Zerschneider",
+      "place": "Steineichenwald",
+      "how": "Vom Köhler nach der Porenta-Suche",
+      "badge": "hive"
+    },
+    {
+      "id": "surf",
+      "name": "VM03 Surfer",
+      "place": "Teak City",
+      "how": "Von einem alten Mann im Tanztheater",
+      "badge": "fog"
+    },
+    {
+      "id": "fly",
+      "name": "VM02 Fliegen",
+      "place": "Anemonia City",
+      "how": "Von Hartwigs Frau nach dem Sieg über Hartwig",
+      "badge": "storm"
+    },
+    {
+      "id": "strength",
+      "name": "VM04 Stärke",
+      "place": "Route 42 (am Kesselberg)",
+      "how": "Von einem Wanderer beim ersten Betreten der Route",
+      "badge": "plain"
+    },
+    {
+      "id": "whirlpool",
+      "name": "VM05 Whirlpool",
+      "place": "Mahagonia City",
+      "how": "Von Siegfried nach dem Rocket-Versteck",
+      "badge": "glacier"
+    },
+    {
+      "id": "waterfall",
+      "name": "VM07 Kaskade",
+      "place": "Eispfad",
+      "how": "Als Item in der Höhle",
+      "badge": "rising"
+    },
+    {
+      "id": "rock-climb",
+      "name": "VM08 Kraxler",
+      "place": "Prof. Eichs Labor (Alabastia)",
+      "how": "Von Prof. Eich nach 16 Orden",
+      "badge": "earth"
+    }
+  ],
+  "soulsilver": [
+    {
+      "id": "flash",
+      "name": "TM70 Blitz",
+      "place": "Knofensa-Turm (Viola City)",
+      "how": "Vom Weisen Marek; in HGSS eine TM"
+    },
+    {
+      "id": "rock-smash",
+      "name": "VM06 Zertrümmerer",
+      "place": "Route 36",
+      "how": "Von einem Mann nahe dem Mogelbaum",
+      "badge": "zephyr"
+    },
+    {
+      "id": "cut",
+      "name": "VM01 Zerschneider",
+      "place": "Steineichenwald",
+      "how": "Vom Köhler nach der Porenta-Suche",
+      "badge": "hive"
+    },
+    {
+      "id": "surf",
+      "name": "VM03 Surfer",
+      "place": "Teak City",
+      "how": "Von einem alten Mann im Tanztheater",
+      "badge": "fog"
+    },
+    {
+      "id": "fly",
+      "name": "VM02 Fliegen",
+      "place": "Anemonia City",
+      "how": "Von Hartwigs Frau nach dem Sieg über Hartwig",
+      "badge": "storm"
+    },
+    {
+      "id": "strength",
+      "name": "VM04 Stärke",
+      "place": "Route 42 (am Kesselberg)",
+      "how": "Von einem Wanderer beim ersten Betreten der Route",
+      "badge": "plain"
+    },
+    {
+      "id": "whirlpool",
+      "name": "VM05 Whirlpool",
+      "place": "Mahagonia City",
+      "how": "Von Siegfried nach dem Rocket-Versteck",
+      "badge": "glacier"
+    },
+    {
+      "id": "waterfall",
+      "name": "VM07 Kaskade",
+      "place": "Eispfad",
+      "how": "Als Item in der Höhle",
+      "badge": "rising"
+    },
+    {
+      "id": "rock-climb",
+      "name": "VM08 Kraxler",
+      "place": "Prof. Eichs Labor (Alabastia)",
+      "how": "Von Prof. Eich nach 16 Orden",
+      "badge": "earth"
+    }
+  ],
+  "black": [
+    {
+      "id": "cut",
+      "name": "VM01 Zerschneider",
+      "place": "Orion City",
+      "how": "Von Vivian nach dem Triorden"
+    },
+    {
+      "id": "fly",
+      "name": "VM02 Fliegen",
+      "place": "Marea City",
+      "how": "Nach dem Kampf gegen Bell"
+    },
+    {
+      "id": "strength",
+      "name": "VM04 Stärke",
+      "place": "Rayono City",
+      "how": "Von einem Ass-Trainer im Haus nordwestlich des Pokémon-Centers"
+    },
+    {
+      "id": "surf",
+      "name": "VM03 Surfer",
+      "place": "Wendelberg",
+      "how": "Von Lauro nach dem Kampf mit Cheren"
+    },
+    {
+      "id": "dive",
+      "name": "VM06 Taucher",
+      "place": "Ondula",
+      "how": "Von einem Mädchen im weißen Kleid westlich des Pokémon-Centers"
+    },
+    {
+      "id": "waterfall",
+      "name": "VM05 Kaskade",
+      "place": "Route 18",
+      "how": "Im Gras im Südwesten"
+    }
+  ],
+  "white": [
+    {
+      "id": "cut",
+      "name": "VM01 Zerschneider",
+      "place": "Orion City",
+      "how": "Von Vivian nach dem Triorden"
+    },
+    {
+      "id": "fly",
+      "name": "VM02 Fliegen",
+      "place": "Marea City",
+      "how": "Nach dem Kampf gegen Bell"
+    },
+    {
+      "id": "strength",
+      "name": "VM04 Stärke",
+      "place": "Rayono City",
+      "how": "Von einem Ass-Trainer im Haus nordwestlich des Pokémon-Centers"
+    },
+    {
+      "id": "surf",
+      "name": "VM03 Surfer",
+      "place": "Wendelberg",
+      "how": "Von Lauro nach dem Kampf mit Cheren"
+    },
+    {
+      "id": "dive",
+      "name": "VM06 Taucher",
+      "place": "Ondula",
+      "how": "Von einem Mädchen im weißen Kleid westlich des Pokémon-Centers"
+    },
+    {
+      "id": "waterfall",
+      "name": "VM05 Kaskade",
+      "place": "Route 18",
+      "how": "Im Gras im Südwesten"
+    }
+  ],
+  "black-2": [
+    {
+      "id": "cut",
+      "name": "VM01 Zerschneider",
+      "place": "Vapydro City",
+      "how": "Von Mica nach dem Sieg über Team Plasma"
+    },
+    {
+      "id": "strength",
+      "name": "VM04 Stärke",
+      "place": "Stratos-Kanalisation",
+      "how": "Vom Rivalen nach dem Sieg über Team-Plasma-Rüpel"
+    },
+    {
+      "id": "fly",
+      "name": "VM02 Fliegen",
+      "place": "Route 5",
+      "how": "Von Bell"
+    },
+    {
+      "id": "surf",
+      "name": "VM03 Surfer",
+      "place": "Route 6",
+      "how": "Von Cheren"
+    },
+    {
+      "id": "waterfall",
+      "name": "VM05 Kaskade",
+      "place": "Siegesstraße",
+      "how": "Als Item auf der Siegesstraße"
+    },
+    {
+      "id": "dive",
+      "name": "VM06 Taucher",
+      "place": "Ondula",
+      "how": "Von Matisse westlich des Pokémon-Centers, nach der Top Vier"
+    }
+  ],
+  "white-2": [
+    {
+      "id": "cut",
+      "name": "VM01 Zerschneider",
+      "place": "Vapydro City",
+      "how": "Von Mica nach dem Sieg über Team Plasma"
+    },
+    {
+      "id": "strength",
+      "name": "VM04 Stärke",
+      "place": "Stratos-Kanalisation",
+      "how": "Vom Rivalen nach dem Sieg über Team-Plasma-Rüpel"
+    },
+    {
+      "id": "fly",
+      "name": "VM02 Fliegen",
+      "place": "Route 5",
+      "how": "Von Bell"
+    },
+    {
+      "id": "surf",
+      "name": "VM03 Surfer",
+      "place": "Route 6",
+      "how": "Von Cheren"
+    },
+    {
+      "id": "waterfall",
+      "name": "VM05 Kaskade",
+      "place": "Siegesstraße",
+      "how": "Als Item auf der Siegesstraße"
+    },
+    {
+      "id": "dive",
+      "name": "VM06 Taucher",
+      "place": "Ondula",
+      "how": "Von Matisse westlich des Pokémon-Centers, nach der Top Vier"
+    }
+  ],
+  "x": [
+    {
+      "id": "cut",
+      "name": "VM01 Zerschneider",
+      "place": "Magnum-Opus-Palast",
+      "how": "Im südwestlichen Labyrinth des Palastgartens",
+      "badge": "bug"
+    },
+    {
+      "id": "strength",
+      "name": "VM04 Stärke",
+      "place": "Relievera City",
+      "how": "Von Lino",
+      "badge": "cliff"
+    },
+    {
+      "id": "surf",
+      "name": "VM03 Surfer",
+      "place": "Yantara City",
+      "how": "Von Kalem/Serena beim Verlassen der Stadt",
+      "badge": "rumble"
+    },
+    {
+      "id": "fly",
+      "name": "VM02 Fliegen",
+      "place": "Tempera City",
+      "how": "Von Professor Platan",
+      "badge": "plant"
+    },
+    {
+      "id": "waterfall",
+      "name": "VM05 Kaskade",
+      "place": "Route 19",
+      "how": "Nach den Kämpfen gegen Sannah, Tierno und Trovato",
+      "badge": "iceberg"
+    }
+  ],
+  "y": [
+    {
+      "id": "cut",
+      "name": "VM01 Zerschneider",
+      "place": "Magnum-Opus-Palast",
+      "how": "Im südwestlichen Labyrinth des Palastgartens",
+      "badge": "bug"
+    },
+    {
+      "id": "strength",
+      "name": "VM04 Stärke",
+      "place": "Relievera City",
+      "how": "Von Lino",
+      "badge": "cliff"
+    },
+    {
+      "id": "surf",
+      "name": "VM03 Surfer",
+      "place": "Yantara City",
+      "how": "Von Kalem/Serena beim Verlassen der Stadt",
+      "badge": "rumble"
+    },
+    {
+      "id": "fly",
+      "name": "VM02 Fliegen",
+      "place": "Tempera City",
+      "how": "Von Professor Platan",
+      "badge": "plant"
+    },
+    {
+      "id": "waterfall",
+      "name": "VM05 Kaskade",
+      "place": "Route 19",
+      "how": "Nach den Kämpfen gegen Sannah, Tierno und Trovato",
+      "badge": "iceberg"
+    }
+  ],
+  "omega-ruby": [
+    {
+      "id": "cut",
+      "name": "VM01 Zerschneider",
+      "place": "Metarost City",
+      "how": "Im Haus des Zerschneiders",
+      "badge": "stone"
+    },
+    {
+      "id": "rock-smash",
+      "name": "VM06 Zertrümmerer",
+      "place": "Malvenfroh City",
+      "how": "Von Heikos Onkel",
+      "badge": "dynamo"
+    },
+    {
+      "id": "strength",
+      "name": "VM04 Stärke",
+      "place": "Route 112",
+      "how": "Vom Rivalen",
+      "badge": "heat"
+    },
+    {
+      "id": "surf",
+      "name": "VM03 Surfer",
+      "place": "Blütenburg City",
+      "how": "Von Heikos Vater nach dem 5. Orden",
+      "badge": "balance"
+    },
+    {
+      "id": "fly",
+      "name": "VM02 Fliegen",
+      "place": "Route 119",
+      "how": "Vom Rivalen nach dessen Niederlage",
+      "badge": "feather"
+    },
+    {
+      "id": "dive",
+      "name": "VM07 Taucher",
+      "place": "Moosbach City",
+      "how": "Von Troy",
+      "badge": "mind"
+    },
+    {
+      "id": "soar",
+      "name": "Überflieger (Äon-Flöte)",
+      "place": "Xeneroville",
+      "how": "Äon-Flöte nach der Krise um Groudon bzw. Kyogre; ruft Latios bzw. Latias"
+    },
+    {
+      "id": "waterfall",
+      "name": "VM05 Kaskade",
+      "place": "Xeneroville",
+      "how": "Von Wassili",
+      "badge": "rain"
+    }
+  ],
+  "alpha-sapphire": [
+    {
+      "id": "cut",
+      "name": "VM01 Zerschneider",
+      "place": "Metarost City",
+      "how": "Im Haus des Zerschneiders",
+      "badge": "stone"
+    },
+    {
+      "id": "rock-smash",
+      "name": "VM06 Zertrümmerer",
+      "place": "Malvenfroh City",
+      "how": "Von Heikos Onkel",
+      "badge": "dynamo"
+    },
+    {
+      "id": "strength",
+      "name": "VM04 Stärke",
+      "place": "Route 112",
+      "how": "Vom Rivalen",
+      "badge": "heat"
+    },
+    {
+      "id": "surf",
+      "name": "VM03 Surfer",
+      "place": "Blütenburg City",
+      "how": "Von Heikos Vater nach dem 5. Orden",
+      "badge": "balance"
+    },
+    {
+      "id": "fly",
+      "name": "VM02 Fliegen",
+      "place": "Route 119",
+      "how": "Vom Rivalen nach dessen Niederlage",
+      "badge": "feather"
+    },
+    {
+      "id": "dive",
+      "name": "VM07 Taucher",
+      "place": "Moosbach City",
+      "how": "Von Troy",
+      "badge": "mind"
+    },
+    {
+      "id": "soar",
+      "name": "Überflieger (Äon-Flöte)",
+      "place": "Xeneroville",
+      "how": "Äon-Flöte nach der Krise um Groudon bzw. Kyogre; ruft Latios bzw. Latias"
+    },
+    {
+      "id": "waterfall",
+      "name": "VM05 Kaskade",
+      "place": "Xeneroville",
+      "how": "Von Wassili",
+      "badge": "rain"
+    }
+  ],
+  "sun": [
+    {
+      "id": "tauros",
+      "name": "Tauros-Rammbock",
+      "place": "Lili'i (Mele-Mele)",
+      "how": "Mit dem PokéMobil-Funk nach dem Sieg über Inselkönig Hala; zertrümmert Felsen, schnelles Reiten",
+      "badge": "grand-hala"
+    },
+    {
+      "id": "stoutland",
+      "name": "Bissbark-Detektor",
+      "place": "Ohana-Farm (Akala)",
+      "how": "Von Captain Maho, nachdem das Tauros auf der Farm beruhigt ist; findet versteckte Items"
+    },
+    {
+      "id": "lapras",
+      "name": "Lapras-Wellenritt",
+      "place": "Plätscherhügel (Akala)",
+      "how": "Von Captain Tracy auf dem Weg zu ihrer Prüfung; surfen und angeln"
+    },
+    {
+      "id": "charizard",
+      "name": "Glurak-Flieger",
+      "place": "Wela-Vulkanpark (Akala)",
+      "how": "Von Captain Kiawe nach seiner Prüfung; Ersatz für Fliegen",
+      "badge": "trial-kiawe"
+    },
+    {
+      "id": "mudsdale",
+      "name": "Pampross-Galopp",
+      "place": "Route 12 (Ula-Ula)",
+      "how": "Von Hapu'u beim ersten Betreten der Route; geht über steinigen Boden"
+    },
+    {
+      "id": "sharpedo",
+      "name": "Tohaido-Düse",
+      "place": "Route 15 (Ula-Ula)",
+      "how": "Von Astor auf Route 15; schnell über Wasser, zertrümmert Felsen im Wasser"
+    },
+    {
+      "id": "machamp",
+      "name": "Machomei-Stoß",
+      "place": "Alter Pfad von Poni",
+      "how": "Von Hapu'us Großmutter; verschiebt Felsblöcke"
+    }
+  ],
+  "moon": [
+    {
+      "id": "tauros",
+      "name": "Tauros-Rammbock",
+      "place": "Lili'i (Mele-Mele)",
+      "how": "Mit dem PokéMobil-Funk nach dem Sieg über Inselkönig Hala; zertrümmert Felsen, schnelles Reiten",
+      "badge": "grand-hala"
+    },
+    {
+      "id": "stoutland",
+      "name": "Bissbark-Detektor",
+      "place": "Ohana-Farm (Akala)",
+      "how": "Von Captain Maho, nachdem das Tauros auf der Farm beruhigt ist; findet versteckte Items"
+    },
+    {
+      "id": "lapras",
+      "name": "Lapras-Wellenritt",
+      "place": "Plätscherhügel (Akala)",
+      "how": "Von Captain Tracy auf dem Weg zu ihrer Prüfung; surfen und angeln"
+    },
+    {
+      "id": "charizard",
+      "name": "Glurak-Flieger",
+      "place": "Wela-Vulkanpark (Akala)",
+      "how": "Von Captain Kiawe nach seiner Prüfung; Ersatz für Fliegen",
+      "badge": "trial-kiawe"
+    },
+    {
+      "id": "mudsdale",
+      "name": "Pampross-Galopp",
+      "place": "Route 12 (Ula-Ula)",
+      "how": "Von Hapu'u beim ersten Betreten der Route; geht über steinigen Boden"
+    },
+    {
+      "id": "sharpedo",
+      "name": "Tohaido-Düse",
+      "place": "Route 15 (Ula-Ula)",
+      "how": "Von Astor auf Route 15; schnell über Wasser, zertrümmert Felsen im Wasser"
+    },
+    {
+      "id": "machamp",
+      "name": "Machomei-Stoß",
+      "place": "Alter Pfad von Poni",
+      "how": "Von Hapu'us Großmutter; verschiebt Felsblöcke"
+    }
+  ],
+  "ultra-sun": [
+    {
+      "id": "tauros",
+      "name": "Tauros-Rammbock",
+      "place": "Lili'i (Mele-Mele)",
+      "how": "Mit dem PokéMobil-Funk nach dem Sieg über Inselkönig Hala; zertrümmert Felsen, schnelles Reiten",
+      "badge": "grand-hala"
+    },
+    {
+      "id": "stoutland",
+      "name": "Bissbark-Detektor",
+      "place": "Ohana-Farm (Akala)",
+      "how": "Von Captain Maho, nachdem das Tauros auf der Farm beruhigt ist; findet versteckte Items"
+    },
+    {
+      "id": "lapras",
+      "name": "Lapras-Wellenritt",
+      "place": "Plätscherhügel (Akala)",
+      "how": "Von Captain Tracy auf dem Weg zu ihrer Prüfung; surfen und angeln"
+    },
+    {
+      "id": "charizard",
+      "name": "Glurak-Flieger",
+      "place": "Wela-Vulkanpark (Akala)",
+      "how": "Von Captain Kiawe nach seiner Prüfung; Ersatz für Fliegen",
+      "badge": "trial-kiawe"
+    },
+    {
+      "id": "mudsdale",
+      "name": "Pampross-Galopp",
+      "place": "Route 12 (Ula-Ula)",
+      "how": "Von Hapu'u beim ersten Betreten der Route; geht über steinigen Boden"
+    },
+    {
+      "id": "sharpedo",
+      "name": "Tohaido-Düse",
+      "place": "Route 15 (Ula-Ula)",
+      "how": "Von Astor auf Route 15; schnell über Wasser, zertrümmert Felsen im Wasser"
+    },
+    {
+      "id": "machamp",
+      "name": "Machomei-Stoß",
+      "place": "Alter Pfad von Poni",
+      "how": "Von Hapu'us Großmutter; verschiebt Felsblöcke"
+    }
+  ],
+  "ultra-moon": [
+    {
+      "id": "tauros",
+      "name": "Tauros-Rammbock",
+      "place": "Lili'i (Mele-Mele)",
+      "how": "Mit dem PokéMobil-Funk nach dem Sieg über Inselkönig Hala; zertrümmert Felsen, schnelles Reiten",
+      "badge": "grand-hala"
+    },
+    {
+      "id": "stoutland",
+      "name": "Bissbark-Detektor",
+      "place": "Ohana-Farm (Akala)",
+      "how": "Von Captain Maho, nachdem das Tauros auf der Farm beruhigt ist; findet versteckte Items"
+    },
+    {
+      "id": "lapras",
+      "name": "Lapras-Wellenritt",
+      "place": "Plätscherhügel (Akala)",
+      "how": "Von Captain Tracy auf dem Weg zu ihrer Prüfung; surfen und angeln"
+    },
+    {
+      "id": "charizard",
+      "name": "Glurak-Flieger",
+      "place": "Wela-Vulkanpark (Akala)",
+      "how": "Von Captain Kiawe nach seiner Prüfung; Ersatz für Fliegen",
+      "badge": "trial-kiawe"
+    },
+    {
+      "id": "mudsdale",
+      "name": "Pampross-Galopp",
+      "place": "Route 12 (Ula-Ula)",
+      "how": "Von Hapu'u beim ersten Betreten der Route; geht über steinigen Boden"
+    },
+    {
+      "id": "sharpedo",
+      "name": "Tohaido-Düse",
+      "place": "Route 15 (Ula-Ula)",
+      "how": "Von Astor auf Route 15; schnell über Wasser, zertrümmert Felsen im Wasser"
+    },
+    {
+      "id": "machamp",
+      "name": "Machomei-Stoß",
+      "place": "Alter Pfad von Poni",
+      "how": "Von Hapu'us Großmutter; verschiebt Felsblöcke"
+    }
+  ],
+  "lets-go-pikachu": [
+    {
+      "id": "chop-down",
+      "name": "Spaltschnitt",
+      "place": "M.S. Anne (Orania City)",
+      "how": "Vom Kapitän, nur das Partner-Pokémon lernt es; entfernt Sträucher (ersetzt Zerschneider)"
+    },
+    {
+      "id": "light-up",
+      "name": "Lichtflut",
+      "place": "Route 2 (über Digdas Höhle)",
+      "how": "Von Prof. Eichs Assistent, ab 10 gefangenen Arten (ersetzt Blitz)"
+    },
+    {
+      "id": "sky-dash",
+      "name": "Himmelsritt",
+      "place": "Prismania City",
+      "how": "Von einem NPC vor der Spielhalle nach Erhalt des Silph Scope (ersetzt Fliegen)"
+    },
+    {
+      "id": "strong-push",
+      "name": "Wuchtstoß",
+      "place": "Fuchsania City",
+      "how": "Vom Safari-Zonen-Direktor gegen das Goldene Gebiss (ersetzt Stärke)"
+    },
+    {
+      "id": "sea-skim",
+      "name": "Wellenspurt",
+      "place": "Fuchsania City",
+      "how": "Vom NPC neben dem schwimmenden Lapras (ersetzt Surfer)"
+    }
+  ],
+  "lets-go-eevee": [
+    {
+      "id": "chop-down",
+      "name": "Spaltschnitt",
+      "place": "M.S. Anne (Orania City)",
+      "how": "Vom Kapitän, nur das Partner-Pokémon lernt es; entfernt Sträucher (ersetzt Zerschneider)"
+    },
+    {
+      "id": "light-up",
+      "name": "Lichtflut",
+      "place": "Route 2 (über Digdas Höhle)",
+      "how": "Von Prof. Eichs Assistent, ab 10 gefangenen Arten (ersetzt Blitz)"
+    },
+    {
+      "id": "sky-dash",
+      "name": "Himmelsritt",
+      "place": "Prismania City",
+      "how": "Von einem NPC vor der Spielhalle nach Erhalt des Silph Scope (ersetzt Fliegen)"
+    },
+    {
+      "id": "strong-push",
+      "name": "Wuchtstoß",
+      "place": "Fuchsania City",
+      "how": "Vom Safari-Zonen-Direktor gegen das Goldene Gebiss (ersetzt Stärke)"
+    },
+    {
+      "id": "sea-skim",
+      "name": "Wellenspurt",
+      "place": "Fuchsania City",
+      "how": "Vom NPC neben dem schwimmenden Lapras (ersetzt Surfer)"
+    }
+  ],
+  "sword": [
+    {
+      "id": "bike",
+      "name": "Rotom-Rad (Landmodus)",
+      "place": "Route 5",
+      "how": "Von einem Mann auf Route 5",
+      "badge": "grass"
+    },
+    {
+      "id": "bike-water",
+      "name": "Rotom-Rad (Aquamodus)",
+      "place": "Route 9 (Circhester-Bucht)",
+      "how": "Vom selben Mann nach dem Sieg über Team-Yell-Rüpel; fährt auf Wasser",
+      "badge": "rock"
+    }
+  ],
+  "shield": [
+    {
+      "id": "bike",
+      "name": "Rotom-Rad (Landmodus)",
+      "place": "Route 5",
+      "how": "Von einem Mann auf Route 5",
+      "badge": "grass"
+    },
+    {
+      "id": "bike-water",
+      "name": "Rotom-Rad (Aquamodus)",
+      "place": "Route 9 (Circhester-Bucht)",
+      "how": "Vom selben Mann nach dem Sieg über Team-Yell-Rüpel; fährt auf Wasser",
+      "badge": "ice"
+    }
+  ],
+  "brilliant-diamond": [
+    {
+      "id": "hm-app",
+      "name": "Pokétch-Funktion „VM-Attacken“",
+      "place": "Erzelingen-Tor",
+      "how": "Wilde Pokémon (Bidiza, Bidifas, Staraptor) setzen die Feldattacken ein, sobald der Orden da ist; kein Team-Pokémon nötig"
+    },
+    {
+      "id": "rock-smash",
+      "name": "Zertrümmerer",
+      "place": "Erzelingen-Tor",
+      "how": "Von einem Wanderer",
+      "badge": "coal"
+    },
+    {
+      "id": "cut",
+      "name": "Zerschneider",
+      "place": "Ewigenau",
+      "how": "Von Cynthia",
+      "badge": "forest"
+    },
+    {
+      "id": "fly",
+      "name": "Fliegen",
+      "place": "Schleiede",
+      "how": "Im Lagerhaus von Team Galaktik",
+      "badge": "cobble"
+    },
+    {
+      "id": "defog",
+      "name": "Auflockern",
+      "place": "Großmoor (Weideburg)",
+      "how": "Im Großmoor (Weideburg)",
+      "badge": "fen"
+    },
+    {
+      "id": "surf",
+      "name": "Surfer",
+      "place": "Elyses",
+      "how": "Von Cynthias Großmutter nach dem Sieg über Team Galaktik",
+      "badge": "relic"
+    },
+    {
+      "id": "strength",
+      "name": "Stärke",
+      "place": "Turm der Ruhenden (Route 209)",
+      "how": "Von einer alten Frau oben im Turm",
+      "badge": "mine"
+    },
+    {
+      "id": "rock-climb",
+      "name": "Kraxler",
+      "place": "Route 217",
+      "how": "Auf der Route",
+      "badge": "icicle"
+    },
+    {
+      "id": "waterfall",
+      "name": "Kaskade",
+      "place": "Sonnewik",
+      "how": "Von Jasmin nach dem Sieg über Volkner",
+      "badge": "beacon"
+    }
+  ],
+  "shining-pearl": [
+    {
+      "id": "hm-app",
+      "name": "Pokétch-Funktion „VM-Attacken“",
+      "place": "Erzelingen-Tor",
+      "how": "Wilde Pokémon (Bidiza, Bidifas, Staraptor) setzen die Feldattacken ein, sobald der Orden da ist; kein Team-Pokémon nötig"
+    },
+    {
+      "id": "rock-smash",
+      "name": "Zertrümmerer",
+      "place": "Erzelingen-Tor",
+      "how": "Von einem Wanderer",
+      "badge": "coal"
+    },
+    {
+      "id": "cut",
+      "name": "Zerschneider",
+      "place": "Ewigenau",
+      "how": "Von Cynthia",
+      "badge": "forest"
+    },
+    {
+      "id": "fly",
+      "name": "Fliegen",
+      "place": "Schleiede",
+      "how": "Im Lagerhaus von Team Galaktik",
+      "badge": "cobble"
+    },
+    {
+      "id": "defog",
+      "name": "Auflockern",
+      "place": "Großmoor (Weideburg)",
+      "how": "Im Großmoor (Weideburg)",
+      "badge": "fen"
+    },
+    {
+      "id": "surf",
+      "name": "Surfer",
+      "place": "Elyses",
+      "how": "Von Cynthias Großmutter nach dem Sieg über Team Galaktik",
+      "badge": "relic"
+    },
+    {
+      "id": "strength",
+      "name": "Stärke",
+      "place": "Turm der Ruhenden (Route 209)",
+      "how": "Von einer alten Frau oben im Turm",
+      "badge": "mine"
+    },
+    {
+      "id": "rock-climb",
+      "name": "Kraxler",
+      "place": "Route 217",
+      "how": "Auf der Route",
+      "badge": "icicle"
+    },
+    {
+      "id": "waterfall",
+      "name": "Kaskade",
+      "place": "Sonnewik",
+      "how": "Von Jasmin nach dem Sieg über Volkner",
+      "badge": "beacon"
+    }
+  ],
+  "legends-arceus": [
+    {
+      "id": "wyrdeer",
+      "name": "Damythir",
+      "place": "Geweihanhöhe (Obsidian-Grasland)",
+      "how": "Nach der Besänftigung von Axantor; schnelleres Fortbewegen, Springen",
+      "badge": "kleavor"
+    },
+    {
+      "id": "ursaluna",
+      "name": "Ursaluna",
+      "place": "Prankenplatz (Rotes Sumpfland)",
+      "how": "Nach Hisui-Dressella; Schatzsuche nach versteckten Items",
+      "badge": "lilligant"
+    },
+    {
+      "id": "basculegion",
+      "name": "Salmagnis-Ritt",
+      "place": "Ginkgo-Strand (Kobalt-Küstenland)",
+      "how": "Nach Hisui-Arkani; Wasser überqueren",
+      "badge": "arcanine"
+    },
+    {
+      "id": "sneasler",
+      "name": "Snieboss-Transport",
+      "place": "Kletterklippe (Kraterberg-Hochland)",
+      "how": "Nach Hisui-Lektrobal; Klippen klettern",
+      "badge": "electrode"
+    },
+    {
+      "id": "braviary",
+      "name": "Washakwil-Gleitflug",
+      "place": "Blizzard-Tempel (Weißes Frostland)",
+      "how": "Nach Hisui-Arktilas; fliegen/gleiten",
+      "badge": "avalugg"
+    }
+  ],
+  "scarlet": [
+    {
+      "id": "dash",
+      "name": "Sprint",
+      "place": "Südliche Zone 3",
+      "how": "Nach dem Herrscher der Steinklippe",
+      "badge": "titan-rock"
+    },
+    {
+      "id": "swim",
+      "name": "Wellenreiten",
+      "place": "Westliche Zone 1",
+      "how": "Nach dem Herrscher des weiten Himmels",
+      "badge": "titan-flying"
+    },
+    {
+      "id": "high-jump",
+      "name": "Hochsprung",
+      "place": "Östliche Zone 3",
+      "how": "Nach dem Herrscher des verborgenen Stahls",
+      "badge": "titan-steel"
+    },
+    {
+      "id": "glide",
+      "name": "Gleiten",
+      "place": "Brutzelwüste",
+      "how": "Nach dem Herrscher der bebenden Erde",
+      "badge": "titan-ground"
+    },
+    {
+      "id": "climb",
+      "name": "Klettern",
+      "place": "Caldero-See",
+      "how": "Nach dem Herrscher der Drachentäuschung",
+      "badge": "titan-dragon"
+    },
+    {
+      "id": "fly",
+      "name": "Flug",
+      "place": "Blaubeer-Akademie",
+      "how": "Nur mit DLC „Die Indigoblaue Scheibe“, nach dessen Hauptgeschichte"
+    }
+  ],
+  "violet": [
+    {
+      "id": "dash",
+      "name": "Sprint",
+      "place": "Südliche Zone 3",
+      "how": "Nach dem Herrscher der Steinklippe",
+      "badge": "titan-rock"
+    },
+    {
+      "id": "swim",
+      "name": "Wellenreiten",
+      "place": "Westliche Zone 1",
+      "how": "Nach dem Herrscher des weiten Himmels",
+      "badge": "titan-flying"
+    },
+    {
+      "id": "high-jump",
+      "name": "Hochsprung",
+      "place": "Östliche Zone 3",
+      "how": "Nach dem Herrscher des verborgenen Stahls",
+      "badge": "titan-steel"
+    },
+    {
+      "id": "glide",
+      "name": "Gleiten",
+      "place": "Brutzelwüste",
+      "how": "Nach dem Herrscher der bebenden Erde",
+      "badge": "titan-ground"
+    },
+    {
+      "id": "climb",
+      "name": "Klettern",
+      "place": "Caldero-See",
+      "how": "Nach dem Herrscher der Drachentäuschung",
+      "badge": "titan-dragon"
+    },
+    {
+      "id": "fly",
+      "name": "Flug",
+      "place": "Blaubeer-Akademie",
+      "how": "Nur mit DLC „Die Indigoblaue Scheibe“, nach dessen Hauptgeschichte"
+    }
+  ]
+}

@@ -116,6 +116,18 @@ export interface Badge {
   sprite?: string;
 }
 
+/** static/data/field-moves.json – Record<gameId, FieldMove[]>, in Erhalt-Reihenfolge. */
+export interface FieldMove {
+  id: string;
+  /** z. B. "VM01 Zerschneider", "Glurak-Flieger", "Sprint" */
+  name: string;
+  place: string;
+  /** wie/wann man sie bekommt */
+  how: string;
+  /** Badge.id desselben Spiels, die zur Nutzung nötig ist bzw. sie freischaltet */
+  badge?: string;
+}
+
 // ---------- Run-Daten (App-Data-Dir/runs/<id>.json) ----------
 
 // Muss mit SCHEMA_VERSION in src-tauri/src/lib.rs übereinstimmen.
@@ -195,6 +207,8 @@ export interface Run {
   team?: TeamMember[];
   /** Erhaltene Orden (Badge.id des Spiels). Fehlt in älteren Runs. */
   badges?: string[];
+  /** Abgehakte FieldMove.id. Fehlt in älteren Runs. */
+  fieldMoves?: string[];
   /** ms seit Epoch */
   createdAt: number;
   updatedAt: number;

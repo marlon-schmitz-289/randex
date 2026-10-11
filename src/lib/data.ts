@@ -1,5 +1,5 @@
 import { CATEGORIES } from "./types.ts";
-import type { Ability, Badge, Category, Game, Location, Move, RegionMap, Species, TypeInfo } from "./types.ts";
+import type { Ability, Badge, Category, FieldMove, Game, Location, Move, RegionMap, Species, TypeInfo } from "./types.ts";
 
 export interface GameData {
   game: Game;
@@ -80,6 +80,10 @@ export function loadRegionMap(region: string): Promise<RegionMap> {
 /** Orden/Prüfungen des Spiels; unbekanntes Spiel → []. */
 export const loadBadges = async (gameId: string): Promise<Badge[]> =>
   (await baseFile<Record<string, Badge[]>>("badges"))[gameId] ?? [];
+
+/** Feldfähigkeiten (VMs, PokéMobil, Reit-Pokémon …) des Spiels; unbekanntes Spiel → []. */
+export const loadFieldMoves = async (gameId: string): Promise<FieldMove[]> =>
+  (await baseFile<Record<string, FieldMove[]>>("field-moves"))[gameId] ?? [];
 
 export function categoriesForGeneration(gen: number): Category[] {
   return CATEGORIES.filter((c) => c !== "abilities" || gen >= ABILITIES_FROM_GEN);
