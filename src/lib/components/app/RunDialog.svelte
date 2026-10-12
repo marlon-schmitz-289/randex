@@ -9,7 +9,7 @@
   import { Textarea } from "$lib/components/ui/textarea/index.js";
   import { categoriesForGeneration } from "$lib/data.ts";
   import { app, createRun, DEFAULT_CATEGORIES, updateRunMeta } from "$lib/runs.svelte.ts";
-  import { CATEGORY_LABELS, WILD_MATCHING_LABELS, type Category, type Game, type Run, type WildMatching } from "$lib/types.ts";
+  import { CATEGORY_LABELS, SAVE_GAMES, WILD_MATCHING_LABELS, type Category, type Game, type Run, type WildMatching } from "$lib/types.ts";
 
   let { open = $bindable(false), run }: { open?: boolean; run?: Run } = $props();
 
@@ -20,6 +20,7 @@
   let categories = $state<Category[]>([]);
   let matching = $state<WildMatching | "off">("off");
   let randomized = $state(true);
+  let saveGame = $state(false);
   let busy = $state(false);
 
   const groups = $derived.by(() => {
@@ -42,6 +43,7 @@
       categories = [...(run?.enabledCategories ?? DEFAULT_CATEGORIES)];
       matching = run?.wildMatching ?? "off";
       randomized = run?.randomized !== false;
+      saveGame = run?.saveGame === true;
     });
   });
 
@@ -61,6 +63,7 @@
       enabledCategories: categories.filter((c) => allowed.includes(c)),
       wildMatching: matching === "off" ? undefined : matching,
       randomized: randomized ? undefined : (false as const),
+      saveGame: saveGame && SAVE_GAMES.has(gameId) ? (true as const) : undefined,
     };
     if (await (run ? updateRunMeta(input) : createRun(input))) open = false;
     busy = false;
@@ -120,6 +123,18 @@
         </div>
         <p class="text-xs text-muted-foreground">Aus: Originaldaten des Spiels nachschlagen statt eintragen.</p>
       </div>
+
+      {#if SAVE_GAMES.has(gameId)}
+        <div class="grid gap-1.5">
+          <div class="flex items-center gap-2">
+            <Switch id="run-save" bind:checked={saveGame} />
+            <Label for="run-save">Spielstand einlesen</Label>
+          </div>
+          <p class="text-xs text-muted-foreground">
+            Zeigt Team mit Werten, Boxen und Beutel aus der Spielstand-Datei des Emulators.
+          </p>
+        </div>
+      {/if}
 
       {#if randomized}
         <div class="grid gap-1.5">

@@ -257,6 +257,10 @@ export interface Run {
   badges?: string[];
   /** Abgehakte FieldMove.id. Fehlt in älteren Runs. */
   fieldMoves?: string[];
+  /** Spielstand-Ansicht an; nur `true` wird gespeichert. */
+  saveGame?: true;
+  /** Zuletzt eingelesener Spielstand; bleibt beim Ausschalten erhalten. */
+  save?: SaveSnapshot;
   /** ms seit Epoch */
   createdAt: number;
   updatedAt: number;
@@ -278,6 +282,73 @@ export interface TeamMember {
 
 export const TEAM_SIZE = 6;
 
+// ---------- Spielstand (src-tauri/src/savefile.rs, static/data/savegame.json) ----------
+
+/** Gen-3-Spiele (Feuerrot/Blattgrün eingeschlossen) und Gen 5 */
+export const SAVE_GAMES = new Set(["ruby", "sapphire", "emerald", "firered", "leafgreen", "black", "white", "black-2", "white-2"]);
+
+export interface PartyStats {
+  hp: number;
+  maxHp: number;
+  atk: number;
+  def: number;
+  spa: number;
+  spd: number;
+  spe: number;
+}
+
+export interface SaveMon {
+  speciesId: number;
+  /** Gen 3 auch ohne Spitzname gesetzt (Artname in Großbuchstaben) */
+  nickname: string | null;
+  exp: number;
+  /** Item-Nummer der Generation, 0 = keins */
+  item: number;
+  /** Move-IDs (wie moves.json) */
+  moves: number[];
+  /** Wesen-Nummer im Spiel (0–24), Name in SavegameData.natures */
+  nature: number;
+  ivs: Stats;
+  evs: Stats;
+  /** Nur im Team */
+  level?: number;
+  stats?: PartyStats;
+}
+
+export interface SaveBox {
+  name: string;
+  /** 30 Plätze, null = leer */
+  mons: (SaveMon | null)[];
+}
+
+export type PocketId = "items" | "keyItems" | "balls" | "tms" | "berries" | "medicine" | "pc";
+
+export interface SavePocket {
+  id: PocketId;
+  /** [Item-Nummer, Anzahl] */
+  items: [number, number][];
+}
+
+export interface SaveSnapshot {
+  /** ms seit Epoch */
+  readAt: number;
+  team: SaveMon[];
+  boxes: SaveBox[];
+  bag: SavePocket[];
+}
+
+/** static/data/savegame.json */
+export interface SavegameData {
+  /** Generation → Item-Nummer → Name */
+  items: Record<string, Record<string, string>>;
+  /** Species-ID → Wachstumsrate (1–6) */
+  growth: number[];
+  /** [Wachstumsrate - 1][Level - 1] = EXP ab diesem Level */
+  experience: number[][];
+  /** Deutsche Wesen-Namen nach Nummer im Spiel */
+  natures: string[];
+}
+
 export interface RunSummary {
   id: string;
   name: string;
@@ -290,4 +361,4 @@ export interface Sighting {
   method: EncounterMethod;
 }
 
-export type View = "pokemon" | "routes" | "progress";
+export type View = "pokemon" | "routes" | "progress" | "save";

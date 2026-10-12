@@ -1,6 +1,7 @@
 import { CATEGORIES } from "./types.ts";
 import type {
-  Ability, Badge, Category, Encounters, FieldMove, Game, Location, Move, OriginalData, RegionMap, Species, TypeInfo,
+  Ability, Badge, Category, Encounters, FieldMove, Game, Location, Move, OriginalData, RegionMap, SavegameData, Species,
+  TypeInfo,
 } from "./types.ts";
 
 export interface GameData {
@@ -86,6 +87,9 @@ export const loadBadges = async (gameId: string): Promise<Badge[]> =>
 /** Feldfähigkeiten (VMs, PokéMobil, Reit-Pokémon …) des Spiels; unbekanntes Spiel → []. */
 export const loadFieldMoves = async (gameId: string): Promise<FieldMove[]> =>
   (await baseFile<Record<string, FieldMove[]>>("field-moves"))[gameId] ?? [];
+
+/** Item-Namen und EXP-Kurven für die Spielstand-Ansicht */
+export const loadSavegameData = (): Promise<SavegameData> => baseFile<SavegameData>("savegame");
 
 export interface Original extends OriginalData {
   movesById: Map<number, string>;

@@ -7,8 +7,12 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use tauri::Manager;
 use tauri_plugin_dialog::{DialogExt, FileDialogBuilder};
 
+mod savefile;
+
 const SCHEMA_VERSION: u64 = 1;
 const MAX_JSON_BYTES: u64 = 50 * 1024 * 1024;
+// Größter unterstützter Spielstand: NDS 512 KiB (+ Emulator-Fußzeile)
+const MAX_SAVE_BYTES: u64 = 1024 * 1024;
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
@@ -137,8 +141,13 @@ fn validate_import(run: &Value) -> Result<(), String> {
             return Err(format!("Feld „{key}“ ist keine Liste"));
         }
     }
-    if run.get("randomized").is_some_and(|v| !v.is_boolean()) {
-        return Err("Feld „randomized“ ist kein Wahrheitswert".into());
+    if run.get("save").is_some_and(|v| !v.is_object()) {
+        return Err("Feld „save“ ist kein Objekt".into());
+    }
+    for key in ["randomized", "saveGame"] {
+        if run.get(key).is_some_and(|v| !v.is_boolean()) {
+            return Err(format!("Feld „{key}“ ist kein Wahrheitswert"));
+        }
     }
     match run.get("schemaVersion").and_then(Value::as_u64) {
         Some(v) if v <= SCHEMA_VERSION => Ok(()),
@@ -201,6 +210,20 @@ fn import_run(app: tauri::AppHandle) -> Result<Option<Value>, String> {
     picked(json_dialog(&app).blocking_pick_file())?.map(|p| import_from(&p)).transpose()
 }
 
+fn read_save_from(path: &Path, game_id: &str) -> Result<savefile::SaveData, String> {
+    let len = fs::metadata(path).map_err(|e| format!("Lesen fehlgeschlagen: {e}"))?.len();
+    if len > MAX_SAVE_BYTES {
+        return Err("Datei ist zu groß für einen Spielstand".into());
+    }
+    savefile::parse(game_id, &fs::read(path).map_err(|e| format!("Lesen fehlgeschlagen: {e}"))?)
+}
+
+#[tauri::command(async)]
+fn read_save(app: tauri::AppHandle, game_id: String) -> Result<Option<savefile::SaveData>, String> {
+    let dialog = app.dialog().file().add_filter("Spielstand", &["sav", "dsv", "srm"]);
+    picked(dialog.blocking_pick_file())?.map(|p| read_save_from(&p, &game_id)).transpose()
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let result = tauri::Builder::default()
@@ -208,7 +231,7 @@ pub fn run() {
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
         .invoke_handler(tauri::generate_handler![
-            list_runs, load_run, save_run, delete_run, export_run, import_run
+            list_runs, load_run, save_run, delete_run, export_run, import_run, read_save
         ])
         .run(tauri::generate_context!());
     if let Err(e) = result {
@@ -312,6 +335,12 @@ mod tests {
         r["randomized"] = json!(false);
         assert!(validate_import(&r).is_ok());
         r["randomized"] = json!("nein");
+        assert!(validate_import(&r).is_err());
+        let mut r = run("a", 1);
+        r["saveGame"] = json!(true);
+        r["save"] = json!({"team": []});
+        assert!(validate_import(&r).is_ok());
+        r["save"] = json!([]);
         assert!(validate_import(&r).is_err());
         let mut r = run("a", 1);
         r.as_object_mut().unwrap().remove("schemaVersion");

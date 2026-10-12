@@ -16,6 +16,7 @@
   import Trash from "@lucide/svelte/icons/trash-2";
   import Upload from "@lucide/svelte/icons/upload";
   import BookOpen from "@lucide/svelte/icons/book-open";
+  import Gamepad from "@lucide/svelte/icons/gamepad-2";
   import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
   import * as Tabs from "$lib/components/ui/tabs/index.js";
@@ -33,6 +34,7 @@
   import PokemonDetail from "./PokemonDetail.svelte";
   import EncounterView from "./encounter/EncounterView.svelte";
   import ProgressView from "./ProgressView.svelte";
+  import SaveView from "./SaveView.svelte";
 
   const activeTab =
     "data-active:bg-primary data-active:text-primary-foreground dark:data-active:border-primary dark:data-active:bg-primary dark:data-active:text-primary-foreground";
@@ -60,7 +62,7 @@
     }
   }
 
-  const isView = (v: string): v is View => v === "pokemon" || v === "routes" || v === "progress";
+  const isView = (v: string): v is View => v === "pokemon" || v === "routes" || v === "progress" || v === "save";
 </script>
 
 <div class="flex h-dvh flex-col">
@@ -109,6 +111,9 @@
           <Tabs.Trigger value="pokemon" class={activeTab}><BookOpen /> Pokémon</Tabs.Trigger>
           <Tabs.Trigger value="routes" class={activeTab}><MapIcon /> Routen</Tabs.Trigger>
           <Tabs.Trigger value="progress" class={activeTab}><Trophy /> Fortschritt</Tabs.Trigger>
+          {#if app.current.saveGame}
+            <Tabs.Trigger value="save" class={activeTab}><Gamepad /> Spielstand</Tabs.Trigger>
+          {/if}
         </Tabs.List>
       </Tabs.Root>
 
@@ -159,6 +164,8 @@
         </div>
       {:else if app.view === "routes"}
         <EncounterView />
+      {:else if app.view === "save"}
+        <SaveView />
       {:else}
         <ProgressView />
       {/if}

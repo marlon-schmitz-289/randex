@@ -55,6 +55,7 @@ als `serde_json::Value`; es prüft nur `id` (`[A-Za-z0-9-]+`), bei Import zusät
 | `delete_run({ id })` | `void` |
 | `export_run({ run })` | `boolean` (false = Dialog abgebrochen; hübsch formatiertes JSON) |
 | `import_run()` | `Run \| null` (geprüft, **nicht** gespeichert; null = abgebrochen) |
+| `read_save({ gameId })` | Team, Boxen, Beutel, Orden-Bits oder `null` (Dialog abgebrochen); Parser in `savefile.rs` (Gen 3, 5) |
 
 Export/Import öffnen den Dateidialog im Backend (`tauri-plugin-dialog`, Filter `json`); das Webview
 übergibt keine Pfade und braucht keine Dialog-Permissions.
@@ -147,3 +148,4 @@ Alle Komponenten lesen/schreiben über `app` und die Funktionen aus `runs.svelte
 | `encounter/EncounterView.svelte`, `encounter/*` | – Ortsliste (Suche, `app.selectedLocationId`), Editor pro Methode, `SpeciesPicker` (`allowFreeText=false`), Methode hinzufügen, eigene Orte anlegen/löschen; ohne Randomizer schreibgeschützt mit Level aus `app.original`; Klick auf Pokémon → `showSpecies` |
 | `encounter/RegionMap.svelte` | – schematische Regionskarte (`loadRegionMap`), Klick auf Ort → Encounter-Liste |
 | `ProgressView.svelte` | – Team (bis 6), Orden (`loadBadges`) und Feldfähigkeiten (`loadFieldMoves`) zum Abhaken |
+| `SaveView.svelte` | – nur mit `run.saveGame`: Spielstand laden (`importSave`), Unter-Tabs Team/Boxen/Beutel aus `run.save` (`loadSavegameData`) |

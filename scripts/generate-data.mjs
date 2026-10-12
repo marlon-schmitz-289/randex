@@ -13,6 +13,9 @@ const SPRITE_BASE = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sp
 const DE = 6;
 const EN = 9;
 const MAX_SPECIES = 1025;
+// Spielstand-Import: Generationen und höchste Dex-Nr. (Gen 5)
+const SAVE_GENERATIONS = [3, 5];
+const MAX_SAVE_SPECIES = 649;
 
 const TYPE_ORDER = [
   "normal", "fire", "water", "grass", "electric", "ice", "fighting", "poison", "ground",
@@ -343,14 +346,15 @@ async function main() {
     typeRows, typeNames, regions, locations, locationNames, areas, encounters, slots, methods, pokemonRows,
     conditions, conditionValues, conditionMap, pokemonTypes, pokemonTypesPast, pokemonAbilities, pokemonAbilitiesPast,
     pokemonStats, pokemonStatsPast, pokemonMoves, machines, items, itemNames, evolutionRows, evolutionTriggers,
-    pokemonForms] = await Promise.all([
+    pokemonForms, itemIndices, experience, natures, natureNames] = await Promise.all([
     "versions", "version_groups", "pokemon_species", "pokemon_species_names", "moves", "move_names",
     "abilities", "ability_names", "types", "type_names", "regions", "locations", "location_names", "location_areas",
     "encounters", "encounter_slots", "encounter_methods", "pokemon",
     "encounter_conditions", "encounter_condition_values", "encounter_condition_value_map",
     "pokemon_types", "pokemon_types_past", "pokemon_abilities", "pokemon_abilities_past",
     "pokemon_stats", "pokemon_stats_past", "pokemon_moves", "machines", "items", "item_names",
-    "pokemon_evolution", "evolution_triggers", "pokemon_forms",
+    "pokemon_evolution", "evolution_triggers", "pokemon_forms", "item_game_indices", "experience",
+    "natures", "nature_names",
   ].map(csv));
 
   const groupGen = new Map(versionGroups.map((g) => [g.id, +g.generation_id]));
@@ -502,6 +506,19 @@ async function main() {
   const moveIds = new Set(moves.map((m) => m.id));
   const itemSlug = new Map(items.map((i) => [i.id, i.identifier]));
   const iName = names(itemNames, "item_id");
+
+  // Spielstand-Import (src-tauri/src/savefile.rs): Item-Nummern je Generation, EXP-Kurven für das Level in Boxen
+  const saveItems = {};
+  for (const r of itemIndices.filter((r) => SAVE_GENERATIONS.includes(+r.generation_id))) {
+    (saveItems[r.generation_id] ??= {})[r.game_index] = iName(+r.item_id) ?? humanize(itemSlug.get(r.item_id));
+  }
+  const growth = [0, ...speciesRows.filter((r) => +r.id <= MAX_SAVE_SPECIES).sort((a, b) => a.id - b.id).map((r) => +r.growth_rate_id)];
+  // experience[growth - 1][level - 1] = EXP ab diesem Level
+  const expCurves = [...group(experience, "growth_rate_id")].sort(([a], [b]) => a - b)
+    .map(([, rows]) => rows.sort((a, b) => a.level - b.level).map((r) => +r.experience));
+  const nName = names(natureNames, "nature_id");
+  const natureList = natures.sort((a, b) => a.game_index - b.game_index).map((n) => nName(+n.id) ?? n.identifier);
+  await json(path.join(DATA, "savegame.json"), { items: saveItems, growth, experience: expCurves, natures: natureList });
   const machineLabel = new Map(machines.map((m) => [`${m.version_group_id}:${m.move_id}`,
     itemSlug.get(m.item_id).replace(/^hm/, "vm").toUpperCase()]));
   const typeSlug = new Map(typeRows.map((t) => [t.id, t.identifier]));

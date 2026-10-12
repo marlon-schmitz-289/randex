@@ -82,6 +82,13 @@ Bekannte Grenzen (Datenlage in PokeAPI):
 - Orden bzw. Prüfungen, Titanen usw. des Spiels zum Abhaken
 - Feldfähigkeiten (VMs, PokéMobil, Geheimtechniken, Reit-Pokémon, Koraidon/Miraidon, Rotom-Rad) mit Fundort zum Abhaken
 
+### Spielstand
+
+- Pro Run zuschaltbar (Gen 3 und 5): Spielstand-Datei des Emulators einlesen (`.sav`, `.dsv`, `.srm`)
+- Tab „Spielstand“ mit Team (Level, KP, Werte, Attacken, Item), Boxen (Level aus EXP) und Beutel
+- Übernimmt Team und Orden in den Fortschritt
+- Formate nach PKHeX; Item-Nummern und EXP-Kurven aus PokeAPI (`static/data/savegame.json`)
+
 ### Daten
 
 - Stammdaten (Pokémon-Namen, Dex-Nr., Sprites, Attacken-, Fähigkeiten-, Typenlisten) werden
