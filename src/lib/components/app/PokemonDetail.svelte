@@ -25,8 +25,9 @@
   const original = $derived(id === null ? undefined : app.original?.pokemon[id]);
   const headerTypes = $derived(app.original ? (original?.types ?? []) : types);
   // Ohne Originaldaten zur Art bleiben nur Fundorte und Notiz.
-  // Breit paarweise nebeneinander (Typen | Fähigkeiten, Attacken | Entwicklungen, Stats | Fundorte, Fangchance | Notiz)
-  const PAIRED_ORDER: Category[] = ["types", "abilities", "moves", "evolutions", "stats", "locations", "catch", "note"];
+  // Breit paarweise nebeneinander, Paare teilen die Höhe: kurze zu kurzen, lange zu langen
+  // (Typen | Entwicklungen, Fähigkeiten | Stats, Attacken | Fundorte, Fangchance | Notiz)
+  const PAIRED_ORDER: Category[] = ["types", "evolutions", "abilities", "stats", "moves", "locations", "catch", "note"];
   const categories = $derived(
     app.original && !original ? app.activeCategories.filter((c) => c === "locations" || c === "note") : app.activeCategories,
   );
