@@ -30,9 +30,6 @@
 </script>
 
 <Panel title="Pokédex {app.dex?.name ?? 'National'}" class="h-full" bodyClass="flex min-h-0 flex-col gap-3">
-  {#snippet actions()}
-    <DexSelect />
-  {/snippet}
   <div class="flex items-center gap-3">
     <StatBar value={done} max={total || 1} class="bg-primary" />
     <span class="shrink-0 text-sm tabular-nums">
@@ -44,6 +41,7 @@
       <Search class="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
       <Input bind:value={query} placeholder="Name oder Nummer …" class="pl-8" aria-label="Pokédex durchsuchen" />
     </div>
+    <DexSelect />
     <ToggleGroup.Root
       type="single"
       variant="outline"
