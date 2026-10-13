@@ -10,6 +10,9 @@ const SPRITES = path.join(ROOT, "static/sprites");
 const EXTRA = path.join(ROOT, "scripts/encounters");
 const CSV = "https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/";
 const SPRITE_BASE = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/";
+// Item-Icons im Gen-8-Stil; item-map.json: "item_<moderne Item-ID>" -> "<ordner>/<name>"
+const ITEMS = path.join(ROOT, "static/items");
+const ITEM_BASE = "https://raw.githubusercontent.com/msikma/pokesprite/master/";
 const DE = 6;
 const EN = 9;
 const MAX_SPECIES = 1025;
@@ -318,28 +321,46 @@ async function pool(items, limit, fn) {
   }));
 }
 
+/** Erste vorhandene URL nach `file`; vorhandene Datei bleibt. → "skipped" | "done" | "missing" */
+async function download(file, urls) {
+  if (await access(file).then(() => true, () => false)) return "skipped";
+  for (const url of urls) {
+    const png = await fetchRetry(url);
+    if (!png) continue;
+    // über .tmp, sonst gilt eine abgebrochene Datei beim nächsten Lauf als vorhanden
+    await writeFile(`${file}.tmp`, png);
+    await rename(`${file}.tmp`, file);
+    return "done";
+  }
+  return "missing";
+}
+
 async function sprites() {
   await mkdir(SPRITES, { recursive: true });
   const ids = Array.from({ length: MAX_SPECIES }, (_, i) => i + 1);
   let done = 0, skipped = 0;
   const missing = [];
   await pool(ids, 24, async (id) => {
-    const file = path.join(SPRITES, `${id}.png`);
-    if (await access(file).then(() => true, () => false)) { skipped++; return; }
     const urls = id <= 649 ? [`${SPRITE_BASE}versions/generation-v/black-white/${id}.png`, `${SPRITE_BASE}${id}.png`] : [`${SPRITE_BASE}${id}.png`];
-    for (const url of urls) {
-      const png = await fetchRetry(url);
-      if (!png) continue;
-      // über .tmp, sonst gilt eine abgebrochene Datei beim nächsten Lauf als vorhanden
-      await writeFile(`${file}.tmp`, png);
-      await rename(`${file}.tmp`, file);
-      done++;
-      return;
-    }
-    missing.push(id);
+    const res = await download(path.join(SPRITES, `${id}.png`), urls);
+    if (res === "done") done++;
+    else if (res === "skipped") skipped++;
+    else missing.push(id);
   });
   console.log(`Sprites: ${done} geladen, ${skipped} vorhanden, ${missing.length} fehlen ${missing.join(",")}`);
   if (missing.length) process.exitCode = 1;
+}
+
+/** pokesprite-Pfade ("ball/poke") nach static/items/ball-poke.png; fehlende Dateien werden ausgelassen. */
+async function itemSprites(paths) {
+  await mkdir(ITEMS, { recursive: true });
+  const missing = new Set();
+  await pool([...paths], 24, async (p) => {
+    const res = await download(path.join(ITEMS, `${p.replace("/", "-")}.png`), [`${ITEM_BASE}items/${p}.png`]);
+    if (res === "missing") missing.add(p);
+  });
+  console.log(`Item-Icons: ${paths.size - missing.size}, ohne Datei ${missing.size}`);
+  return missing;
 }
 
 async function main() {
@@ -534,8 +555,39 @@ async function main() {
 
   // Spielstand-Import (src-tauri/src/savefile.rs): Item-Nummern je Generation, EXP-Kurven für das Level in Boxen
   const saveItems = {};
+  const saveIcons = {};
+  const iconMap = JSON.parse((await fetchRetry(`${ITEM_BASE}data/item-map.json`)).toString());
+  // Fallback für Items ohne moderne ID (Briefe, alte Basis-Items …): Dateiname = PokeAPI-Identifier
+  const tree = JSON.parse((await fetchRetry("https://api.github.com/repos/msikma/pokesprite/git/trees/master?recursive=1")).toString());
+  const iconByName = new Map();
+  for (const { path: p } of tree.tree) {
+    const m = p.match(/^items\/(.+\/(.+))\.png$/);
+    if (m && !iconByName.has(m[2])) iconByName.set(m[2], m[1]);
+  }
+  // Ab Gen 5 ist der Spiel-Index die moderne Item-ID
+  const modernId = new Map(itemIndices.filter((r) => +r.generation_id >= 5).map((r) => [r.item_id, r.game_index]));
+  // TM/VM-Disc in Typfarbe der Attacke dieser Generation (item-map kennt nur die heutige Belegung)
+  const moveType = new Map(moveRows.map((m) => [m.id, typeRows.find((t) => t.id === m.type_id)?.identifier]));
+  const discType = new Map(machines.map((m) => [`${groupGen.get(m.version_group_id)}:${m.item_id}`, moveType.get(m.move_id)]));
   for (const r of itemIndices.filter((r) => SAVE_GENERATIONS.includes(+r.generation_id))) {
-    (saveItems[r.generation_id] ??= {})[r.game_index] = iName(+r.item_id) ?? humanize(itemSlug.get(r.item_id));
+    const slug = itemSlug.get(r.item_id);
+    (saveItems[r.generation_id] ??= {})[r.game_index] = iName(+r.item_id) ?? humanize(slug);
+    const disc = /^(tm|hm)\d/.test(slug) && discType.get(`${r.generation_id}:${r.item_id}`);
+    const icon = disc ? `${slug.slice(0, 2)}/${disc}`
+      : iconMap[`item_${String(modernId.get(r.item_id)).padStart(4, "0")}`] ?? iconByName.get(slug)
+      // Datenkarte 01–27 teilen ein Icon
+      ?? iconByName.get(slug.replace(/-\d+$/, ""));
+    if (icon) (saveIcons[r.generation_id] ??= {})[r.game_index] = icon;
+  }
+  // Fortschritt: VM/TM-Discs und Item-Icons der Feldfähigkeiten
+  const fieldIcons = ["normal", "flying", "water", "fighting"].flatMap((t) => [`hm/${t}`, `tm/${t}`])
+    .concat(["key-item/eon-flute", "key-item/rotom-bike-1"]);
+  const noFile = await itemSprites(new Set([...Object.values(saveIcons).flatMap(Object.values), ...fieldIcons]));
+  for (const icons of Object.values(saveIcons)) {
+    for (const [idx, p] of Object.entries(icons)) {
+      if (noFile.has(p)) delete icons[idx];
+      else icons[idx] = p.replace("/", "-");
+    }
   }
   const growth = [0, ...speciesRows.filter((r) => +r.id <= MAX_SAVE_SPECIES).sort((a, b) => a.id - b.id).map((r) => +r.growth_rate_id)];
   // experience[growth - 1][level - 1] = EXP ab diesem Level
@@ -543,7 +595,7 @@ async function main() {
     .map(([, rows]) => rows.sort((a, b) => a.level - b.level).map((r) => +r.experience));
   const nName = names(natureNames, "nature_id");
   const natureList = natures.sort((a, b) => a.game_index - b.game_index).map((n) => nName(+n.id) ?? n.identifier);
-  await json(path.join(DATA, "savegame.json"), { items: saveItems, growth, experience: expCurves, natures: natureList });
+  await json(path.join(DATA, "savegame.json"), { items: saveItems, icons: saveIcons, growth, experience: expCurves, natures: natureList });
   const machineLabel = new Map(machines.map((m) => [`${m.version_group_id}:${m.move_id}`,
     itemSlug.get(m.item_id).replace(/^hm/, "vm").toUpperCase()]));
   const typeSlug = new Map(typeRows.map((t) => [t.id, t.identifier]));

@@ -152,6 +152,10 @@ export interface FieldMove {
   how: string;
   /** Badge.id desselben Spiels, die zur Nutzung nötig ist bzw. sie freischaltet */
   badge?: string;
+  /** Icon: Item-Sprite `static/items/<item>.png` (Äon-Flöte, Rotom-Rad) oder Species-ID (Reit-/Partner-Pokémon);
+   *  sonst VM-Disc bzw. Kreis */
+  item?: string;
+  pokemon?: number;
 }
 
 /**
@@ -349,6 +353,8 @@ export interface SaveSnapshot {
 export interface SavegameData {
   /** Generation → Item-Nummer → Name */
   items: Record<string, Record<string, string>>;
+  /** Generation → Item-Nummer → Icon-Datei in static/items (ohne .png); fehlt = kein Icon */
+  icons: Record<string, Record<string, string>>;
   /** Species-ID → Wachstumsrate (1–6) */
   growth: number[];
   /** [Wachstumsrate - 1][Level - 1] = EXP ab diesem Level */

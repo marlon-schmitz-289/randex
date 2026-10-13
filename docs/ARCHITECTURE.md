@@ -27,9 +27,10 @@ existiert (Species, Typen, Attacken, Fähigkeiten) plus die Orte des Spiels. Fä
 | `data/original/<gameId>.json` | `OriginalData` für Runs ohne Randomizer: Typen/Fähigkeiten/Stats nach Generation, Level- und TM/VM-Attacken der Version-Group, Entwicklungen, Fundorte mit Level |
 | `data/maps/<region>.json` | `RegionMap` (schematisch, von Hand gezeichnet; `src/lib/maps.test.ts` prüft Vollständigkeit) |
 | `data/badges.json` | `Record<gameId, Badge[]>` (von Hand gepflegt) |
-| `data/field-moves.json` | `Record<gameId, FieldMove[]>` (von Hand gepflegt; `badge` → `Badge.id` desselben Spiels) |
+| `data/field-moves.json` | `Record<gameId, FieldMove[]>` (von Hand gepflegt; `badge` → `Badge.id` desselben Spiels, Icon: `item` → `items/<item>.png`, sonst `pokemon` = Species-ID) |
 | `sprites/<speciesId>.png` | 96×96 Front-Sprite |
 | `badges/<n>.png` | Orden-Bilder (PokeAPI-Nummerierung) |
+| `items/<ordner>-<name>.png` | 32×32 Item-Icons (msikma/pokesprite, Gen-8-Stil) für Beutel, getragene Items und Feldfähigkeiten |
 
 Erzeugt von `npm run generate` (`scripts/generate-data.mjs`; PokeAPI, deutsche Namen, Fallback englisch;
 `maps/`, `badges.json` und `field-moves.json` fasst es nicht an).

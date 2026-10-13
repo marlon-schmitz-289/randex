@@ -1,10 +1,11 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { calcStats, itemName, levelOf, natureEffect, ownNickname } from "./savegame.ts";
+import { calcStats, itemIcon, itemName, levelOf, natureEffect, ownNickname } from "./savegame.ts";
 import type { SavegameData, SaveMon } from "./types.ts";
 
 const data: SavegameData = {
   items: { 5: { 17: "Trank" } },
+  icons: { 5: { 17: "medicine-potion" } },
   growth: [0, 2],
   experience: [[], [0, 8, 27, 64]],
   natures: [],
@@ -25,6 +26,8 @@ test("levelOf", () => {
 test("itemName", () => {
   assert.equal(itemName(data, 5, 17), "Trank");
   assert.equal(itemName(data, 3, 17), "Item #17");
+  assert.equal(itemIcon(data, 5, 17), "/items/medicine-potion.png");
+  assert.equal(itemIcon(data, 3, 17), undefined);
 });
 
 test("ownNickname", () => {

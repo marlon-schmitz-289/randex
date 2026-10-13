@@ -1,9 +1,10 @@
 <script lang="ts">
   import { app, showSpecies } from "$lib/runs.svelte.ts";
-  import { calcStats, itemName, levelOf, natureEffect, ownNickname } from "$lib/savegame.ts";
+  import { calcStats, itemIcon, itemName, levelOf, natureEffect, ownNickname } from "$lib/savegame.ts";
   import { Hint, Panel } from "$lib/components/kit";
   import type { SavegameData, SaveMon, Stats } from "$lib/types.ts";
   import { STATS } from "./detail/StatsEditor.svelte";
+  import ItemIcon from "./ItemIcon.svelte";
   import Sprite from "./list/Sprite.svelte";
 
   const MOVE_SLOTS = [0, 1, 2, 3];
@@ -18,6 +19,7 @@
   const stats: Stats | undefined = $derived(
     mon.stats ? { ...mon.stats, hp: mon.stats.maxHp } : base && calcStats(base, mon, level),
   );
+  const generation = $derived(app.data?.game.generation ?? 0);
   const moveNames = $derived(new Map(app.data?.moves.map((m) => [m.id, m.name])));
 </script>
 
@@ -44,7 +46,14 @@
         <dt class="text-muted-foreground">Wesen</dt>
         <dd class="truncate">{data.natures[mon.nature] ?? "?"}</dd>
         <dt class="text-muted-foreground">Item</dt>
-        <dd class="truncate">{mon.item ? itemName(data, app.data?.game.generation ?? 0, mon.item) : "–"}</dd>
+        {#if mon.item}
+          <dd class="flex min-w-0 items-center gap-1">
+            <ItemIcon class="-my-2" src={itemIcon(data, generation, mon.item)} />
+            <span class="truncate">{itemName(data, generation, mon.item)}</span>
+          </dd>
+        {:else}
+          <dd>–</dd>
+        {/if}
       </dl>
     </div>
 

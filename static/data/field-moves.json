@@ -1132,7 +1132,8 @@
       "id": "soar",
       "name": "Überflieger (Äon-Flöte)",
       "place": "Xeneroville",
-      "how": "Äon-Flöte nach der Krise um Groudon bzw. Kyogre; ruft Latios bzw. Latias"
+      "how": "Äon-Flöte nach der Krise um Groudon bzw. Kyogre; ruft Latios bzw. Latias",
+      "item": "key-item-eon-flute"
     },
     {
       "id": "waterfall",
@@ -1189,7 +1190,8 @@
       "id": "soar",
       "name": "Überflieger (Äon-Flöte)",
       "place": "Xeneroville",
-      "how": "Äon-Flöte nach der Krise um Groudon bzw. Kyogre; ruft Latios bzw. Latias"
+      "how": "Äon-Flöte nach der Krise um Groudon bzw. Kyogre; ruft Latios bzw. Latias",
+      "item": "key-item-eon-flute"
     },
     {
       "id": "waterfall",
@@ -1205,44 +1207,51 @@
       "name": "Tauros-Rammbock",
       "place": "Lili'i (Mele-Mele)",
       "how": "Mit dem PokéMobil-Funk nach dem Sieg über Inselkönig Hala; zertrümmert Felsen, schnelles Reiten",
-      "badge": "grand-hala"
+      "badge": "grand-hala",
+      "pokemon": 128
     },
     {
       "id": "stoutland",
       "name": "Bissbark-Detektor",
       "place": "Ohana-Farm (Akala)",
-      "how": "Von Captain Maho, nachdem das Tauros auf der Farm beruhigt ist; findet versteckte Items"
+      "how": "Von Captain Maho, nachdem das Tauros auf der Farm beruhigt ist; findet versteckte Items",
+      "pokemon": 508
     },
     {
       "id": "lapras",
       "name": "Lapras-Wellenritt",
       "place": "Plätscherhügel (Akala)",
-      "how": "Von Captain Tracy auf dem Weg zu ihrer Prüfung; surfen und angeln"
+      "how": "Von Captain Tracy auf dem Weg zu ihrer Prüfung; surfen und angeln",
+      "pokemon": 131
     },
     {
       "id": "charizard",
       "name": "Glurak-Flieger",
       "place": "Wela-Vulkanpark (Akala)",
       "how": "Von Captain Kiawe nach seiner Prüfung; Ersatz für Fliegen",
-      "badge": "trial-kiawe"
+      "badge": "trial-kiawe",
+      "pokemon": 6
     },
     {
       "id": "mudsdale",
       "name": "Pampross-Galopp",
       "place": "Route 12 (Ula-Ula)",
-      "how": "Von Hapu'u beim ersten Betreten der Route; geht über steinigen Boden"
+      "how": "Von Hapu'u beim ersten Betreten der Route; geht über steinigen Boden",
+      "pokemon": 750
     },
     {
       "id": "sharpedo",
       "name": "Tohaido-Düse",
       "place": "Route 15 (Ula-Ula)",
-      "how": "Von Astor auf Route 15; schnell über Wasser, zertrümmert Felsen im Wasser"
+      "how": "Von Astor auf Route 15; schnell über Wasser, zertrümmert Felsen im Wasser",
+      "pokemon": 319
     },
     {
       "id": "machamp",
       "name": "Machomei-Stoß",
       "place": "Alter Pfad von Poni",
-      "how": "Von Hapu'us Großmutter; verschiebt Felsblöcke"
+      "how": "Von Hapu'us Großmutter; verschiebt Felsblöcke",
+      "pokemon": 68
     }
   ],
   "moon": [
@@ -1251,44 +1260,51 @@
       "name": "Tauros-Rammbock",
       "place": "Lili'i (Mele-Mele)",
       "how": "Mit dem PokéMobil-Funk nach dem Sieg über Inselkönig Hala; zertrümmert Felsen, schnelles Reiten",
-      "badge": "grand-hala"
+      "badge": "grand-hala",
+      "pokemon": 128
     },
     {
       "id": "stoutland",
       "name": "Bissbark-Detektor",
       "place": "Ohana-Farm (Akala)",
-      "how": "Von Captain Maho, nachdem das Tauros auf der Farm beruhigt ist; findet versteckte Items"
+      "how": "Von Captain Maho, nachdem das Tauros auf der Farm beruhigt ist; findet versteckte Items",
+      "pokemon": 508
     },
     {
       "id": "lapras",
       "name": "Lapras-Wellenritt",
       "place": "Plätscherhügel (Akala)",
-      "how": "Von Captain Tracy auf dem Weg zu ihrer Prüfung; surfen und angeln"
+      "how": "Von Captain Tracy auf dem Weg zu ihrer Prüfung; surfen und angeln",
+      "pokemon": 131
     },
     {
       "id": "charizard",
       "name": "Glurak-Flieger",
       "place": "Wela-Vulkanpark (Akala)",
       "how": "Von Captain Kiawe nach seiner Prüfung; Ersatz für Fliegen",
-      "badge": "trial-kiawe"
+      "badge": "trial-kiawe",
+      "pokemon": 6
     },
     {
       "id": "mudsdale",
       "name": "Pampross-Galopp",
       "place": "Route 12 (Ula-Ula)",
-      "how": "Von Hapu'u beim ersten Betreten der Route; geht über steinigen Boden"
+      "how": "Von Hapu'u beim ersten Betreten der Route; geht über steinigen Boden",
+      "pokemon": 750
     },
     {
       "id": "sharpedo",
       "name": "Tohaido-Düse",
       "place": "Route 15 (Ula-Ula)",
-      "how": "Von Astor auf Route 15; schnell über Wasser, zertrümmert Felsen im Wasser"
+      "how": "Von Astor auf Route 15; schnell über Wasser, zertrümmert Felsen im Wasser",
+      "pokemon": 319
     },
     {
       "id": "machamp",
       "name": "Machomei-Stoß",
       "place": "Alter Pfad von Poni",
-      "how": "Von Hapu'us Großmutter; verschiebt Felsblöcke"
+      "how": "Von Hapu'us Großmutter; verschiebt Felsblöcke",
+      "pokemon": 68
     }
   ],
   "ultra-sun": [
@@ -1297,44 +1313,51 @@
       "name": "Tauros-Rammbock",
       "place": "Lili'i (Mele-Mele)",
       "how": "Mit dem PokéMobil-Funk nach dem Sieg über Inselkönig Hala; zertrümmert Felsen, schnelles Reiten",
-      "badge": "grand-hala"
+      "badge": "grand-hala",
+      "pokemon": 128
     },
     {
       "id": "stoutland",
       "name": "Bissbark-Detektor",
       "place": "Ohana-Farm (Akala)",
-      "how": "Von Captain Maho, nachdem das Tauros auf der Farm beruhigt ist; findet versteckte Items"
+      "how": "Von Captain Maho, nachdem das Tauros auf der Farm beruhigt ist; findet versteckte Items",
+      "pokemon": 508
     },
     {
       "id": "lapras",
       "name": "Lapras-Wellenritt",
       "place": "Plätscherhügel (Akala)",
-      "how": "Von Captain Tracy auf dem Weg zu ihrer Prüfung; surfen und angeln"
+      "how": "Von Captain Tracy auf dem Weg zu ihrer Prüfung; surfen und angeln",
+      "pokemon": 131
     },
     {
       "id": "charizard",
       "name": "Glurak-Flieger",
       "place": "Wela-Vulkanpark (Akala)",
       "how": "Von Captain Kiawe nach seiner Prüfung; Ersatz für Fliegen",
-      "badge": "trial-kiawe"
+      "badge": "trial-kiawe",
+      "pokemon": 6
     },
     {
       "id": "mudsdale",
       "name": "Pampross-Galopp",
       "place": "Route 12 (Ula-Ula)",
-      "how": "Von Hapu'u beim ersten Betreten der Route; geht über steinigen Boden"
+      "how": "Von Hapu'u beim ersten Betreten der Route; geht über steinigen Boden",
+      "pokemon": 750
     },
     {
       "id": "sharpedo",
       "name": "Tohaido-Düse",
       "place": "Route 15 (Ula-Ula)",
-      "how": "Von Astor auf Route 15; schnell über Wasser, zertrümmert Felsen im Wasser"
+      "how": "Von Astor auf Route 15; schnell über Wasser, zertrümmert Felsen im Wasser",
+      "pokemon": 319
     },
     {
       "id": "machamp",
       "name": "Machomei-Stoß",
       "place": "Alter Pfad von Poni",
-      "how": "Von Hapu'us Großmutter; verschiebt Felsblöcke"
+      "how": "Von Hapu'us Großmutter; verschiebt Felsblöcke",
+      "pokemon": 68
     }
   ],
   "ultra-moon": [
@@ -1343,44 +1366,51 @@
       "name": "Tauros-Rammbock",
       "place": "Lili'i (Mele-Mele)",
       "how": "Mit dem PokéMobil-Funk nach dem Sieg über Inselkönig Hala; zertrümmert Felsen, schnelles Reiten",
-      "badge": "grand-hala"
+      "badge": "grand-hala",
+      "pokemon": 128
     },
     {
       "id": "stoutland",
       "name": "Bissbark-Detektor",
       "place": "Ohana-Farm (Akala)",
-      "how": "Von Captain Maho, nachdem das Tauros auf der Farm beruhigt ist; findet versteckte Items"
+      "how": "Von Captain Maho, nachdem das Tauros auf der Farm beruhigt ist; findet versteckte Items",
+      "pokemon": 508
     },
     {
       "id": "lapras",
       "name": "Lapras-Wellenritt",
       "place": "Plätscherhügel (Akala)",
-      "how": "Von Captain Tracy auf dem Weg zu ihrer Prüfung; surfen und angeln"
+      "how": "Von Captain Tracy auf dem Weg zu ihrer Prüfung; surfen und angeln",
+      "pokemon": 131
     },
     {
       "id": "charizard",
       "name": "Glurak-Flieger",
       "place": "Wela-Vulkanpark (Akala)",
       "how": "Von Captain Kiawe nach seiner Prüfung; Ersatz für Fliegen",
-      "badge": "trial-kiawe"
+      "badge": "trial-kiawe",
+      "pokemon": 6
     },
     {
       "id": "mudsdale",
       "name": "Pampross-Galopp",
       "place": "Route 12 (Ula-Ula)",
-      "how": "Von Hapu'u beim ersten Betreten der Route; geht über steinigen Boden"
+      "how": "Von Hapu'u beim ersten Betreten der Route; geht über steinigen Boden",
+      "pokemon": 750
     },
     {
       "id": "sharpedo",
       "name": "Tohaido-Düse",
       "place": "Route 15 (Ula-Ula)",
-      "how": "Von Astor auf Route 15; schnell über Wasser, zertrümmert Felsen im Wasser"
+      "how": "Von Astor auf Route 15; schnell über Wasser, zertrümmert Felsen im Wasser",
+      "pokemon": 319
     },
     {
       "id": "machamp",
       "name": "Machomei-Stoß",
       "place": "Alter Pfad von Poni",
-      "how": "Von Hapu'us Großmutter; verschiebt Felsblöcke"
+      "how": "Von Hapu'us Großmutter; verschiebt Felsblöcke",
+      "pokemon": 68
     }
   ],
   "lets-go-pikachu": [
@@ -1388,31 +1418,36 @@
       "id": "chop-down",
       "name": "Spaltschnitt",
       "place": "M.S. Anne (Orania City)",
-      "how": "Vom Kapitän, nur das Partner-Pokémon lernt es; entfernt Sträucher (ersetzt Zerschneider)"
+      "how": "Vom Kapitän, nur das Partner-Pokémon lernt es; entfernt Sträucher (ersetzt Zerschneider)",
+      "pokemon": 25
     },
     {
       "id": "light-up",
       "name": "Lichtflut",
       "place": "Route 2 (über Digdas Höhle)",
-      "how": "Von Prof. Eichs Assistent, ab 10 gefangenen Arten (ersetzt Blitz)"
+      "how": "Von Prof. Eichs Assistent, ab 10 gefangenen Arten (ersetzt Blitz)",
+      "pokemon": 25
     },
     {
       "id": "sky-dash",
       "name": "Himmelsritt",
       "place": "Prismania City",
-      "how": "Von einem NPC vor der Spielhalle nach Erhalt des Silph Scope (ersetzt Fliegen)"
+      "how": "Von einem NPC vor der Spielhalle nach Erhalt des Silph Scope (ersetzt Fliegen)",
+      "pokemon": 25
     },
     {
       "id": "strong-push",
       "name": "Wuchtstoß",
       "place": "Fuchsania City",
-      "how": "Vom Safari-Zonen-Direktor gegen das Goldene Gebiss (ersetzt Stärke)"
+      "how": "Vom Safari-Zonen-Direktor gegen das Goldene Gebiss (ersetzt Stärke)",
+      "pokemon": 25
     },
     {
       "id": "sea-skim",
       "name": "Wellenspurt",
       "place": "Fuchsania City",
-      "how": "Vom NPC neben dem schwimmenden Lapras (ersetzt Surfer)"
+      "how": "Vom NPC neben dem schwimmenden Lapras (ersetzt Surfer)",
+      "pokemon": 25
     }
   ],
   "lets-go-eevee": [
@@ -1420,31 +1455,36 @@
       "id": "chop-down",
       "name": "Spaltschnitt",
       "place": "M.S. Anne (Orania City)",
-      "how": "Vom Kapitän, nur das Partner-Pokémon lernt es; entfernt Sträucher (ersetzt Zerschneider)"
+      "how": "Vom Kapitän, nur das Partner-Pokémon lernt es; entfernt Sträucher (ersetzt Zerschneider)",
+      "pokemon": 133
     },
     {
       "id": "light-up",
       "name": "Lichtflut",
       "place": "Route 2 (über Digdas Höhle)",
-      "how": "Von Prof. Eichs Assistent, ab 10 gefangenen Arten (ersetzt Blitz)"
+      "how": "Von Prof. Eichs Assistent, ab 10 gefangenen Arten (ersetzt Blitz)",
+      "pokemon": 133
     },
     {
       "id": "sky-dash",
       "name": "Himmelsritt",
       "place": "Prismania City",
-      "how": "Von einem NPC vor der Spielhalle nach Erhalt des Silph Scope (ersetzt Fliegen)"
+      "how": "Von einem NPC vor der Spielhalle nach Erhalt des Silph Scope (ersetzt Fliegen)",
+      "pokemon": 133
     },
     {
       "id": "strong-push",
       "name": "Wuchtstoß",
       "place": "Fuchsania City",
-      "how": "Vom Safari-Zonen-Direktor gegen das Goldene Gebiss (ersetzt Stärke)"
+      "how": "Vom Safari-Zonen-Direktor gegen das Goldene Gebiss (ersetzt Stärke)",
+      "pokemon": 133
     },
     {
       "id": "sea-skim",
       "name": "Wellenspurt",
       "place": "Fuchsania City",
-      "how": "Vom NPC neben dem schwimmenden Lapras (ersetzt Surfer)"
+      "how": "Vom NPC neben dem schwimmenden Lapras (ersetzt Surfer)",
+      "pokemon": 133
     }
   ],
   "sword": [
@@ -1453,14 +1493,16 @@
       "name": "Rotom-Rad (Landmodus)",
       "place": "Route 5",
       "how": "Von einem Mann auf Route 5",
-      "badge": "grass"
+      "badge": "grass",
+      "item": "key-item-rotom-bike-1"
     },
     {
       "id": "bike-water",
       "name": "Rotom-Rad (Aquamodus)",
       "place": "Route 9 (Circhester-Bucht)",
       "how": "Vom selben Mann nach dem Sieg über Team-Yell-Rüpel; fährt auf Wasser",
-      "badge": "rock"
+      "badge": "rock",
+      "item": "key-item-rotom-bike-1"
     }
   ],
   "shield": [
@@ -1469,14 +1511,16 @@
       "name": "Rotom-Rad (Landmodus)",
       "place": "Route 5",
       "how": "Von einem Mann auf Route 5",
-      "badge": "grass"
+      "badge": "grass",
+      "item": "key-item-rotom-bike-1"
     },
     {
       "id": "bike-water",
       "name": "Rotom-Rad (Aquamodus)",
       "place": "Route 9 (Circhester-Bucht)",
       "how": "Vom selben Mann nach dem Sieg über Team-Yell-Rüpel; fährt auf Wasser",
-      "badge": "ice"
+      "badge": "ice",
+      "item": "key-item-rotom-bike-1"
     }
   ],
   "brilliant-diamond": [
@@ -1484,7 +1528,8 @@
       "id": "hm-app",
       "name": "Pokétch-Funktion „VM-Attacken“",
       "place": "Erzelingen-Tor",
-      "how": "Wilde Pokémon (Bidiza, Bidifas, Staraptor) setzen die Feldattacken ein, sobald der Orden da ist; kein Team-Pokémon nötig"
+      "how": "Wilde Pokémon (Bidiza, Bidifas, Staraptor) setzen die Feldattacken ein, sobald der Orden da ist; kein Team-Pokémon nötig",
+      "pokemon": 399
     },
     {
       "id": "rock-smash",
@@ -1548,7 +1593,8 @@
       "id": "hm-app",
       "name": "Pokétch-Funktion „VM-Attacken“",
       "place": "Erzelingen-Tor",
-      "how": "Wilde Pokémon (Bidiza, Bidifas, Staraptor) setzen die Feldattacken ein, sobald der Orden da ist; kein Team-Pokémon nötig"
+      "how": "Wilde Pokémon (Bidiza, Bidifas, Staraptor) setzen die Feldattacken ein, sobald der Orden da ist; kein Team-Pokémon nötig",
+      "pokemon": 399
     },
     {
       "id": "rock-smash",
@@ -1613,35 +1659,40 @@
       "name": "Damythir",
       "place": "Geweihanhöhe (Obsidian-Grasland)",
       "how": "Nach der Besänftigung von Axantor; schnelleres Fortbewegen, Springen",
-      "badge": "kleavor"
+      "badge": "kleavor",
+      "pokemon": 899
     },
     {
       "id": "ursaluna",
       "name": "Ursaluna",
       "place": "Prankenplatz (Rotes Sumpfland)",
       "how": "Nach Hisui-Dressella; Schatzsuche nach versteckten Items",
-      "badge": "lilligant"
+      "badge": "lilligant",
+      "pokemon": 901
     },
     {
       "id": "basculegion",
       "name": "Salmagnis-Ritt",
       "place": "Ginkgo-Strand (Kobalt-Küstenland)",
       "how": "Nach Hisui-Arkani; Wasser überqueren",
-      "badge": "arcanine"
+      "badge": "arcanine",
+      "pokemon": 902
     },
     {
       "id": "sneasler",
       "name": "Snieboss-Transport",
       "place": "Kletterklippe (Kraterberg-Hochland)",
       "how": "Nach Hisui-Lektrobal; Klippen klettern",
-      "badge": "electrode"
+      "badge": "electrode",
+      "pokemon": 903
     },
     {
       "id": "braviary",
       "name": "Washakwil-Gleitflug",
       "place": "Blizzard-Tempel (Weißes Frostland)",
       "how": "Nach Hisui-Arktilas; fliegen/gleiten",
-      "badge": "avalugg"
+      "badge": "avalugg",
+      "pokemon": 628
     }
   ],
   "scarlet": [
@@ -1650,41 +1701,47 @@
       "name": "Sprint",
       "place": "Südliche Zone 3",
       "how": "Nach dem Herrscher der Steinklippe",
-      "badge": "titan-rock"
+      "badge": "titan-rock",
+      "pokemon": 1007
     },
     {
       "id": "swim",
       "name": "Wellenreiten",
       "place": "Westliche Zone 1",
       "how": "Nach dem Herrscher des weiten Himmels",
-      "badge": "titan-flying"
+      "badge": "titan-flying",
+      "pokemon": 1007
     },
     {
       "id": "high-jump",
       "name": "Hochsprung",
       "place": "Östliche Zone 3",
       "how": "Nach dem Herrscher des verborgenen Stahls",
-      "badge": "titan-steel"
+      "badge": "titan-steel",
+      "pokemon": 1007
     },
     {
       "id": "glide",
       "name": "Gleiten",
       "place": "Brutzelwüste",
       "how": "Nach dem Herrscher der bebenden Erde",
-      "badge": "titan-ground"
+      "badge": "titan-ground",
+      "pokemon": 1007
     },
     {
       "id": "climb",
       "name": "Klettern",
       "place": "Caldero-See",
       "how": "Nach dem Herrscher der Drachentäuschung",
-      "badge": "titan-dragon"
+      "badge": "titan-dragon",
+      "pokemon": 1007
     },
     {
       "id": "fly",
       "name": "Flug",
       "place": "Blaubeer-Akademie",
-      "how": "Nur mit DLC „Die Indigoblaue Scheibe“, nach dessen Hauptgeschichte"
+      "how": "Nur mit DLC „Die Indigoblaue Scheibe“, nach dessen Hauptgeschichte",
+      "pokemon": 1007
     }
   ],
   "violet": [
@@ -1693,41 +1750,47 @@
       "name": "Sprint",
       "place": "Südliche Zone 3",
       "how": "Nach dem Herrscher der Steinklippe",
-      "badge": "titan-rock"
+      "badge": "titan-rock",
+      "pokemon": 1008
     },
     {
       "id": "swim",
       "name": "Wellenreiten",
       "place": "Westliche Zone 1",
       "how": "Nach dem Herrscher des weiten Himmels",
-      "badge": "titan-flying"
+      "badge": "titan-flying",
+      "pokemon": 1008
     },
     {
       "id": "high-jump",
       "name": "Hochsprung",
       "place": "Östliche Zone 3",
       "how": "Nach dem Herrscher des verborgenen Stahls",
-      "badge": "titan-steel"
+      "badge": "titan-steel",
+      "pokemon": 1008
     },
     {
       "id": "glide",
       "name": "Gleiten",
       "place": "Brutzelwüste",
       "how": "Nach dem Herrscher der bebenden Erde",
-      "badge": "titan-ground"
+      "badge": "titan-ground",
+      "pokemon": 1008
     },
     {
       "id": "climb",
       "name": "Klettern",
       "place": "Caldero-See",
       "how": "Nach dem Herrscher der Drachentäuschung",
-      "badge": "titan-dragon"
+      "badge": "titan-dragon",
+      "pokemon": 1008
     },
     {
       "id": "fly",
       "name": "Flug",
       "place": "Blaubeer-Akademie",
-      "how": "Nur mit DLC „Die Indigoblaue Scheibe“, nach dessen Hauptgeschichte"
+      "how": "Nur mit DLC „Die Indigoblaue Scheibe“, nach dessen Hauptgeschichte",
+      "pokemon": 1008
     }
   ]
 }

@@ -4,12 +4,14 @@
   import Import from "@lucide/svelte/icons/import";
   import * as Select from "$lib/components/ui/select/index.js";
   import * as Tabs from "$lib/components/ui/tabs/index.js";
+  import * as ToggleGroup from "$lib/components/ui/toggle-group/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
-  import { EmptyState, Hint, IconButton, Panel, SelectCard, TabTrigger } from "$lib/components/kit";
+  import { EmptyState, Hint, IconButton, Panel, SegmentItem, SelectCard, TabTrigger } from "$lib/components/kit";
   import { loadOriginal, loadSavegameData } from "$lib/data.ts";
   import { app, importSave } from "$lib/runs.svelte.ts";
-  import { itemName, levelOf, ownNickname, POCKET_LABELS } from "$lib/savegame.ts";
-  import type { SaveMon, Stats } from "$lib/types.ts";
+  import { itemIcon, itemName, levelOf, ownNickname, POCKET_LABELS } from "$lib/savegame.ts";
+  import type { PocketId, SaveMon, Stats } from "$lib/types.ts";
+  import ItemIcon from "./ItemIcon.svelte";
   import Sprite from "./list/Sprite.svelte";
   import SaveMonCard from "./SaveMonCard.svelte";
 
@@ -17,6 +19,7 @@
   // Auswahl gilt nur für den Spielstand, in dem sie getroffen wurde; sonst erste belegte Box bzw. erster Platz.
   let chosen = $state<{ readAt: number; index: number } | null>(null);
   let picked = $state<{ readAt: number; box: number; slot: number } | null>(null);
+  let pocketId = $state<PocketId | null>(null);
 
   const save = $derived(app.current?.save);
   const generation = $derived(app.data?.game.generation ?? 0);
@@ -28,6 +31,8 @@
     picked && picked.readAt === save?.readAt && picked.box === boxIndex ? picked.slot : (box?.mons.findIndex(Boolean) ?? -1),
   );
   const selected = $derived(box?.mons[slot] ?? null);
+  // Ohne Wahl die erste Tasche mit Inhalt
+  const pocket = $derived(save?.bag.find((p) => p.id === pocketId) ?? save?.bag.find((p) => p.items.length) ?? save?.bag[0]);
   const loaded = $derived(Promise.all([loadSavegameData(), app.current ? loadOriginal(app.current.gameId) : null]));
   // Randomisierte Stats nur aus dem Eintrag, sonst Originalwerte des Spiels
   const statsRandomized = $derived(app.current?.randomized !== false && app.current?.enabledCategories.includes("stats"));
@@ -142,25 +147,40 @@
         </div>
       </Tabs.Content>
 
-      <Tabs.Content value="bag" class="min-h-0 overflow-y-auto">
-        <div class="grid grid-cols-[repeat(auto-fill,minmax(16rem,1fr))] items-start gap-3">
-          {#each save.bag as pocket (pocket.id)}
-            <Panel title="{POCKET_LABELS[pocket.id]} ({pocket.items.length})">
-              {#if pocket.items.length}
-                <ul class="grid gap-0.5 text-sm">
-                  {#each pocket.items as [item, count], i (i)}
-                    <li class="flex gap-2">
-                      <span class="truncate">{itemName(data, generation, item)}</span>
-                      <span class="ml-auto text-muted-foreground tabular-nums">×{count}</span>
-                    </li>
-                  {/each}
-                </ul>
-              {:else}
-                <EmptyState variant="inline">Leer</EmptyState>
-              {/if}
-            </Panel>
+      <Tabs.Content value="bag" class="flex min-h-0 flex-1 flex-col gap-3">
+        <ToggleGroup.Root
+          type="single"
+          variant="outline"
+          size="sm"
+          class="flex-wrap"
+          value={pocket?.id}
+          onValueChange={(v) => v && (pocketId = v as PocketId)}
+          aria-label="Tasche"
+        >
+          {#each save.bag as p (p.id)}
+            <SegmentItem value={p.id}>
+              {POCKET_LABELS[p.id]} <span class="tabular-nums opacity-70">{p.items.length}</span>
+            </SegmentItem>
           {/each}
-        </div>
+        </ToggleGroup.Root>
+        {#if pocket}
+          <Panel title={POCKET_LABELS[pocket.id]} class="min-h-0 flex-1" bodyClass="overflow-y-auto">
+            {#snippet actions()}{pocket.items.length} Items{/snippet}
+            {#if pocket.items.length}
+              <ul class="grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] gap-2 text-sm">
+                {#each pocket.items as [item, count], i (i)}
+                  <li class="flex items-center gap-3 rounded-md border border-panel-border bg-panel-inset/50 py-1 pr-3 pl-1">
+                    <ItemIcon src={itemIcon(data, generation, item)} />
+                    <span class="min-w-0 flex-1 truncate">{itemName(data, generation, item)}</span>
+                    <span class="text-muted-foreground tabular-nums">×{count}</span>
+                  </li>
+                {/each}
+              </ul>
+            {:else}
+              <EmptyState variant="inline">Diese Tasche ist leer.</EmptyState>
+            {/if}
+          </Panel>
+        {/if}
       </Tabs.Content>
     {:catch e}
       <EmptyState variant="inline">Daten konnten nicht geladen werden: {e instanceof Error ? e.message : e}</EmptyState>

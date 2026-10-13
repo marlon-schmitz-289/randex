@@ -47,6 +47,11 @@ export function calcStats(base: Stats, mon: SaveMon, level: number): Stats {
 export const itemName = (data: SavegameData, generation: number, item: number): string =>
   data.items[generation]?.[item] ?? `Item #${item}`;
 
+export function itemIcon(data: SavegameData, generation: number, item: number): string | undefined {
+  const file = data.icons[generation]?.[item];
+  return file && `/items/${file}.png`;
+}
+
 /** Spitzname, wenn er sich vom Artnamen unterscheidet (Gen 3 speichert sonst den Artnamen in Großbuchstaben). */
 export function ownNickname(mon: SaveMon, speciesName: string | undefined): string | undefined {
   const nick = mon.nickname;
