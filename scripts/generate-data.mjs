@@ -474,7 +474,7 @@ async function main() {
 
   const sName = names(speciesNames, "pokemon_species_id");
   const species = speciesRows.filter((r) => +r.id <= MAX_SPECIES)
-    .map((r) => ({ id: +r.id, name: sName(+r.id) ?? r.identifier, generation: +r.generation_id }))
+    .map((r) => ({ id: +r.id, name: sName(+r.id) ?? r.identifier, generation: +r.generation_id, captureRate: +r.capture_rate }))
     .sort((a, b) => a.id - b.id);
   if (species.length !== MAX_SPECIES) throw new Error(`${species.length} statt ${MAX_SPECIES} Species`);
   await json(path.join(DATA, "species.json"), species);
@@ -673,7 +673,9 @@ async function main() {
   // TM/TR-Discs aller Typen (Attackenlisten, Fortschritt), VM-Discs, Item-Icons der Feldfähigkeiten
   const fieldIcons = TYPE_ORDER.flatMap((t) => [`tm/${t}`, `tr/${t}`])
     .concat(["normal", "flying", "water", "fighting"].map((t) => `hm/${t}`), ["key-item/eon-flute", "key-item/rotom-bike-1"]);
-  const noFile = await itemSprites(new Set([...Object.values(saveIcons).flatMap(Object.values), ...fieldIcons]));
+  // Bälle für den Fangrechner (src/lib/catch.ts)
+  const ballIcons = ["poke", "great", "ultra", "net", "dusk", "quick"].map((b) => `ball/${b}`);
+  const noFile = await itemSprites(new Set([...Object.values(saveIcons).flatMap(Object.values), ...fieldIcons, ...ballIcons]));
   for (const icons of Object.values(saveIcons)) {
     for (const [idx, p] of Object.entries(icons)) {
       if (noFile.has(p)) delete icons[idx];

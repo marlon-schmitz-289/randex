@@ -4,12 +4,12 @@ import { hasEntry, normalize, searchSpecies } from "./search.ts";
 import type { Run, Species, TypeId } from "./types.ts";
 
 const species: Species[] = [
-  { id: 1, name: "Bisasam", generation: 1 },
-  { id: 25, name: "Pikachu", generation: 1 },
-  { id: 26, name: "Raichu", generation: 1 },
-  { id: 172, name: "Pichu", generation: 2 },
-  { id: 250, name: "Ho-Oh", generation: 2 },
-  { id: 669, name: "Flabébé", generation: 6 },
+  { id: 1, name: "Bisasam", generation: 1, captureRate: 45 },
+  { id: 25, name: "Pikachu", generation: 1, captureRate: 45 },
+  { id: 26, name: "Raichu", generation: 1, captureRate: 45 },
+  { id: 172, name: "Pichu", generation: 2, captureRate: 45 },
+  { id: 250, name: "Ho-Oh", generation: 2, captureRate: 45 },
+  { id: 669, name: "Flabébé", generation: 6, captureRate: 45 },
 ];
 
 const run = (pokemon: Run["pokemon"]): Run => ({

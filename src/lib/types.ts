@@ -24,6 +24,8 @@ export interface Species {
   id: number;
   name: string;
   generation: number;
+  /** Fangrate 3–255 (aktueller Stand, ältere Spiele weichen selten ab) */
+  captureRate: number;
 }
 
 /** static/data/moves.json – nach name sortiert. */
@@ -203,7 +205,7 @@ export interface OriginalPokemon {
 export const SCHEMA_VERSION = 1;
 
 /** Reihenfolge für Toggles und Detailansicht. */
-export const CATEGORIES = ["types", "moves", "stats", "abilities", "evolutions", "locations", "note"] as const;
+export const CATEGORIES = ["types", "moves", "stats", "abilities", "evolutions", "locations", "catch", "note"] as const;
 export type Category = (typeof CATEGORIES)[number];
 
 export const CATEGORY_LABELS: Record<Category, string> = {
@@ -213,6 +215,7 @@ export const CATEGORY_LABELS: Record<Category, string> = {
   abilities: "Fähigkeiten",
   evolutions: "Entwicklungen",
   locations: "Fundorte",
+  catch: "Fangchance",
   note: "Notiz",
 };
 

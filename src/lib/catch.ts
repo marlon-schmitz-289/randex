@@ -1,0 +1,69 @@
+import type { TypeId } from "./types.ts";
+
+/** Fangformeln je Generation nach pokewiki.de/Fangrate. */
+
+export type CatchStatus = "none" | "sleep" | "other";
+
+export const CATCH_STATUS_LABELS: Record<CatchStatus, string> = {
+  none: "Keiner",
+  sleep: "Schlaf/Frost",
+  other: "Paralyse/Gift/Verbrennung",
+};
+
+export interface Ball {
+  id: "poke" | "great" | "ultra" | "net" | "dusk" | "quick";
+  name: string;
+  /** Wann der Bonus gilt; ohne = immer */
+  when?: string;
+  factor: number;
+}
+
+/** Bälle des Spiels mit ihrem Faktor; Netzball nur, wenn er bei diesen Typen wirkt. */
+export function ballsFor(gen: number, types: readonly TypeId[]): Ball[] {
+  const balls: Ball[] = [
+    { id: "poke", name: "Pokéball", factor: 1 },
+    { id: "great", name: "Superball", factor: 1.5 },
+    { id: "ultra", name: "Hyperball", factor: 2 },
+  ];
+  if (gen >= 3 && types.some((t) => t === "water" || t === "bug")) {
+    balls.push({ id: "net", name: "Netzball", factor: gen >= 7 ? 3.5 : 3 });
+  }
+  if (gen >= 4) {
+    balls.push({ id: "dusk", name: "Finsterball", when: "nachts/Höhle", factor: gen >= 7 ? 3 : 3.5 });
+    balls.push({ id: "quick", name: "Flottball", when: "1. Runde", factor: gen >= 5 ? 5 : 4 });
+  }
+  return balls;
+}
+
+/**
+ * Fangchance pro Wurf (0–1). hp = KP-Anteil 0–1 (0 ≈ 1 KP).
+ * shortcut: ohne Superfang (Gen 5+), dunkles Gras, O-Kraft und Level-/Orden-Faktoren (Gen 8+), die das Ergebnis
+ * nur in Sonderfällen ändern; ergänzen, falls jemand danach fragt.
+ */
+export function catchChance(gen: number, rate: number, hp: number, status: CatchStatus, ball: Ball): number {
+  if (gen <= 1) return gen1(rate, hp, status, ball.id);
+  if (gen === 2) {
+    // Bug: nur Schlaf/Frost zählt
+    const x = Math.min(255, Math.max(Math.floor(((3 - 2 * hp) * Math.min(255, rate * ball.factor)) / 3), 1) + (status === "sleep" ? 10 : 0));
+    return (x + 1) / 256;
+  }
+  const s = status === "sleep" ? (gen >= 5 ? 2.5 : 2) : status === "other" ? 1.5 : 1;
+  const x = Math.min(255, Math.floor(((3 - 2 * hp) * rate * ball.factor) / 3) * s);
+  if (x >= 255) return 1;
+  if (x <= 0) return 0;
+  if (gen <= 4) {
+    const y = Math.floor(1048560 / Math.floor(Math.sqrt(Math.floor(Math.sqrt(Math.floor(16711680 / x))))));
+    return Math.min(1, y / 65536) ** 4;
+  }
+  if (gen === 5) return Math.min(1, Math.floor(65536 / (255 / x) ** 0.25) / 65536) ** 3;
+  return Math.min(1, Math.floor(65536 / (255 / x) ** (3 / 16)) / 65536) ** 4;
+}
+
+/** Gen 1: eigener Algorithmus mit Zufallsbereich je Ball (Näherung aus dem Pokéwiki). */
+function gen1(rate: number, hp: number, status: CatchStatus, ball: Ball["id"]): number {
+  const range = ball === "great" ? 201 : ball === "ultra" ? 151 : 256;
+  const s = status === "sleep" ? 25 : status === "other" ? 12 : 0;
+  // F = KPmax·255/Teiler / ⌊KPakt/4⌋, mit dem KP-Anteil statt absoluter KP
+  const f = hp <= 0 ? 255 : Math.min(255, Math.floor((255 * 4) / ((ball === "great" ? 8 : 12) * hp)));
+  return Math.min(1, (s + (Math.min(rate + 1, range - s) * (f + 1)) / 256) / range);
+}

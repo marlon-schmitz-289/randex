@@ -7,6 +7,7 @@
   import { app, showLocation, updateEntry } from "$lib/runs.svelte.ts";
   import { CATEGORY_LABELS, ENCOUNTER_METHOD_LABELS } from "$lib/types.ts";
   import type { Category, EncounterMethod, PokemonEntry, TypeId } from "$lib/types.ts";
+  import CatchCalculator from "./detail/CatchCalculator.svelte";
   import EvolutionsEditor from "./detail/EvolutionsEditor.svelte";
   import MovesEditor from "./detail/MovesEditor.svelte";
   import NamePicker from "./detail/NamePicker.svelte";
@@ -24,8 +25,8 @@
   const original = $derived(id === null ? undefined : app.original?.pokemon[id]);
   const headerTypes = $derived(app.original ? (original?.types ?? []) : types);
   // Ohne Originaldaten zur Art bleiben nur Fundorte und Notiz.
-  // Breit paarweise nebeneinander (Typen | Fähigkeiten, Attacken | Entwicklungen, Stats | Fundorte)
-  const PAIRED_ORDER: Category[] = ["types", "abilities", "moves", "evolutions", "stats", "locations", "note"];
+  // Breit paarweise nebeneinander (Typen | Fähigkeiten, Attacken | Entwicklungen, Stats | Fundorte, Fangchance | Notiz)
+  const PAIRED_ORDER: Category[] = ["types", "abilities", "moves", "evolutions", "stats", "locations", "catch", "note"];
   const categories = $derived(
     app.original && !original ? app.activeCategories.filter((c) => c === "locations" || c === "note") : app.activeCategories,
   );
@@ -184,7 +185,9 @@
       <div class="grid gap-3 @5xl:grid-cols-2">
         {#each ordered as category (category)}
           <Panel title={CATEGORY_LABELS[category]} class="@5xl:[&:last-child:nth-child(odd)]:col-span-2">
-            {#if original && category !== "locations" && category !== "note"}
+            {#if category === "catch"}
+              <CatchCalculator captureRate={species.captureRate} types={headerTypes} />
+            {:else if original && category !== "locations" && category !== "note"}
               <OriginalSection {category} pokemon={original} />
             {:else if category === "types"}
               {@render typesBody()}
