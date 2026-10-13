@@ -351,7 +351,7 @@ export async function importSave(): Promise<void> {
   const generation = app.data?.game.generation;
   if (!run || !generation) return;
   try {
-    const save = await invoke<(Omit<SaveSnapshot, "readAt"> & { badges: number; caught: number[] }) | null>("read_save", {
+    const save = await invoke<(Omit<SaveSnapshot, "readAt"> & { badges: number | null; caught: number[] }) | null>("read_save", {
       gameId: run.gameId,
     });
     if (!save) return;
@@ -367,7 +367,8 @@ export async function importSave(): Promise<void> {
         const nickname = ownNickname(m, app.data?.speciesById.get(m.speciesId)?.name);
         return nickname ? { speciesId: m.speciesId, nickname, level: m.level } : { speciesId: m.speciesId, level: m.level };
       });
-      r.badges = badges.filter((_, i) => owned & (1 << i)).map((b) => b.id);
+      // Gen 7 speichert keine Orden-Flags: dann bleibt der abgehakte Stand
+      if (owned !== null) r.badges = badges.filter((_, i) => owned & (1 << i)).map((b) => b.id);
       r.caught = [...new Set([...(r.caught ?? []), ...caught])];
       r.fieldMoves = [...new Set([...(r.fieldMoves ?? []), ...fieldMovesInBag(fieldMoves, snapshot.bag, saveData, generation)])];
       r.save = { ...snapshot, readAt: Date.now() };

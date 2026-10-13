@@ -75,7 +75,7 @@
       <TabTrigger value="bag">Beutel</TabTrigger>
     </Tabs.List>
     {#if save}<Hint>Stand: {readAt(save.readAt)}</Hint>{/if}
-    <Button class="ml-auto" title="Spielstand-Datei des Emulators wählen (.sav, .dsv, .srm)" onclick={importSave}>
+    <Button class="ml-auto" title="Spielstand-Datei wählen (.sav, .dsv, .srm, 3DS: main, Let's Go: savedata.bin)" onclick={importSave}>
       <Import /> Spielstand laden
     </Button>
   </div>
@@ -84,7 +84,7 @@
     <Panel title="Noch kein Spielstand" flush>
       <EmptyState>
         Im Spiel speichern, dann „Spielstand laden“ und die Datei des Emulators wählen (mGBA/melonDS: .sav,
-        DeSmuME: .dsv, RetroArch: .srm). Übernommen werden Team, Orden, VMs, Name, Geld und
+        DeSmuME: .dsv, RetroArch: .srm, 3DS: main, Let's Go: savedata.bin). Übernommen werden Team, Orden, VMs, Name, Geld und
         Spielzeit in den Fortschritt sowie gefangene Pokémon in den Pokédex.
       </EmptyState>
     </Panel>

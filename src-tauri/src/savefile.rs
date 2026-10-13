@@ -1,9 +1,9 @@
-//! Liest Team, Boxen, Beutel, Orden, Pokédex und Trainerdaten aus Spielständen (Gen 1–5).
+//! Liest Team, Boxen, Beutel, Orden, Pokédex und Trainerdaten aus Spielständen (Gen 1–7).
 //! Formate nach PKHeX (PKHeX.Core/Saves, PokeCrypto, Items/Bags).
 
 use serde::Serialize;
 
-#[derive(Serialize, Debug, PartialEq)]
+#[derive(Serialize, Debug, PartialEq, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Mon {
     species_id: u16,
@@ -24,7 +24,7 @@ pub struct Mon {
     stats: Option<PartyStats>,
 }
 
-#[derive(Serialize, Debug, PartialEq)]
+#[derive(Serialize, Debug, PartialEq, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct PartyStats {
     hp: u16,
@@ -36,8 +36,8 @@ pub struct PartyStats {
     spe: u16,
 }
 
-#[derive(Serialize, Debug, PartialEq)]
 /// IVs/EVs; Gen 1/2: DVs (0–15) und Stat-EXP (bis 65535), Spezial in spa und spd
+#[derive(Serialize, Debug, PartialEq, Clone)]
 pub struct StatSet {
     hp: u16,
     atk: u16,
@@ -82,8 +82,8 @@ pub struct SaveData {
     team: Vec<Mon>,
     boxes: Vec<BoxData>,
     bag: Vec<Pocket>,
-    /// Bit i = i-ter Orden in Spielreihenfolge (wie static/data/badges.json)
-    badges: u16,
+    /// Bit i = i-ter Orden in Spielreihenfolge (wie static/data/badges.json); `None` = nicht im Spielstand (Gen 7)
+    badges: Option<u16>,
     /// Im Pokédex als gefangen markierte Nationaldex-Nummern
     caught: Vec<u16>,
     /// Name des Spielers
@@ -316,7 +316,7 @@ fn gen1(data: &[u8]) -> Result<SaveData, String> {
         team,
         boxes,
         bag: vec![gb_pocket("items", &data[0x25C9..], 20), gb_pocket("pc", &data[0x27E6..], 50)],
-        badges: u16::from(data[0x2602]),
+        badges: Some(u16::from(data[0x2602])),
         caught: dex_flags(&data[0x25A3..], 151),
         trainer: gb_text(&data[0x2598..][..11], G1_CHARS),
         money: bcd(&data[0x25F3..][..3]),
@@ -393,7 +393,7 @@ fn gen2(data: &[u8], g: &Gen2) -> Result<SaveData, String> {
             Pocket { id: "tms", items: machines },
             gb_pocket("pc", &data[pc..], 50),
         ],
-        badges: u16::from_le_bytes([data[g.badges], data[g.badges + 1]]),
+        badges: Some(u16::from_le_bytes([data[g.badges], data[g.badges + 1]])),
         caught: dex_flags(&data[g.dex..], 251),
         trainer: gb_text(&data[0x200B..][..11], G2_CHARS),
         money: u24_be(data, g.money),
@@ -416,6 +416,11 @@ pub fn parse(game_id: &str, data: &[u8]) -> Result<SaveData, String> {
         "diamond" | "pearl" => gen4(data, &DP),
         "platinum" => gen4(data, &PT),
         "heartgold" | "soulsilver" => gen4(data, &HGSS),
+        "x" | "y" => gen67(data, &XY),
+        "omega-ruby" | "alpha-sapphire" => gen67(data, &ORAS),
+        "sun" | "moon" => gen67(data, &SM),
+        "ultra-sun" | "ultra-moon" => gen67(data, &USUM),
+        "lets-go-pikachu" | "lets-go-eevee" => lgpe(data),
         "black" | "white" => gen5(data, 0x21200, 0x21600),
         "black-2" | "white-2" => gen5(data, 0x21100, 0x21400),
         _ => Err("Spielstände werden für dieses Spiel noch nicht unterstützt".into()),
@@ -490,7 +495,7 @@ fn gen3(data: &[u8], g: &Gen3) -> Result<SaveData, String> {
         team,
         boxes,
         bag,
-        badges: bits & 0xFF,
+        badges: Some(bits & 0xFF),
         caught: dex_flags(&blocks[0x28..], 386),
         trainer: gen3_text(&blocks[..8]),
         money,
@@ -689,11 +694,252 @@ fn gen4(data: &[u8], g: &Gen4) -> Result<SaveData, String> {
         team,
         boxes,
         bag,
-        badges: u16::from(t[0x1A]) | kanto << 8,
+        badges: Some(u16::from(t[0x1A]) | kanto << 8),
         caught: dex_flags(&general[g.dex + 4..], 493),
         trainer: gen4_text(&t[..16]),
         money: u32_at(t, 0x14),
         played: [u16_at(t, 0x22), u16::from(t[0x24]), u16::from(t[0x25])],
+    })
+}
+
+/// Spiel → 3DS-Layout (Gen 6/7): feste Block-Offsets in der Datei
+struct Gen67 {
+    size: usize,
+    bag: usize,
+    pockets: &'static [(&'static str, usize, usize)],
+    /// Gen 7 speichert Items als u32 (10 Bit Item, 10 Bit Anzahl), Gen 6 als zwei u16
+    packed: bool,
+    /// Name im Spielerblock (UTF-16)
+    trainer: usize,
+    party: usize,
+    /// Gefangen-Flags und höchste Art
+    dex: usize,
+    dex_max: u16,
+    money: usize,
+    badges: Option<usize>,
+    played: usize,
+    box_names: usize,
+    box_count: usize,
+    boxes: usize,
+}
+
+const XY: Gen67 = Gen67 {
+    size: 0x65600,
+    bag: 0x400,
+    pockets: &[("items", 0, 400), ("keyItems", 0x640, 96), ("tms", 0x7C0, 106), ("medicine", 0x968, 64), ("berries", 0xA68, 72)],
+    packed: false,
+    trainer: 0x14048,
+    party: 0x14200,
+    dex: 0x15008,
+    dex_max: 721,
+    money: 0x4208,
+    badges: Some(0x420C),
+    played: 0x1800,
+    box_names: 0x4400,
+    box_count: 31,
+    boxes: 0x22600,
+};
+
+const ORAS: Gen67 = Gen67 {
+    size: 0x76000,
+    pockets: &[("items", 0, 400), ("keyItems", 0x640, 96), ("tms", 0x7C0, 108), ("medicine", 0x970, 64), ("berries", 0xA70, 72)],
+    boxes: 0x33000,
+    ..XY
+};
+
+const SM: Gen67 = Gen67 {
+    size: 0x6BE00,
+    bag: 0,
+    pockets: &[
+        ("items", 0, 430),
+        ("medicine", 0xB48, 64),
+        ("tms", 0x998, 108),
+        ("berries", 0xC48, 72),
+        ("keyItems", 0x6B8, 184),
+        ("zCrystals", 0xD68, 30),
+    ],
+    packed: true,
+    trainer: 0x1238,
+    party: 0x1400,
+    dex: 0x2A88,
+    dex_max: 807,
+    money: 0x4004,
+    badges: None,
+    played: 0x40C00,
+    box_names: 0x4800,
+    box_count: 32,
+    boxes: 0x4E00,
+};
+
+const USUM: Gen67 = Gen67 {
+    size: 0x6CC00,
+    pockets: &[
+        ("items", 0, 427),
+        ("medicine", 0xB74, 60),
+        ("tms", 0x9C4, 108),
+        ("berries", 0xC64, 67),
+        ("keyItems", 0x6AC, 198),
+        ("zCrystals", 0xD70, 35),
+        ("battle", 0xDFC, 11),
+    ],
+    trainer: 0x1438,
+    party: 0x1600,
+    dex: 0x2C88,
+    money: 0x4404,
+    played: 0x41000,
+    box_names: 0x4C00,
+    boxes: 0x5200,
+    ..SM
+};
+
+/// Gen-7-Tasche: u32 je Platz, Item in den unteren `bits` Bits, Anzahl in den nächsten (S/M: 10, Let's Go: 15)
+fn packed_pocket(id: &'static str, d: &[u8], bits: u32) -> Pocket {
+    let mask = (1 << bits) - 1;
+    let items = d
+        .chunks_exact(4)
+        .map(|c| u32_at(c, 0))
+        .map(|v| [(v & mask) as u16, ((v >> bits) & mask) as u16])
+        .filter(|&[item, count]| item != 0 && count != 0)
+        .collect();
+    Pocket { id, items }
+}
+
+/// PK6/PK7/PB7 (232 Bytes, im Team 260): mit der Encryption Constant verschlüsselt, vier Blöcke à 56 Bytes.
+/// `None` = leer oder Ei.
+fn pk67_mon(m: &[u8], party: bool, max: u16) -> Result<Option<Mon>, String> {
+    if m[..232].iter().all(|&b| b == 0) {
+        return Ok(None);
+    }
+    let ec = u32_at(m, 0);
+    let mut stored = m[8..232].to_vec();
+    crypt5(&mut stored, ec);
+    if checksum(&stored) != u16_at(m, 6) {
+        return Err(wrong_game());
+    }
+    let sv = ((ec >> 13) & 31) as usize % 24;
+    let mut d = m[..232].to_vec();
+    for i in 0..4 {
+        let pos = usize::from(BLOCK_POSITION[sv * 4 + i]);
+        d[8 + i * 56..][..56].copy_from_slice(&stored[pos * 56..][..56]);
+    }
+    let species_id = u16_at(&d, 0x08);
+    let ivs = u32_at(&d, 0x74);
+    if species_id == 0 || (ivs >> 30) & 1 == 1 {
+        return Ok(None);
+    }
+    if species_id > max {
+        return Err(wrong_game());
+    }
+    let (level, stats) = if party {
+        let mut p = m[232..260].to_vec();
+        crypt5(&mut p, ec);
+        (Some(p[4]), Some(party_stats(&p[8..])))
+    } else {
+        (None, None)
+    };
+    Ok(Some(Mon {
+        species_id,
+        nickname: (ivs >> 31 == 1).then(|| utf16_text(&d[0x40..0x5A])),
+        exp: u32_at(&d, 0x10),
+        item: u16_at(&d, 0x0A),
+        moves: moves(&d[0x5A..]),
+        nature: Some(d[0x1C]),
+        ivs: StatSet::ivs(ivs),
+        evs: StatSet::evs(&d[0x1E..]),
+        level,
+        stats,
+    }))
+}
+
+fn gen67(data: &[u8], g: &Gen67) -> Result<SaveData, String> {
+    // 3DS-Spielstände haben je Spiel eine feste Größe
+    if data.len() != g.size {
+        return Err(wrong_game());
+    }
+    let count = usize::from(data[g.party + 6 * 260]);
+    if count > 6 {
+        return Err(wrong_game());
+    }
+    let team = data[g.party..]
+        .chunks_exact(260)
+        .take(count)
+        .map(|m| pk67_mon(m, true, g.dex_max))
+        .filter_map(Result::transpose)
+        .collect::<Result<_, _>>()?;
+    let boxes = (0..g.box_count)
+        .map(|b| BoxData {
+            name: utf16_text(&data[g.box_names + b * 0x22..][..0x22]),
+            mons: data[g.boxes + b * 30 * 232..][..30 * 232]
+                .chunks_exact(232)
+                .map(|m| pk67_mon(m, false, g.dex_max).ok().flatten())
+                .collect(),
+        })
+        .collect();
+    let bag = g
+        .pockets
+        .iter()
+        .map(|&(id, ofs, slots)| {
+            let d = &data[g.bag + ofs..][..slots * 4];
+            if g.packed { packed_pocket(id, d, 10) } else { pocket(id, d, 0) }
+        })
+        .collect();
+    Ok(SaveData {
+        team,
+        boxes,
+        bag,
+        badges: g.badges.map(|o| u16::from(data[o])),
+        caught: dex_flags(&data[g.dex..], g.dex_max),
+        trainer: utf16_text(&data[g.trainer..][..0x1A]),
+        money: u32_at(data, g.money),
+        played: [u16_at(data, g.played), u16::from(data[g.played + 2]), u16::from(data[g.played + 3])],
+    })
+}
+
+/// Let's Go: 1000 Plätze im Team-Format, das Team sind Zeiger darauf (1001 = leer). Ohne Boxen im Spiel,
+/// hier in Gruppen à 30 angezeigt.
+fn lgpe(data: &[u8]) -> Result<SaveData, String> {
+    const HEADER: usize = 0x5A00;
+    const STORAGE: usize = 0x5C00;
+    const EMPTY: usize = 1001;
+    if data.len() != 0x100000 {
+        return Err(wrong_game());
+    }
+    // Team mit Werten, in den „Boxen“ wie sonst ohne (Level aus EXP)
+    let slot = |i: usize, party: bool| pk67_mon(&data[STORAGE + i * 260..][..260], party, 809);
+    let team = (0..6)
+        .map(|i| usize::from(u16_at(data, HEADER + i * 2)))
+        .filter(|&i| i < EMPTY - 1)
+        .map(|i| slot(i, true))
+        .filter_map(Result::transpose)
+        .collect::<Result<_, _>>()?;
+    let boxes = (0..1000)
+        .map(|i| slot(i, false).ok().flatten())
+        .collect::<Vec<_>>()
+        .chunks(30)
+        .map(|c| {
+            let mut mons = c.to_vec();
+            mons.resize_with(30, || None);
+            BoxData { name: String::new(), mons }
+        })
+        .collect();
+    let pockets = [
+        ("medicine", 0, 60),
+        ("tms", 0xF0, 108),
+        ("candy", 0x2A0, 200),
+        ("zCrystals", 0x5C0, 150),
+        ("balls", 0x818, 50),
+        ("battle", 0x8E0, 150),
+        ("items", 0xB38, 150),
+    ];
+    Ok(SaveData {
+        team,
+        boxes,
+        bag: pockets.iter().map(|&(id, ofs, slots)| packed_pocket(id, &data[ofs..][..slots * 4], 15)).collect(),
+        badges: None,
+        caught: dex_flags(&data[0x2A88..], 809),
+        trainer: utf16_text(&data[0x1038..][..0x1A]),
+        money: u32_at(data, 0x4C04),
+        played: [u16_at(data, 0x45400), u16::from(data[0x45402]), u16::from(data[0x45403])],
     })
 }
 
@@ -754,7 +1000,7 @@ fn gen5(data: &[u8], misc: usize, dex: usize) -> Result<SaveData, String> {
         team,
         boxes,
         bag,
-        badges: u16::from(data[misc + 4]),
+        badges: Some(u16::from(data[misc + 4])),
         caught: dex_flags(&data[dex + 8..], 649),
         trainer: utf16_text(&data[TRAINER + 4..][..16]),
         money: u32_at(data, misc),
@@ -894,7 +1140,7 @@ mod tests {
         let mons = [g3_mon(7, 25, 12, false), g3_mon(123_456, 280, 50, false), g3_mon(5, 1, 1, true)];
         for (a, b) in [(4, 9), (9, 4)] {
             let s = parse("firered", &g3_save(a, b, &mons)).unwrap();
-            assert_eq!(s.badges, 0b101);
+            assert_eq!(s.badges, Some(0b101));
             assert_eq!(s.caught, [1, 26]);
             assert_eq!((s.trainer.as_str(), s.money, s.played), ("Rot", 3000, [12, 34, 56]));
             // intern 280 = Nationaldex 255 (Flemmli)
@@ -938,7 +1184,7 @@ mod tests {
         d[g + HGSS.bag + 0x520..][..4].copy_from_slice(&[17, 0, 2, 0]); // Medizin: Trank × 2
         let s = parse("soulsilver", &d).unwrap();
         assert_eq!(summary(&s.team), [(155, None, Some(7))]);
-        assert_eq!((s.trainer.as_str(), s.money, s.played, s.badges), ("Lyra", 3000, [5, 6, 7], 0x103));
+        assert_eq!((s.trainer.as_str(), s.money, s.played, s.badges), ("Lyra", 3000, [5, 6, 7], Some(0x103)));
         assert_eq!(s.caught, [1]);
         assert_eq!(s.bag[4], Pocket { id: "medicine", items: vec![[17, 2]] });
         assert_eq!(s.boxes.len(), 18);
@@ -976,11 +1222,65 @@ mod tests {
         let nick = list + 8 + 6 * 44 + 6 * 11;
         d[nick..nick + 2].copy_from_slice(&[0x8F, 0x50]); // „P“
         let s = parse("red", &d).unwrap();
-        assert_eq!((s.trainer.as_str(), s.money, s.badges, s.caught.as_slice()), ("Rot", 3000, 0b101, &[1u16][..]));
+        assert_eq!((s.trainer.as_str(), s.money, s.badges, s.caught.as_slice()), ("Rot", 3000, Some(0b101), &[1u16][..]));
         assert_eq!(summary(&s.team), [(25, Some("P"), Some(23))]);
         let t = &s.team[0];
         assert_eq!((t.exp, t.ivs.hp, t.ivs.spa, t.ivs.spd, t.nature), (12_167, 11, 3, 3, None));
         assert_eq!(s.boxes.len(), 12);
+    }
+
+    /// PK6/PK7 im Team-Format (260 Bytes)
+    fn g6_mon(ec: u32, species: u16, level: u8) -> Vec<u8> {
+        let mut logical = vec![0u8; 224];
+        logical[0..2].copy_from_slice(&species.to_le_bytes());
+        logical[0x08..0x0C].copy_from_slice(&12_167u32.to_le_bytes());
+        logical[0x14] = 15; // Wesen (0x1C − 8)
+        logical[0x16] = 252; // KP-EV
+        logical[0x52..0x54].copy_from_slice(&84u16.to_le_bytes()); // Donnerschock
+        logical[0x6C..0x70].copy_from_slice(&(13u32 << 5).to_le_bytes()); // Angr.-IV 13
+        let chk = checksum(&logical);
+        let mut stored = shuffle(&logical, ((ec >> 13) & 31) as usize % 24, 56);
+        crypt5(&mut stored, ec);
+        let mut stats = vec![0u8; 28];
+        stats[4] = level;
+        stats[8..10].copy_from_slice(&63u16.to_le_bytes());
+        stats[10..12].copy_from_slice(&63u16.to_le_bytes());
+        crypt5(&mut stats, ec);
+        let mut m = vec![0u8; 260];
+        m[0..4].copy_from_slice(&ec.to_le_bytes());
+        m[6..8].copy_from_slice(&chk.to_le_bytes());
+        m[8..232].copy_from_slice(&stored);
+        m[232..].copy_from_slice(&stats);
+        m
+    }
+
+    #[test]
+    fn gen6_xy() {
+        let mut d = vec![0u8; XY.size];
+        let mon = g6_mon(0x1234_5678, 25, 23);
+        d[XY.party..][..260].copy_from_slice(&mon);
+        d[XY.party + 6 * 260] = 1;
+        d[XY.boxes + 232..][..232].copy_from_slice(&mon[..232]); // Box 1, Platz 2
+        for (i, u) in "Serena".encode_utf16().enumerate() {
+            d[XY.trainer + i * 2..][..2].copy_from_slice(&u.to_le_bytes());
+        }
+        d[XY.money..][..4].copy_from_slice(&5000u32.to_le_bytes());
+        d[XY.badges.unwrap()] = 0b11;
+        d[XY.played..][..4].copy_from_slice(&[3, 0, 4, 5]);
+        d[XY.dex + 3] = 1; // #25
+        d[XY.bag + 0x968..][..4].copy_from_slice(&[17, 0, 2, 0]); // Medizin: Trank × 2
+        let s = parse("y", &d).unwrap();
+        assert_eq!(summary(&s.team), [(25, None, Some(23))]);
+        let t = &s.team[0];
+        assert_eq!((t.exp, t.nature, t.evs.hp, t.ivs.atk, &t.moves), (12_167, Some(15), 252, 13, &vec![84]));
+        assert_eq!(t.stats.as_ref().map(|st| st.max_hp), Some(63));
+        assert_eq!(s.boxes[0].mons[1].as_ref().map(|m| (m.species_id, m.level)), Some((25, None)));
+        assert_eq!((s.trainer.as_str(), s.money, s.played, s.badges), ("Serena", 5000, [3, 4, 5], Some(0b11)));
+        assert_eq!(s.caught, [25]);
+        assert_eq!(s.bag[3], Pocket { id: "medicine", items: vec![[17, 2]] });
+        assert!(parse("x", &d[..XY.size - 1]).is_err());
+        // S/M: andere Größe, keine Orden
+        assert!(parse("sun", &d).is_err());
     }
 
     fn g5_mon(pid: u32, species: u16, level: u8, nick: Option<&str>) -> Vec<u8> {
@@ -1031,7 +1331,7 @@ mod tests {
         d[box2..box2 + 136].copy_from_slice(&mons[1][..136]);
         d[0x18400 + 0x7D8..0x18400 + 0x7DC].copy_from_slice(&[17, 0, 7, 0]);
         let s = parse("white-2", &d).unwrap();
-        assert_eq!(s.badges, 0xFF);
+        assert_eq!(s.badges, Some(0xFF));
         assert_eq!(s.caught, [2, 649]);
         assert_eq!((s.trainer.as_str(), s.money, s.played), ("Lisa", 123_456, [101, 2, 3]));
         assert_eq!(summary(&s.team), [(495, None, Some(5)), (571, Some("Zoroark♀"), Some(42))]);
@@ -1040,7 +1340,7 @@ mod tests {
         assert_eq!(s.boxes[1].mons[0].as_ref().map(|m| (m.species_id, m.level)), Some((571, None)));
         assert!(s.boxes[0].mons.iter().all(Option::is_none));
         assert_eq!(s.bag[3], Pocket { id: "medicine", items: vec![[17, 7]] });
-        assert_eq!(parse("black", &d).unwrap().badges, 0);
+        assert_eq!(parse("black", &d).unwrap().badges, Some(0));
         assert!(parse("black", &[0; 0x80000]).is_err_and(|e| e.contains("leer")));
         assert!(parse("black", &d[..0x40000]).is_err());
         assert!(parse("x", &d).is_err());

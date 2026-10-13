@@ -57,7 +57,7 @@ als `serde_json::Value`; es prüft nur `id` (`[A-Za-z0-9-]+`), bei Import zusät
 | `delete_run({ id })` | `void` |
 | `export_run({ run })` | `boolean` (false = Dialog abgebrochen; hübsch formatiertes JSON) |
 | `import_run()` | `Run \| null` (geprüft, **nicht** gespeichert; null = abgebrochen) |
-| `read_save({ gameId })` | Team, Boxen, Beutel, Orden-Bits, gefangene Arten, Name, Geld, Spielzeit oder `null` (Dialog abgebrochen); Parser in `savefile.rs` (Gen 1–5) |
+| `read_save({ gameId })` | Team, Boxen, Beutel, Orden-Bits, gefangene Arten, Name, Geld, Spielzeit oder `null` (Dialog abgebrochen); Parser in `savefile.rs` (Gen 1–7) |
 
 Export/Import öffnen den Dateidialog im Backend (`tauri-plugin-dialog`, Filter `json`); das Webview
 übergibt keine Pfade und braucht keine Dialog-Permissions.

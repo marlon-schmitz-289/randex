@@ -317,7 +317,8 @@ export const TEAM_SIZE = 6;
 /** Spiele mit Spielstand-Parser (src-tauri/src/savefile.rs) */
 export const SAVE_GAMES = new Set([
   "red", "blue", "yellow", "gold", "silver", "crystal", "ruby", "sapphire", "emerald", "firered", "leafgreen", "diamond", "pearl", "platinum", "heartgold", "soulsilver",
-  "black", "white", "black-2", "white-2",
+  "black", "white", "black-2", "white-2", "x", "y", "omega-ruby", "alpha-sapphire", "sun", "moon", "ultra-sun", "ultra-moon",
+  "lets-go-pikachu", "lets-go-eevee",
 ]);
 
 export interface PartyStats {
@@ -354,7 +355,8 @@ export interface SaveBox {
   mons: (SaveMon | null)[];
 }
 
-export type PocketId = "items" | "keyItems" | "balls" | "tms" | "berries" | "medicine" | "mail" | "battle" | "pc";
+export type PocketId =
+  | "items" | "keyItems" | "balls" | "tms" | "berries" | "medicine" | "mail" | "battle" | "zCrystals" | "candy" | "pc";
 
 export interface SavePocket {
   id: PocketId;

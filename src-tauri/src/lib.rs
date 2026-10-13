@@ -220,7 +220,8 @@ fn read_save_from(path: &Path, game_id: &str) -> Result<savefile::SaveData, Stri
 
 #[tauri::command(async)]
 fn read_save(app: tauri::AppHandle, game_id: String) -> Result<Option<savefile::SaveData>, String> {
-    let dialog = app.dialog().file().add_filter("Spielstand", &["sav", "dsv", "srm"]);
+    // 3DS-Spielstände (Checkpoint/JKSM) heißen „main“ ohne Endung, Let's Go „savedata.bin“
+    let dialog = app.dialog().file().add_filter("Spielstand", &["sav", "dsv", "srm", "bin", "main"]).add_filter("Alle Dateien", &["*"]);
     picked(dialog.blocking_pick_file())?.map(|p| read_save_from(&p, &game_id)).transpose()
 }
 
