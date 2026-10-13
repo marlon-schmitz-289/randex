@@ -1,13 +1,13 @@
 <script lang="ts" module>
   import type { Stats } from "$lib/types.ts";
 
-  export const STATS: { key: keyof Stats; label: string; bar: string }[] = [
-    { key: "hp", label: "KP", bar: "bg-stat-hp" },
-    { key: "atk", label: "Angriff", bar: "bg-stat-atk" },
-    { key: "def", label: "Verteidigung", bar: "bg-stat-def" },
-    { key: "spa", label: "Sp.-Angriff", bar: "bg-stat-spa" },
-    { key: "spd", label: "Sp.-Verteidigung", bar: "bg-stat-spd" },
-    { key: "spe", label: "Initiative", bar: "bg-stat-spe" },
+  export const STATS: { key: keyof Stats; label: string; short: string; bar: string }[] = [
+    { key: "hp", label: "KP", short: "KP", bar: "bg-stat-hp" },
+    { key: "atk", label: "Angriff", short: "Angr.", bar: "bg-stat-atk" },
+    { key: "def", label: "Verteidigung", short: "Vert.", bar: "bg-stat-def" },
+    { key: "spa", label: "Sp.-Angriff", short: "Sp.-A.", bar: "bg-stat-spa" },
+    { key: "spd", label: "Sp.-Verteidigung", short: "Sp.-V.", bar: "bg-stat-spd" },
+    { key: "spe", label: "Initiative", short: "Init.", bar: "bg-stat-spe" },
   ];
   export const MAX = 255;
 </script>

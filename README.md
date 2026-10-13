@@ -84,9 +84,10 @@ Bekannte Grenzen (Datenlage in PokeAPI):
 
 ### Spielstand
 
-- Pro Run zuschaltbar (Gen 3 und 5): Spielstand-Datei des Emulators einlesen (`.sav`, `.dsv`, `.srm`)
+- Pro Run zuschaltbar (Gen 1–5): Spielstand-Datei des Emulators einlesen (`.sav`, `.dsv`, `.srm`)
 - Tab „Spielstand“ mit Team (Level, KP, Werte, Attacken, Item), Boxen (Level aus EXP) und Beutel
-- Übernimmt Team und Orden in den Fortschritt
+- Übernimmt Team, Orden und Feldfähigkeiten (VM im Beutel) in den Fortschritt und gefangene Pokémon in den
+  Pokédex (nur ergänzend, manuell Abgehaktes bleibt); zeigt Name, Geld und Spielzeit im Fortschritt
 - Formate nach PKHeX; Item-Nummern und EXP-Kurven aus PokeAPI (`static/data/savegame.json`)
 
 ### Daten

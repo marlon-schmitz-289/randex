@@ -1,10 +1,10 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { calcStats, itemIcon, itemName, levelOf, natureEffect, ownNickname } from "./savegame.ts";
+import { calcStats, calcStatsGb, fieldMovesInBag, itemIcon, itemName, levelOf, natureEffect, ownNickname } from "./savegame.ts";
 import type { SavegameData, SaveMon } from "./types.ts";
 
 const data: SavegameData = {
-  items: { 5: { 17: "Trank" } },
+  items: { 5: { 17: "Trank", 420: "VM01", 422: "VM03" } },
   icons: { 5: { 17: "medicine-potion" } },
   growth: [0, 2],
   experience: [[], [0, 8, 27, 64]],
@@ -54,4 +54,26 @@ test("calcStats wie PKHeX", () => {
   const base = { hp: 60, atk: 105, def: 60, spa: 120, spd: 60, spe: 105 };
   assert.deepEqual(calcStats(base, zoroark, 23), { hp: 82, atk: 53, def: 37, spa: 63, spd: 36, spe: 49 });
   assert.equal(calcStats(base, { ...zoroark, speciesId: 292 }, 50).hp, 1);
+});
+
+test("fieldMovesInBag: nur VMs im Beutel, andere Feldfähigkeiten bleiben manuell", () => {
+  const moves = [
+    { id: "cut", name: "VM01 Zerschneider", place: "", how: "" },
+    { id: "fly", name: "VM02 Fliegen", place: "", how: "" },
+    { id: "surf", name: "VM03 Surfer", place: "", how: "" },
+    { id: "ride", name: "Reit-Pokémon", place: "", how: "" },
+  ];
+  const bag = [{ id: "tms" as const, items: [[420, 1], [422, 1]] as [number, number][] }];
+  assert.deepEqual(fieldMovesInBag(moves, bag, data, 5), ["cut", "surf"]);
+  assert.deepEqual(fieldMovesInBag(moves, bag, data, 3), []);
+});
+
+test("calcStatsGb: Gen-1-Pikachu wie im Spiel (PKHeX)", () => {
+  const base = { hp: 35, atk: 55, def: 30, spa: 50, spd: 50, spe: 90 };
+  const pika: SaveMon = {
+    ...mon(12167, 23),
+    ivs: { hp: 11, atk: 13, def: 10, spa: 3, spd: 3, spe: 7 },
+    evs: { hp: 1234, atk: 0, def: 0, spa: 777, spd: 777, spe: 0 },
+  };
+  assert.deepEqual(calcStatsGb(base, pika, 23), { hp: 56, atk: 36, def: 23, spa: 30, spd: 30, spe: 49 });
 });

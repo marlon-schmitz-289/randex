@@ -1,4 +1,4 @@
-import type { PocketId, SavegameData, SaveMon, Stats } from "./types.ts";
+import type { FieldMove, PocketId, SavegameData, SaveMon, SavePocket, Stats } from "./types.ts";
 
 export const POCKET_LABELS: Record<PocketId, string> = {
   items: "Items",
@@ -6,6 +6,8 @@ export const POCKET_LABELS: Record<PocketId, string> = {
   balls: "Bälle",
   tms: "TM/VM",
   berries: "Beeren",
+  mail: "Briefe",
+  battle: "Kampf-Items",
   keyItems: "Basis-Items",
   pc: "PC",
 };
@@ -21,7 +23,8 @@ export function levelOf(mon: SaveMon, data: SavegameData): number {
 /** Wesen n: +NATURE_STATS[n / 5], −NATURE_STATS[n % 5] (gleich = neutral) */
 const NATURE_STATS: (keyof Stats)[] = ["atk", "def", "spe", "spa", "spd"];
 
-export function natureEffect(nature: number): { up?: keyof Stats; down?: keyof Stats } {
+export function natureEffect(nature: number | undefined): { up?: keyof Stats; down?: keyof Stats } {
+  if (nature === undefined) return {};
   const up = NATURE_STATS[Math.floor(nature / 5)];
   const down = NATURE_STATS[nature % 5];
   return up === down ? {} : { up, down };
@@ -44,6 +47,20 @@ export function calcStats(base: Stats, mon: SaveMon, level: number): Stats {
   };
 }
 
+/** Werte in Gen 1/2 aus Basiswerten, DVs (0–15), Stat-EXP und Level; Spezial steckt in spa und spd. */
+export function calcStatsGb(base: Stats, mon: SaveMon, level: number): Stats {
+  const core = (k: keyof Stats) =>
+    Math.floor((((base[k] + mon.ivs[k]) * 2 + Math.floor(Math.ceil(Math.sqrt(mon.evs[k])) / 4)) * level) / 100);
+  return {
+    hp: core("hp") + level + 10,
+    atk: core("atk") + 5,
+    def: core("def") + 5,
+    spa: core("spa") + 5,
+    spd: core("spd") + 5,
+    spe: core("spe") + 5,
+  };
+}
+
 export const itemName = (data: SavegameData, generation: number, item: number): string =>
   data.items[generation]?.[item] ?? `Item #${item}`;
 
@@ -56,4 +73,10 @@ export function itemIcon(data: SavegameData, generation: number, item: number): 
 export function ownNickname(mon: SaveMon, speciesName: string | undefined): string | undefined {
   const nick = mon.nickname;
   return nick && nick.toLocaleUpperCase("de") !== speciesName?.toLocaleUpperCase("de") ? nick : undefined;
+}
+
+/** Feldfähigkeiten, deren VM im Beutel liegt (Name beginnt mit der VM-Nummer, z. B. „VM03 Surfer“). */
+export function fieldMovesInBag(moves: readonly FieldMove[], bag: readonly SavePocket[], data: SavegameData, generation: number): string[] {
+  const owned = new Set(bag.flatMap((p) => p.items.map(([item]) => itemName(data, generation, item))));
+  return moves.filter((m) => /^VM\d+/.test(m.name) && owned.has(m.name.split(" ")[0])).map((m) => m.id);
 }

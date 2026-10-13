@@ -314,8 +314,11 @@ export const TEAM_SIZE = 6;
 
 // ---------- Spielstand (src-tauri/src/savefile.rs, static/data/savegame.json) ----------
 
-/** Gen-3-Spiele (Feuerrot/Blattgrün eingeschlossen) und Gen 5 */
-export const SAVE_GAMES = new Set(["ruby", "sapphire", "emerald", "firered", "leafgreen", "black", "white", "black-2", "white-2"]);
+/** Spiele mit Spielstand-Parser (src-tauri/src/savefile.rs) */
+export const SAVE_GAMES = new Set([
+  "red", "blue", "yellow", "gold", "silver", "crystal", "ruby", "sapphire", "emerald", "firered", "leafgreen", "diamond", "pearl", "platinum", "heartgold", "soulsilver",
+  "black", "white", "black-2", "white-2",
+]);
 
 export interface PartyStats {
   hp: number;
@@ -336,8 +339,8 @@ export interface SaveMon {
   item: number;
   /** Move-IDs (wie moves.json) */
   moves: number[];
-  /** Wesen-Nummer im Spiel (0–24), Name in SavegameData.natures */
-  nature: number;
+  /** Wesen-Nummer im Spiel (0–24), Name in SavegameData.natures; fehlt in Gen 1/2 */
+  nature?: number;
   ivs: Stats;
   evs: Stats;
   /** Nur im Team */
@@ -351,7 +354,7 @@ export interface SaveBox {
   mons: (SaveMon | null)[];
 }
 
-export type PocketId = "items" | "keyItems" | "balls" | "tms" | "berries" | "medicine" | "pc";
+export type PocketId = "items" | "keyItems" | "balls" | "tms" | "berries" | "medicine" | "mail" | "battle" | "pc";
 
 export interface SavePocket {
   id: PocketId;
@@ -365,6 +368,10 @@ export interface SaveSnapshot {
   team: SaveMon[];
   boxes: SaveBox[];
   bag: SavePocket[];
+  /** Spielername, Geld und Spielzeit [h, min, s]; fehlen in Snapshots vor 0.1.7 */
+  trainer?: string;
+  money?: number;
+  played?: [number, number, number];
 }
 
 /** static/data/savegame.json */

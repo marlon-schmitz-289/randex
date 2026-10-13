@@ -1,8 +1,11 @@
 import { invoke } from "@tauri-apps/api/core";
 import { toast } from "svelte-sonner";
-import { categoriesForGeneration, loadBadges, loadGameData, loadGames, loadOriginal, type GameData, type Original } from "./data.ts";
+import {
+  categoriesForGeneration, loadBadges, loadFieldMoves, loadGameData, loadGames, loadOriginal, loadSavegameData, type GameData,
+  type Original,
+} from "./data.ts";
 import { applyPatch, patchEntry } from "./entry.ts";
-import { ownNickname } from "./savegame.ts";
+import { fieldMovesInBag, ownNickname } from "./savegame.ts";
 import { SCHEMA_VERSION } from "./types.ts";
 import type {
   Category, Encounters, Game, Pokedex, PokemonEntry, Run, RunSummary, SaveSnapshot, Species, View, WildMatching,
@@ -339,25 +342,37 @@ export async function importRunFromFile(): Promise<void> {
   }
 }
 
-/** Spielstand per Dateidialog einlesen: Team und Orden übernehmen, Team/Boxen/Beutel ablegen. */
+/**
+ * Spielstand per Dateidialog einlesen: Team, Orden, gefangene Pokémon und Feldfähigkeiten (VM im Beutel) übernehmen,
+ * Team/Boxen/Beutel ablegen. Gefangene und Feldfähigkeiten werden ergänzt, nie entfernt (manuell Abgehaktes bleibt).
+ */
 export async function importSave(): Promise<void> {
   const run = app.current;
-  if (!run) return;
+  const generation = app.data?.game.generation;
+  if (!run || !generation) return;
   try {
-    const save = await invoke<(Omit<SaveSnapshot, "readAt"> & { badges: number }) | null>("read_save", { gameId: run.gameId });
+    const save = await invoke<(Omit<SaveSnapshot, "readAt"> & { badges: number; caught: number[] }) | null>("read_save", {
+      gameId: run.gameId,
+    });
     if (!save) return;
-    const badges = await loadBadges(run.gameId);
+    const [badges, fieldMoves, saveData] = await Promise.all([
+      loadBadges(run.gameId),
+      loadFieldMoves(run.gameId),
+      loadSavegameData(),
+    ]);
     if (app.current?.id !== run.id) return;
-    const { badges: owned, ...snapshot } = save;
+    const { badges: owned, caught, ...snapshot } = save;
     mutate((r) => {
       r.team = save.team.map((m) => {
         const nickname = ownNickname(m, app.data?.speciesById.get(m.speciesId)?.name);
         return nickname ? { speciesId: m.speciesId, nickname, level: m.level } : { speciesId: m.speciesId, level: m.level };
       });
       r.badges = badges.filter((_, i) => owned & (1 << i)).map((b) => b.id);
+      r.caught = [...new Set([...(r.caught ?? []), ...caught])];
+      r.fieldMoves = [...new Set([...(r.fieldMoves ?? []), ...fieldMovesInBag(fieldMoves, snapshot.bag, saveData, generation)])];
       r.save = { ...snapshot, readAt: Date.now() };
     });
-    toast.success("Spielstand eingelesen");
+    toast.success(`Spielstand eingelesen, ${caught.length} Pokémon im Pokédex gefangen`);
   } catch (e) {
     toast.error(`Spielstand konnte nicht gelesen werden: ${errText(e)}`);
   }

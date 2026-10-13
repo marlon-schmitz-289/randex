@@ -17,7 +17,7 @@ const DE = 6;
 const EN = 9;
 const MAX_SPECIES = 1025;
 // Spielstand-Import: Generationen und höchste Dex-Nr. (Gen 5)
-const SAVE_GENERATIONS = [3, 5];
+const SAVE_GENERATIONS = [1, 2, 3, 4, 5];
 const MAX_SAVE_SPECIES = 649;
 
 const TYPE_ORDER = [

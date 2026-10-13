@@ -75,6 +75,11 @@
     return type && { src: `/items/${f.name.startsWith("TM") ? "tm" : "hm"}-${type}.png`, pixel: true };
   }
 
+  const save = $derived(app.current?.save);
+  const readAt = (ms: number) => new Date(ms).toLocaleString("de-DE", { dateStyle: "short", timeStyle: "short" });
+  const playTime = (p: [number, number, number] | undefined) =>
+    p ? `${p[0]}:${String(p[1]).padStart(2, "0")} h` : "–";
+
   function parseLevel(v: string): number | undefined {
     const n = Number.parseInt(v, 10);
     return Number.isNaN(n) ? undefined : Math.min(100, Math.max(1, n));
@@ -82,7 +87,13 @@
 </script>
 
 <div class="grid h-full min-h-0 grid-cols-[minmax(20rem,26rem)_1fr] gap-3">
-  <Panel title="Team ({team.length}/{TEAM_SIZE})" flush bodyClass="overflow-y-auto">
+  <!-- Trainerdaten aus dem Spielstand unten im Team-Panel -->
+  <Panel
+    title="Team ({team.length}/{TEAM_SIZE})"
+    flush
+    bodyClass="overflow-y-auto"
+    footer={save?.trainer !== undefined ? trainer : undefined}
+  >
     <ul class="space-y-2 p-3">
       {#each team as m, i}
         {@const name = app.data?.speciesById.get(m.speciesId)?.name ?? `#${m.speciesId}`}
@@ -169,6 +180,23 @@
     {/await}
   </div>
 </div>
+
+{#snippet trainer()}
+  {#if save}
+    <dl class="grid w-full grid-cols-3 gap-3" title="Aus dem Spielstand vom {readAt(save.readAt)}">
+      {@render fact("Trainer", save.trainer || "–")}
+      {@render fact("Geld", `${(save.money ?? 0).toLocaleString("de-DE")} ₽`)}
+      {@render fact("Spielzeit", playTime(save.played))}
+    </dl>
+  {/if}
+{/snippet}
+
+{#snippet fact(label: string, value: string)}
+  <div class="min-w-0">
+    <dt class="text-xs text-muted-foreground">{label}</dt>
+    <dd class="truncate font-semibold tabular-nums">{value}</dd>
+  </div>
+{/snippet}
 
 {#snippet badgeGrid(list: Badge[])}
   <div class="grid grid-cols-[repeat(auto-fill,minmax(12rem,1fr))] gap-2">

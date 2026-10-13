@@ -77,13 +77,15 @@
     <Panel title="Noch kein Spielstand" flush>
       <EmptyState>
         Im Spiel speichern, dann „Spielstand laden“ und die Datei des Emulators wählen (mGBA/melonDS: .sav,
-        DeSmuME: .dsv, RetroArch: .srm). Team und Orden im Fortschritt werden dabei übernommen.
+        DeSmuME: .dsv, RetroArch: .srm). Übernommen werden Team, Orden, VMs, Name, Geld und
+        Spielzeit in den Fortschritt sowie gefangene Pokémon in den Pokédex.
       </EmptyState>
     </Panel>
   {:else}
     {#await loaded then [data, original]}
-      <Tabs.Content value="team" class="min-h-0 overflow-y-auto">
-        <div class="grid grid-cols-3 gap-3">
+      <Tabs.Content value="team" class="min-h-0 flex-1 overflow-y-auto">
+        <!-- Zwei Reihen füllen die Höhe; reicht sie nicht, bestimmt der Inhalt die Höhe und es scrollt -->
+        <div class="grid min-h-full grid-cols-3 grid-rows-[repeat(2,minmax(min-content,1fr))] gap-3">
           {#each save.team as mon, i (i)}
             <SaveMonCard {mon} {data} />
           {:else}
