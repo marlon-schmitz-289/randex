@@ -5,6 +5,7 @@
   import { Input } from "$lib/components/ui/input/index.js";
   import * as Select from "$lib/components/ui/select/index.js";
   import * as ToggleGroup from "$lib/components/ui/toggle-group/index.js";
+  import { EmptyState, Hint, NavRow, SegmentItem } from "$lib/components/kit";
   import { app, showSpecies } from "$lib/runs.svelte.ts";
   import { hasEntry, searchSpecies, type EntryFilter } from "$lib/search.ts";
   import type { TypeId } from "$lib/types.ts";
@@ -116,10 +117,7 @@
         aria-label="Filter"
       >
         {#each FILTERS as f (f.value)}
-          <ToggleGroup.Item
-            value={f.value}
-            class="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
-          >{f.label}</ToggleGroup.Item>
+          <SegmentItem value={f.value}>{f.label}</SegmentItem>
         {/each}
       </ToggleGroup.Root>
     {/if}
@@ -135,7 +133,7 @@
       </Select.Content>
     </Select.Root>
   </div>
-  <p class="text-xs text-muted-foreground" aria-live="polite">{results.length} Pokémon</p>
+  <Hint live>{results.length} Pokémon</Hint>
 
   <div
     bind:this={listEl}
@@ -144,7 +142,7 @@
     class="panel min-h-0 flex-1 overflow-y-auto"
   >
     {#if results.length === 0}
-      <p class="p-4 text-sm text-muted-foreground">Keine Treffer.</p>
+      <EmptyState>Keine Treffer.</EmptyState>
     {:else}
       <div class="relative" style="height:{results.length * ROW}px" role="list" aria-label="Pokémon">
         {#each visible as s, i (s.id)}
@@ -158,17 +156,14 @@
             class="absolute inset-x-0"
             style="top:{(first + i) * ROW}px;height:{ROW}px"
           >
-            <button
-              type="button"
-              aria-current={selected ? "true" : undefined}
+            <NavRow
+              current={selected}
               onclick={() => showSpecies(s.id)}
-              class="flex size-full items-center gap-2 border-l-4 px-2 focus-visible:-outline-offset-2 text-left hover:bg-accent hover:text-accent-foreground {selected
-                ? 'border-panel-header bg-panel-header text-panel-header-foreground hover:bg-panel-header hover:text-panel-header-foreground'
-                : 'border-transparent'}"
+              class="size-full rounded-none py-0 focus-visible:-outline-offset-2"
             >
               <Sprite id={s.id} size={40} />
               <span class="w-11 shrink-0 text-xs tabular-nums {selected ? '' : 'text-muted-foreground'}">#{String(s.id).padStart(3, "0")}</span>
-              <span class="min-w-0 flex-1 truncate text-sm font-medium">{s.name}</span>
+              <span class="min-w-0 flex-1 truncate font-medium">{s.name}</span>
               {#each types as t (t)}
                 <TypeBadge id={t} size="sm" />
               {/each}
@@ -181,7 +176,7 @@
                   <span class="sr-only">Fehlt</span>
                 {/if}
               {/if}
-            </button>
+            </NavRow>
           </div>
         {/each}
       </div>

@@ -14,6 +14,7 @@
 
 <script lang="ts">
   import { Input } from "$lib/components/ui/input/index.js";
+  import { StatBar } from "$lib/components/kit";
   import { updateEntry } from "$lib/runs.svelte.ts";
   import type { PokemonEntry } from "$lib/types.ts";
 
@@ -43,9 +44,7 @@
       class="h-7 text-right tabular-nums"
       onchange={(e) => set(s.key, e.currentTarget.valueAsNumber)}
     />
-    <div class="h-2.5 overflow-hidden rounded-full bg-stat-track" aria-hidden="true">
-      <div class={["h-full rounded-full", s.bar]} style:width="{(value / MAX) * 100}%"></div>
-    </div>
+    <StatBar {value} max={MAX} class={s.bar} />
   {/each}
   <span class="text-sm font-semibold">Summe</span>
   <span class="pr-3 text-right text-sm font-semibold tabular-nums">{total}</span>

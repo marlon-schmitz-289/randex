@@ -1,6 +1,7 @@
 <script lang="ts">
   import { app, showSpecies } from "$lib/runs.svelte.ts";
   import { calcStats, itemName, levelOf, natureEffect, ownNickname } from "$lib/savegame.ts";
+  import { Hint, Panel } from "$lib/components/kit";
   import type { SavegameData, SaveMon, Stats } from "$lib/types.ts";
   import { STATS } from "./detail/StatsEditor.svelte";
   import Sprite from "./list/Sprite.svelte";
@@ -20,12 +21,8 @@
   const moveNames = $derived(new Map(app.data?.moves.map((m) => [m.id, m.name])));
 </script>
 
-<section class="panel flex min-w-0 flex-col">
-  <div class="panel-header flex min-h-11 items-center gap-2 px-4 py-1.5 text-sm">
-    <span class="truncate">{nick ?? species}</span>
-    <span class="ml-auto shrink-0 tabular-nums">Lv. {level}</span>
-  </div>
-  <div class="flex flex-1 flex-col gap-3 p-3">
+<Panel title={nick ?? species} class="min-w-0" bodyClass="flex flex-col gap-3">
+  {#snippet actions()}Lv. {level}{/snippet}
     <div class="flex items-center gap-3">
       <button
         type="button"
@@ -77,11 +74,11 @@
       </tbody>
     </table>
     {#if !mon.stats}
-      <p class="text-xs text-muted-foreground">
+      <Hint>
         {stats
           ? "Werte aus Basiswerten berechnet (Boxen speichern keine Werte)."
           : "Werte unbekannt: Stats sind randomisiert, aber für diese Art nicht eingetragen."}
-      </p>
+      </Hint>
     {/if}
 
     <ul class="mt-auto grid grid-cols-2 gap-1 text-sm" aria-label="Attacken">
@@ -98,5 +95,4 @@
         {/if}
       {/each}
     </ul>
-  </div>
-</section>
+</Panel>

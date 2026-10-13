@@ -5,6 +5,7 @@
   import * as Select from "$lib/components/ui/select/index.js";
   import * as Tabs from "$lib/components/ui/tabs/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
+  import { EmptyState, Hint, IconButton, Panel, SelectCard, TabTrigger } from "$lib/components/kit";
   import { loadOriginal, loadSavegameData } from "$lib/data.ts";
   import { app, importSave } from "$lib/runs.svelte.ts";
   import { itemName, levelOf, ownNickname, POCKET_LABELS } from "$lib/savegame.ts";
@@ -57,24 +58,23 @@
 <Tabs.Root bind:value={tab} class="flex h-full min-h-0 flex-col gap-3">
   <div class="flex flex-wrap items-center gap-3">
     <Tabs.List aria-label="Spielstand">
-      <Tabs.Trigger value="team">Team</Tabs.Trigger>
-      <Tabs.Trigger value="boxes">Boxen</Tabs.Trigger>
-      <Tabs.Trigger value="bag">Beutel</Tabs.Trigger>
+      <TabTrigger value="team">Team</TabTrigger>
+      <TabTrigger value="boxes">Boxen</TabTrigger>
+      <TabTrigger value="bag">Beutel</TabTrigger>
     </Tabs.List>
-    {#if save}<span class="text-xs text-muted-foreground">Stand: {readAt(save.readAt)}</span>{/if}
+    {#if save}<Hint>Stand: {readAt(save.readAt)}</Hint>{/if}
     <Button class="ml-auto" title="Spielstand-Datei des Emulators wählen (.sav, .dsv, .srm)" onclick={importSave}>
       <Import /> Spielstand laden
     </Button>
   </div>
 
   {#if !save}
-    <section class="panel">
-      <h2 class="panel-header px-4 py-2 text-sm">Noch kein Spielstand</h2>
-      <p class="p-4 text-sm text-muted-foreground">
+    <Panel title="Noch kein Spielstand" flush>
+      <EmptyState>
         Im Spiel speichern, dann „Spielstand laden“ und die Datei des Emulators wählen (mGBA/melonDS: .sav,
         DeSmuME: .dsv, RetroArch: .srm). Team und Orden im Fortschritt werden dabei übernommen.
-      </p>
-    </section>
+      </EmptyState>
+    </Panel>
   {:else}
     {#await loaded then [data, original]}
       <Tabs.Content value="team" class="min-h-0 overflow-y-auto">
@@ -82,22 +82,18 @@
           {#each save.team as mon, i (i)}
             <SaveMonCard {mon} {data} />
           {:else}
-            <p class="text-sm text-muted-foreground">Kein Pokémon im Team.</p>
+            <EmptyState variant="inline">Kein Pokémon im Team.</EmptyState>
           {/each}
         </div>
       </Tabs.Content>
 
       <Tabs.Content value="boxes" class="min-h-0 flex-1 overflow-y-auto">
         <div class="grid min-h-full items-start gap-3 lg:grid-cols-[minmax(0,1fr)_24rem]">
-          <section class="panel flex h-full min-h-[30rem] flex-col">
-            <div class="panel-header flex items-center gap-2 px-2 py-1.5">
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                class="hover:bg-panel-header-foreground/15 hover:text-panel-header-foreground dark:hover:bg-panel-header-foreground/15"
-                aria-label="Vorherige Box" onclick={() => stepBox(-1)}>
+          <Panel class="h-full min-h-[30rem]" bodyClass="flex">
+            {#snippet header()}
+              <IconButton size="icon-sm" onHeader label="Vorherige Box" onclick={() => stepBox(-1)}>
                 <ChevronLeft />
-              </Button>
+              </IconButton>
               <Select.Root type="single" value={String(boxIndex)} onValueChange={(v) => selectBox(Number(v))}>
                 <Select.Trigger
                   class="mx-auto h-7 w-auto min-w-40 justify-center gap-2 border-0 bg-transparent font-semibold text-panel-header-foreground shadow-none hover:bg-panel-header-foreground/15 dark:bg-transparent dark:hover:bg-panel-header-foreground/15 [&_svg]:text-panel-header-foreground!"
@@ -115,42 +111,33 @@
                   {/each}
                 </Select.Content>
               </Select.Root>
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                class="hover:bg-panel-header-foreground/15 hover:text-panel-header-foreground dark:hover:bg-panel-header-foreground/15"
-                aria-label="Nächste Box" onclick={() => stepBox(1)}>
+              <IconButton size="icon-sm" onHeader label="Nächste Box" onclick={() => stepBox(1)}>
                 <ChevronRight />
-              </Button>
-            </div>
-            <ul class="grid flex-1 grid-cols-6 grid-rows-5 gap-2 p-3" aria-label={boxName(boxIndex)}>
+              </IconButton>
+            {/snippet}
+            <ul class="grid flex-1 grid-cols-6 grid-rows-5 gap-2" aria-label={boxName(boxIndex)}>
               {#each box?.mons ?? [] as mon, i (i)}
+                {@const level = mon && levelOf(mon, data)}
                 <li class="rounded-md bg-panel-inset/50">
                   {#if mon}
-                    {@const level = levelOf(mon, data)}
-                    <button
-                      type="button"
-                      class={[
-                        "flex size-full flex-col items-center justify-center rounded-md border-2 hover:border-ring",
-                        i === slot ? "border-primary bg-accent text-accent-foreground" : "border-panel-border/40 bg-panel-inset",
-                      ]}
-                      title={title(mon, level)}
-                      aria-label={title(mon, level)}
-                      aria-pressed={i === slot}
+                    <SelectCard
+                      class="flex size-full flex-col items-center justify-center"
+                      label={title(mon, level ?? 0)}
+                      pressed={i === slot}
                       onclick={() => save && (picked = { readAt: save.readAt, box: boxIndex, slot: i })}
                     >
                       <Sprite id={mon.speciesId} size={80} />
                       <span class="text-xs tabular-nums">Lv. {level}</span>
-                    </button>
+                    </SelectCard>
                   {/if}
                 </li>
               {/each}
             </ul>
-          </section>
+          </Panel>
           {#if selected}
             <SaveMonCard mon={selected} {data} base={baseStats(selected.speciesId, original)} />
           {:else}
-            <p class="text-sm text-muted-foreground">Diese Box ist leer.</p>
+            <EmptyState variant="inline">Diese Box ist leer.</EmptyState>
           {/if}
         </div>
       </Tabs.Content>
@@ -158,10 +145,9 @@
       <Tabs.Content value="bag" class="min-h-0 overflow-y-auto">
         <div class="grid grid-cols-[repeat(auto-fill,minmax(16rem,1fr))] items-start gap-3">
           {#each save.bag as pocket (pocket.id)}
-            <section class="panel">
-              <h2 class="panel-header px-4 py-1.5 text-sm">{POCKET_LABELS[pocket.id]} ({pocket.items.length})</h2>
+            <Panel title="{POCKET_LABELS[pocket.id]} ({pocket.items.length})">
               {#if pocket.items.length}
-                <ul class="grid gap-0.5 p-3 text-sm">
+                <ul class="grid gap-0.5 text-sm">
                   {#each pocket.items as [item, count], i (i)}
                     <li class="flex gap-2">
                       <span class="truncate">{itemName(data, generation, item)}</span>
@@ -170,14 +156,14 @@
                   {/each}
                 </ul>
               {:else}
-                <p class="p-3 text-sm text-muted-foreground">Leer</p>
+                <EmptyState variant="inline">Leer</EmptyState>
               {/if}
-            </section>
+            </Panel>
           {/each}
         </div>
       </Tabs.Content>
     {:catch e}
-      <p class="text-sm text-muted-foreground">Daten konnten nicht geladen werden: {e instanceof Error ? e.message : e}</p>
+      <EmptyState variant="inline">Daten konnten nicht geladen werden: {e instanceof Error ? e.message : e}</EmptyState>
     {/await}
   {/if}
 </Tabs.Root>

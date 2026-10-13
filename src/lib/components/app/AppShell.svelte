@@ -21,6 +21,7 @@
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
   import * as Tabs from "$lib/components/ui/tabs/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
+  import { EmptyState, IconButton, Panel, TabTrigger } from "$lib/components/kit";
   import {
     app,
     deleteRun,
@@ -35,9 +36,6 @@
   import EncounterView from "./encounter/EncounterView.svelte";
   import ProgressView from "./ProgressView.svelte";
   import SaveView from "./SaveView.svelte";
-
-  const activeTab =
-    "data-active:bg-primary data-active:text-primary-foreground dark:data-active:border-primary dark:data-active:bg-primary dark:data-active:text-primary-foreground";
 
   let createOpen = $state(false);
   let editOpen = $state(false);
@@ -108,24 +106,24 @@
 
       <Tabs.Root value={app.view} onValueChange={(v) => isView(v) && (app.view = v)} class="mx-auto">
         <Tabs.List aria-label="Ansicht">
-          <Tabs.Trigger value="pokemon" class={activeTab}><BookOpen /> Pokémon</Tabs.Trigger>
-          <Tabs.Trigger value="routes" class={activeTab}><MapIcon /> Routen</Tabs.Trigger>
-          <Tabs.Trigger value="progress" class={activeTab}><Trophy /> Fortschritt</Tabs.Trigger>
+          <TabTrigger value="pokemon"><BookOpen /> Pokémon</TabTrigger>
+          <TabTrigger value="routes"><MapIcon /> Routen</TabTrigger>
+          <TabTrigger value="progress"><Trophy /> Fortschritt</TabTrigger>
           {#if app.current.saveGame}
-            <Tabs.Trigger value="save" class={activeTab}><Gamepad /> Spielstand</Tabs.Trigger>
+            <TabTrigger value="save"><Gamepad /> Spielstand</TabTrigger>
           {/if}
         </Tabs.List>
       </Tabs.Root>
 
-      <Button variant="ghost" size="icon" aria-label="Run bearbeiten" title="Run bearbeiten" onclick={() => (editOpen = true)}>
+      <IconButton label="Run bearbeiten" onclick={() => (editOpen = true)}>
         <Pencil />
-      </Button>
-      <Button variant="ghost" size="icon" aria-label="Run exportieren" title="Run exportieren" onclick={() => void exportCurrentRun()}>
+      </IconButton>
+      <IconButton label="Run exportieren" onclick={() => void exportCurrentRun()}>
         <Download />
-      </Button>
-      <Button variant="ghost" size="icon" aria-label="Run löschen" title="Run löschen" onclick={() => (deleteOpen = true)}>
+      </IconButton>
+      <IconButton label="Run löschen" onclick={() => (deleteOpen = true)}>
         <Trash />
-      </Button>
+      </IconButton>
     {:else}
       <span class="mx-auto"></span>
     {/if}
@@ -144,15 +142,13 @@
       </Button>
     {/if}
 
-    <Button
-      variant="ghost"
-      size="icon"
-      aria-label={mode.current === "dark" ? "Heller Modus" : "Dunkler Modus"}
+    <IconButton
+      label={mode.current === "dark" ? "Heller Modus" : "Dunkler Modus"}
       title={mode.current === "dark" ? "Weiße Edition (hell)" : "Schwarze Edition (dunkel)"}
       onclick={toggleMode}
     >
       {#if mode.current === "dark"}<Sun />{:else}<Moon />{/if}
-    </Button>
+    </IconButton>
   </header>
 
   <main class="min-h-0 flex-1 p-3">
@@ -170,23 +166,24 @@
         <ProgressView />
       {/if}
     {:else if app.loading}
-      <p role="status" class="grid h-full place-items-center text-muted-foreground">Lade …</p>
+      <EmptyState variant="center" status>Lade …</EmptyState>
     {:else}
       <div class="grid h-full place-items-center">
-        <section class="panel w-full max-w-md overflow-hidden">
-          <h2 class="panel-header px-4 py-2">{app.runs.length ? "Kein Run geöffnet" : "Noch kein Run"}</h2>
-          <div class="grid gap-4 p-4">
-            <p class="text-sm text-muted-foreground">
-              {app.runs.length
-                ? "Wähle oben einen Run oder lege einen neuen an."
-                : "Lege einen Run für dein randomisiertes Spiel an oder importiere einen gespeicherten."}
-            </p>
-            <div class="flex gap-2">
-              <Button onclick={() => (createOpen = true)}><Plus /> Neuer Run</Button>
-              <Button variant="outline" onclick={() => void importRunFromFile()}><Upload /> Importieren</Button>
-            </div>
+        <Panel
+          title={app.runs.length ? "Kein Run geöffnet" : "Noch kein Run"}
+          class="w-full max-w-md overflow-hidden"
+          bodyClass="grid gap-4"
+        >
+          <EmptyState variant="inline">
+            {app.runs.length
+              ? "Wähle oben einen Run oder lege einen neuen an."
+              : "Lege einen Run für dein randomisiertes Spiel an oder importiere einen gespeicherten."}
+          </EmptyState>
+          <div class="flex gap-2">
+            <Button onclick={() => (createOpen = true)}><Plus /> Neuer Run</Button>
+            <Button variant="outline" onclick={() => void importRunFromFile()}><Upload /> Importieren</Button>
           </div>
-        </section>
+        </Panel>
       </div>
     {/if}
   </main>

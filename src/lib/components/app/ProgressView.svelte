@@ -1,10 +1,9 @@
 <script lang="ts">
   import Check from "@lucide/svelte/icons/check";
-  import X from "@lucide/svelte/icons/x";
   import { app, mutate, showSpecies } from "$lib/runs.svelte.ts";
   import { loadBadges, loadFieldMoves } from "$lib/data.ts";
   import { TEAM_SIZE, type Badge, type FieldMove, type TeamMember } from "$lib/types.ts";
-  import { Button } from "$lib/components/ui/button/index.js";
+  import { EmptyState, EditRow, Panel, Section, SelectCard } from "$lib/components/kit";
   import { Input } from "$lib/components/ui/input/index.js";
   import Sprite from "./list/Sprite.svelte";
   import SpeciesPicker from "./list/SpeciesPicker.svelte";
@@ -59,12 +58,11 @@
 </script>
 
 <div class="grid h-full min-h-0 grid-cols-[minmax(20rem,26rem)_1fr] gap-3">
-  <section class="panel flex min-h-0 flex-col">
-    <h2 class="panel-header px-4 py-2 text-sm">Team ({team.length}/{TEAM_SIZE})</h2>
-    <ul class="min-h-0 flex-1 space-y-2 overflow-y-auto p-3">
+  <Panel title="Team ({team.length}/{TEAM_SIZE})" flush bodyClass="overflow-y-auto">
+    <ul class="space-y-2 p-3">
       {#each team as m, i}
         {@const name = app.data?.speciesById.get(m.speciesId)?.name ?? `#${m.speciesId}`}
-        <li class="flex items-center gap-2 rounded-md border border-panel-border bg-panel-inset p-2">
+        <EditRow inset removeLabel="{name} aus dem Team entfernen" onRemove={() => mutate((r) => r.team?.splice(i, 1))}>
           <button type="button" class="shrink-0 rounded-md" title="{name} ansehen" onclick={() => showSpecies(m.speciesId)}>
             <Sprite id={m.speciesId} size={48} />
           </button>
@@ -94,15 +92,7 @@
               />
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label="{name} aus dem Team entfernen"
-            onclick={() => mutate((r) => r.team?.splice(i, 1))}
-          >
-            <X />
-          </Button>
-        </li>
+        </EditRow>
       {/each}
       {#if team.length < TEAM_SIZE}
         <li>
@@ -110,70 +100,62 @@
         </li>
       {/if}
     </ul>
-  </section>
+  </Panel>
 
   <!-- Wie links: Rahmen bleiben ganz sichtbar, nur der Inhalt scrollt -->
   <div class="flex min-h-0 flex-col gap-3">
     {#await progress then [badges, fieldMoves]}
-      <section class="panel flex min-h-0 flex-col">
-        <h2 class="panel-header px-4 py-2 text-sm">
-          Orden ({badges.filter((b) => owned.badges.has(b.id)).length}/{badges.length})
-        </h2>
-        <div class="min-h-0 space-y-4 overflow-y-auto p-3">
-          {#each groups(badges) as [group, list] (group)}
-            <div>
-              {#if group}<h3 class="mb-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase">{group}</h3>{/if}
-              <div class="grid grid-cols-[repeat(auto-fill,minmax(12rem,1fr))] gap-2">
-                {#each list as b (b.id)}
-                  {@render card(owned.badges.has(b.id), b.sprite, b.name, `${b.leader} · ${b.place}`, () => toggle("badges", b.id))}
-                {/each}
-              </div>
-            </div>
+      <Panel
+        title="Orden ({badges.filter((b) => owned.badges.has(b.id)).length}/{badges.length})"
+        bodyClass="space-y-4 overflow-y-auto"
+      >
+        {#each groups(badges) as [group, list] (group)}
+          {#if group}
+            <Section title={group}>{@render badgeGrid(list)}</Section>
           {:else}
-            <p class="text-sm text-muted-foreground">Für dieses Spiel sind keine Orden hinterlegt.</p>
-          {/each}
-        </div>
-      </section>
+            {@render badgeGrid(list)}
+          {/if}
+        {:else}
+          <EmptyState variant="inline">Für dieses Spiel sind keine Orden hinterlegt.</EmptyState>
+        {/each}
+      </Panel>
       {#if fieldMoves.length}
-        <section class="panel flex min-h-40 flex-1 flex-col">
-          <h2 class="panel-header px-4 py-2 text-sm">
-            Feldfähigkeiten ({fieldMoves.filter((f) => owned.fieldMoves.has(f.id)).length}/{fieldMoves.length})
-          </h2>
-          <div class="grid min-h-0 grid-cols-[repeat(auto-fill,minmax(16rem,1fr))] content-start gap-2 overflow-y-auto p-3">
-            {#each fieldMoves as f (f.id)}
-              {@const badge = f.badge && badges.find((b) => b.id === f.badge)?.name}
-              {@render card(
-                owned.fieldMoves.has(f.id),
-                undefined,
-                f.name,
-                f.place,
-                () => toggle("fieldMoves", f.id),
-                badge ? `${f.how} · ab ${badge}` : f.how,
-              )}
-            {/each}
-          </div>
-        </section>
+        <Panel
+          title="Feldfähigkeiten ({fieldMoves.filter((f) => owned.fieldMoves.has(f.id)).length}/{fieldMoves.length})"
+          class="min-h-40 flex-1"
+          bodyClass="grid grid-cols-[repeat(auto-fill,minmax(16rem,1fr))] content-start gap-2 overflow-y-auto"
+        >
+          {#each fieldMoves as f (f.id)}
+            {@const badge = f.badge && badges.find((b) => b.id === f.badge)?.name}
+            {@render card(
+              owned.fieldMoves.has(f.id),
+              undefined,
+              f.name,
+              f.place,
+              () => toggle("fieldMoves", f.id),
+              badge ? `${f.how} · ab ${badge}` : f.how,
+            )}
+          {/each}
+        </Panel>
       {/if}
     {:catch e}
-      <section class="panel">
-        <h2 class="panel-header px-4 py-2 text-sm">Fortschritt</h2>
-        <p class="p-4 text-sm text-muted-foreground">
-          Fortschritt konnte nicht geladen werden: {e instanceof Error ? e.message : e}
-        </p>
-      </section>
+      <Panel title="Fortschritt" flush>
+        <EmptyState>Fortschritt konnte nicht geladen werden: {e instanceof Error ? e.message : e}</EmptyState>
+      </Panel>
     {/await}
   </div>
 </div>
 
+{#snippet badgeGrid(list: Badge[])}
+  <div class="grid grid-cols-[repeat(auto-fill,minmax(12rem,1fr))] gap-2">
+    {#each list as b (b.id)}
+      {@render card(owned.badges.has(b.id), b.sprite, b.name, `${b.leader} · ${b.place}`, () => toggle("badges", b.id))}
+    {/each}
+  </div>
+{/snippet}
+
 {#snippet card(on: boolean, sprite: string | undefined, title: string, sub: string, onclick: () => void, detail?: string)}
-  <button
-    type="button"
-    aria-pressed={on}
-    class="group flex items-center gap-3 rounded-md border-2 p-2 text-left transition-colors {on
-      ? 'border-primary bg-accent text-accent-foreground'
-      : 'border-panel-border bg-panel-inset text-muted-foreground hover:border-ring'}"
-    {onclick}
-  >
+  <SelectCard pressed={on} {onclick} class="flex items-center gap-3 p-2">
     {#if sprite}
       <img
         src={sprite}
@@ -195,6 +177,5 @@
       <span class="block truncate text-xs">{sub}</span>
       {#if detail}<span class="mt-0.5 block text-xs text-muted-foreground">{detail}</span>{/if}
     </span>
-    {#if on}<Check class="ml-auto size-4 shrink-0 text-primary" />{/if}
-  </button>
+  </SelectCard>
 {/snippet}

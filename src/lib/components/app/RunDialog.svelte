@@ -4,9 +4,8 @@
   import * as Select from "$lib/components/ui/select/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
   import { Input } from "$lib/components/ui/input/index.js";
-  import { Label } from "$lib/components/ui/label/index.js";
-  import { Switch } from "$lib/components/ui/switch/index.js";
   import { Textarea } from "$lib/components/ui/textarea/index.js";
+  import { Field, SwitchField } from "$lib/components/kit";
   import { categoriesForGeneration } from "$lib/data.ts";
   import { app, createRun, DEFAULT_CATEGORIES, updateRunMeta } from "$lib/runs.svelte.ts";
   import { CATEGORY_LABELS, SAVE_GAMES, WILD_MATCHING_LABELS, type Category, type Game, type Run, type WildMatching } from "$lib/types.ts";
@@ -80,13 +79,17 @@
         </Dialog.Description>
       </Dialog.Header>
 
-      <div class="grid gap-1.5">
-        <Label for="run-name">Name</Label>
+      <Field label="Name" for="run-name">
         <Input id="run-name" bind:value={name} placeholder="z. B. Nuzlocke Schwarz" required />
-      </div>
+      </Field>
 
-      <div class="grid gap-1.5">
-        <Label for="run-game">Spiel</Label>
+      <Field
+        label="Spiel"
+        for="run-game"
+        hint={run && gameId !== run.gameId
+          ? "Einträge bleiben erhalten, Pokémon und Routen richten sich nach dem neuen Spiel. Encounter auf Routen, die es dort nicht gibt, werden ausgeblendet und erscheinen erst nach einem Zurückwechseln wieder."
+          : undefined}
+      >
         <Select.Root type="single" bind:value={gameId}>
           <Select.Trigger id="run-game" class="w-full" aria-required="true">
             {game ? `${game.name} (${game.region})` : "Spiel wählen"}
@@ -102,43 +105,34 @@
             {/each}
           </Select.Content>
         </Select.Root>
-        {#if run && gameId !== run.gameId}
-          <p class="text-xs text-muted-foreground">
-            Einträge bleiben erhalten, Pokémon und Routen richten sich nach dem neuen Spiel.
-            Encounter auf Routen, die es dort nicht gibt, werden ausgeblendet und erscheinen erst nach
-            einem Zurückwechseln wieder.
-          </p>
-        {/if}
-      </div>
+      </Field>
 
-      <div class="grid gap-1.5">
-        <Label for="run-seed">Seed <span class="text-muted-foreground">(optional)</span></Label>
+      <Field label="Seed" for="run-seed" optional>
         <Input id="run-seed" bind:value={seed} />
-      </div>
+      </Field>
 
-      <div class="grid gap-1.5">
-        <div class="flex items-center gap-2">
-          <Switch id="run-randomized" bind:checked={randomized} />
-          <Label for="run-randomized">Randomizer-Run</Label>
-        </div>
-        <p class="text-xs text-muted-foreground">Aus: Originaldaten des Spiels nachschlagen statt eintragen.</p>
-      </div>
+      <SwitchField
+        id="run-randomized"
+        label="Randomizer-Run"
+        bind:checked={randomized}
+        hint="Aus: Originaldaten des Spiels nachschlagen statt eintragen."
+      />
 
       {#if SAVE_GAMES.has(gameId)}
-        <div class="grid gap-1.5">
-          <div class="flex items-center gap-2">
-            <Switch id="run-save" bind:checked={saveGame} />
-            <Label for="run-save">Spielstand einlesen</Label>
-          </div>
-          <p class="text-xs text-muted-foreground">
-            Zeigt Team mit Werten, Boxen und Beutel aus der Spielstand-Datei des Emulators.
-          </p>
-        </div>
+        <SwitchField
+          id="run-save"
+          label="Spielstand einlesen"
+          bind:checked={saveGame}
+          hint="Zeigt Team mit Werten, Boxen und Beutel aus der Spielstand-Datei des Emulators."
+        />
       {/if}
 
       {#if randomized}
-        <div class="grid gap-1.5">
-          <Label for="run-matching">Wilde Pokémon</Label>
+        <Field
+          label="Wilde Pokémon"
+          for="run-matching"
+          hint="Wie im Randomizer eingestellt. Bei 1:1 zeigen die Routen pro Methode, wie viele Pokémon es dort gibt (z. B. 2/3)."
+        >
           <Select.Root type="single" bind:value={matching}>
             <Select.Trigger id="run-matching" class="w-full">
               {matching === "off" ? "Keine Zuordnung" : WILD_MATCHING_LABELS[matching]}
@@ -150,30 +144,23 @@
               {/each}
             </Select.Content>
           </Select.Root>
-          <p class="text-xs text-muted-foreground">
-            Wie im Randomizer eingestellt. Bei 1:1 zeigen die Routen pro Methode, wie viele Pokémon es dort gibt (z. B. 2/3).
-          </p>
-        </div>
+        </Field>
       {/if}
 
-      <div class="grid gap-1.5">
-        <Label for="run-note">Notiz <span class="text-muted-foreground">(optional)</span></Label>
+      <Field label="Notiz" for="run-note" optional>
         <Textarea id="run-note" bind:value={note} rows={2} />
-      </div>
+      </Field>
 
       {#if randomized && allowed.length}
         <fieldset class="grid gap-2">
           <legend class="mb-2 text-sm font-medium">Kategorien</legend>
           <div class="grid grid-cols-2 gap-x-4 gap-y-2">
             {#each allowed as c (c)}
-              <div class="flex items-center gap-2">
-                <Switch
-                  id="run-cat-{c}"
-                  checked={categories.includes(c)}
-                  onCheckedChange={(on) => toggle(c, on)}
-                />
-                <Label for="run-cat-{c}" class="font-normal">{CATEGORY_LABELS[c]}</Label>
-              </div>
+              <SwitchField
+                id="run-cat-{c}"
+                label={CATEGORY_LABELS[c]}
+                bind:checked={() => categories.includes(c), (on) => toggle(c, on)}
+              />
             {/each}
           </div>
         </fieldset>

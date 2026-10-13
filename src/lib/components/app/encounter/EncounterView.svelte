@@ -4,6 +4,7 @@
   import { app } from "$lib/runs.svelte.ts";
   import { allLocations } from "$lib/encounters.ts";
   import * as ToggleGroup from "$lib/components/ui/toggle-group/index.js";
+  import { EmptyState, Panel, SegmentItem } from "$lib/components/kit";
   import LocationList from "./LocationList.svelte";
   import LocationEditor from "./LocationEditor.svelte";
   import RegionMap from "./RegionMap.svelte";
@@ -12,7 +13,6 @@
   const selected = $derived(locations.find((l) => l.id === app.selectedLocationId) ?? null);
 
   let mode = $state<"list" | "map">("map");
-  const itemOn = "data-[state=on]:bg-primary data-[state=on]:text-primary-foreground";
 </script>
 
 <div class="flex h-full min-h-0 flex-col gap-3">
@@ -25,8 +25,8 @@
     aria-label="Darstellung der Routen"
     class="self-start"
   >
-    <ToggleGroup.Item value="map" class={itemOn}><MapIcon /> Karte</ToggleGroup.Item>
-    <ToggleGroup.Item value="list" class={itemOn}><ListIcon /> Liste</ToggleGroup.Item>
+    <SegmentItem value="map"><MapIcon /> Karte</SegmentItem>
+    <SegmentItem value="list"><ListIcon /> Liste</SegmentItem>
   </ToggleGroup.Root>
 
   <div
@@ -45,13 +45,15 @@
         <LocationEditor location={selected} />
       {/key}
     {:else}
-      <div class="panel flex items-center justify-center p-6 text-sm text-muted-foreground">
-        {#if mode === "map"}
-          Klicke auf der Karte auf eine Route oder einen Ort.
-        {:else}
-          Wähle links eine Route aus.
-        {/if}
-      </div>
+      <Panel flush>
+        <EmptyState variant="center">
+          {#if mode === "map"}
+            Klicke auf der Karte auf eine Route oder einen Ort.
+          {:else}
+            Wähle links eine Route aus.
+          {/if}
+        </EmptyState>
+      </Panel>
     {/if}
   </div>
 </div>

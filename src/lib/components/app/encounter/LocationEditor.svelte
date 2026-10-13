@@ -1,6 +1,5 @@
 <script lang="ts">
   import PlusIcon from "@lucide/svelte/icons/plus";
-  import XIcon from "@lucide/svelte/icons/x";
   import Trash2Icon from "@lucide/svelte/icons/trash-2";
   import { app, mutate, showSpecies } from "$lib/runs.svelte.ts";
   import { addEncounter, countSpecies, isCustomLocation, methodsFor, removeCustomLocation, removeEncounter } from "$lib/encounters.ts";
@@ -10,6 +9,7 @@
   import { Button } from "$lib/components/ui/button/index.js";
   import Sprite from "$lib/components/app/list/Sprite.svelte";
   import SpeciesPicker from "$lib/components/app/list/SpeciesPicker.svelte";
+  import { Chip, EmptyState, Panel, Section } from "$lib/components/kit";
 
   let { location }: { location: Location } = $props();
 
@@ -45,102 +45,83 @@
   }
 </script>
 
-<section class="panel flex min-h-0 flex-col" aria-labelledby="location-editor-title">
-  <div class="panel-header flex items-center justify-between gap-2 px-4 py-2">
-    <h2 id="location-editor-title" class="truncate text-sm font-semibold">{location.name}</h2>
+<Panel title={location.name} bodyClass="space-y-4 overflow-y-auto">
+  {#snippet actions()}
     {#if isCustom}
       <Button variant="ghost" size="xs" onclick={() => (entryCount ? (confirmOpen = true) : removeLocation())}>
         <Trash2Icon /> Route löschen
       </Button>
     {/if}
-  </div>
-  <div class="min-h-0 flex-1 space-y-4 overflow-y-auto p-4">
-    {#if app.original}
-      {#each originalMethods as method (method)}
-        <div class="space-y-2">
-          <h3 class="text-sm font-semibold">{ENCOUNTER_METHOD_LABELS[method]}</h3>
-          <ul class="flex flex-wrap gap-2">
-            {#each original?.[method] ?? [] as [id, min, max] (id)}
-              <li>
-                <button
-                  type="button"
-                  class="flex items-center gap-1 rounded-full border border-panel-border bg-secondary py-0.5 pr-3 pl-1 text-sm text-secondary-foreground hover:bg-accent"
-                  onclick={() => showSpecies(id)}
-                >
-                  <Sprite {id} size={32} />
-                  {speciesName(id)}
-                  <span class="text-xs text-muted-foreground tabular-nums">Lv. {min === max ? min : `${min}–${max}`}</span>
-                </button>
-              </li>
-            {/each}
-          </ul>
-        </div>
-      {:else}
-        <p class="text-sm text-muted-foreground">
-          Hier gibt es keine wilden Pokémon.
-        </p>
-      {/each}
-    {:else}
-      {#each methods as method (method)}
-        {@const ids = app.current?.encounters[location.id]?.[method] ?? []}
-        {@const max = app.current?.wildMatching ? location.slots?.[method] : undefined}
-        <div class="space-y-2">
-          <h3 class="text-sm font-semibold">
-            {ENCOUNTER_METHOD_LABELS[method]}
-            {#if max}
-              <span
-                class={["ml-1 tabular-nums", ids.length > max ? "text-destructive" : ids.length === max ? "text-primary" : "text-muted-foreground"]}
-                title={ids.length > max ? "Mehr eingetragen, als es hier Slots gibt" : `${max} verschiedene Pokémon`}
-              >
-                ({ids.length}/{max}){#if ids.length > max}<span class="sr-only">, zu viele</span>{:else if ids.length === max}<span class="sr-only">, voll</span>{/if}
-              </span>
-            {/if}
-          </h3>
-          <ul class="flex flex-wrap gap-2">
-            {#each ids as id (id)}
-              <li class="flex items-center rounded-full border border-panel-border bg-secondary text-secondary-foreground">
-                <button
-                  type="button"
-                  class="flex items-center gap-1 rounded-l-full py-0.5 pr-1 pl-1 text-sm hover:bg-accent"
-                  onclick={() => showSpecies(id)}
-                >
-                  <Sprite {id} size={32} />
-                  {speciesName(id)}
-                </button>
-                <button
-                  type="button"
-                  class="rounded-r-full p-1.5 hover:bg-destructive hover:text-destructive-foreground"
-                  aria-label="{speciesName(id)} entfernen"
-                  onclick={() => mutate((r) => removeEncounter(r, location.id, method, id))}
-                >
-                  <XIcon class="size-3.5" />
-                </button>
-              </li>
-            {:else}
-              <li class="text-sm text-muted-foreground">Noch nichts eingetragen.</li>
-            {/each}
-          </ul>
-          <SpeciesPicker
-            allowFreeText={false}
-            exclude={ids}
-            placeholder="Pokémon hinzufügen …"
-            onSelect={(v) => add(method, v)}
-          />
-        </div>
-      {/each}
-      {#if missing.length}
-        <div class="flex flex-wrap items-center gap-2 border-t border-panel-border pt-3">
-          <span class="text-sm text-muted-foreground">Methode hinzufügen:</span>
-          {#each missing as m (m)}
-            <Button variant="outline" size="xs" onclick={() => (added = [...added, m])}>
-              <PlusIcon /> {ENCOUNTER_METHOD_LABELS[m]}
-            </Button>
+  {/snippet}
+  {#if app.original}
+    {#each originalMethods as method (method)}
+      <Section title={ENCOUNTER_METHOD_LABELS[method]}>
+        <ul class="flex flex-wrap gap-2">
+          {#each original?.[method] ?? [] as [id, min, max] (id)}
+            <li>
+              <Chip onclick={() => showSpecies(id)}>
+                <Sprite {id} size={32} />
+                {speciesName(id)}
+                <span class="text-xs text-muted-foreground tabular-nums">Lv. {min === max ? min : `${min}–${max}`}</span>
+              </Chip>
+            </li>
           {/each}
-        </div>
-      {/if}
+        </ul>
+      </Section>
+    {:else}
+      <EmptyState variant="inline">Hier gibt es keine wilden Pokémon.</EmptyState>
+    {/each}
+  {:else}
+    {#each methods as method (method)}
+      {@const ids = app.current?.encounters[location.id]?.[method] ?? []}
+      {@const max = app.current?.wildMatching ? location.slots?.[method] : undefined}
+      <Section title={ENCOUNTER_METHOD_LABELS[method]}>
+        {#snippet aside()}
+          {#if max}
+            <span
+              class={ids.length > max ? "text-destructive" : ids.length === max ? "text-primary" : undefined}
+              title={ids.length > max ? "Mehr eingetragen, als es hier Slots gibt" : `${max} verschiedene Pokémon`}
+            >
+              ({ids.length}/{max}){#if ids.length > max}<span class="sr-only">, zu viele</span>{:else if ids.length === max}<span class="sr-only">, voll</span>{/if}
+            </span>
+          {/if}
+        {/snippet}
+        <ul class="flex flex-wrap gap-2">
+          {#each ids as id (id)}
+            <li>
+              <Chip
+                onclick={() => showSpecies(id)}
+                removeLabel="{speciesName(id)} entfernen"
+                onRemove={() => mutate((r) => removeEncounter(r, location.id, method, id))}
+              >
+                <Sprite {id} size={32} />
+                {speciesName(id)}
+              </Chip>
+            </li>
+          {:else}
+            <li><EmptyState variant="inline">Noch nichts eingetragen.</EmptyState></li>
+          {/each}
+        </ul>
+        <SpeciesPicker
+          allowFreeText={false}
+          exclude={ids}
+          placeholder="Pokémon hinzufügen …"
+          onSelect={(v) => add(method, v)}
+        />
+      </Section>
+    {/each}
+    {#if missing.length}
+      <div class="flex flex-wrap items-center gap-2 border-t border-panel-border pt-3">
+        <span class="text-sm text-muted-foreground">Methode hinzufügen:</span>
+        {#each missing as m (m)}
+          <Button variant="outline" size="xs" onclick={() => (added = [...added, m])}>
+            <PlusIcon /> {ENCOUNTER_METHOD_LABELS[m]}
+          </Button>
+        {/each}
+      </div>
     {/if}
-  </div>
-</section>
+  {/if}
+</Panel>
 
 <AlertDialog.Root bind:open={confirmOpen}>
   <AlertDialog.Content>

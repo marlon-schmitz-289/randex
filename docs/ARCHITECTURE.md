@@ -149,3 +149,25 @@ Alle Komponenten lesen/schreiben über `app` und die Funktionen aus `runs.svelte
 | `encounter/RegionMap.svelte` | – schematische Regionskarte (`loadRegionMap`), Klick auf Ort → Encounter-Liste |
 | `ProgressView.svelte` | – Team (bis 6), Orden (`loadBadges`) und Feldfähigkeiten (`loadFieldMoves`) zum Abhaken |
 | `SaveView.svelte` | – nur mit `run.saveGame`: Spielstand laden (`importSave`), Unter-Tabs Team/Boxen/Beutel aus `run.save` (`loadSavegameData`) |
+
+## UI-Bausteine (`src/lib/components/kit/`)
+
+Dünne App-Schicht über shadcn (`ui/`), Import über `$lib/components/kit`. Alle nehmen `children: Snippet`
+(außer `StatBar`, `SwitchField`); `class` nur für Layout.
+
+| Datei | Props |
+| --- | --- |
+| `Panel.svelte` | `title?`, `header?: Snippet` (ersetzt Titel), `actions?: Snippet` (rechts, Zähler/Knöpfe), `footer?: Snippet`, `flush?` (Body ohne `p-3`), `class?`, `bodyClass?` – ohne `title`/`header` kein Kopf |
+| `IconButton.svelte` | `label` (aria-label + title), `variant?` (Standard `ghost`), `size?: "icon" \| "icon-sm" \| "icon-xs"`, `onHeader?`, `class?`, Rest = Button-Attribute (`onclick`, `disabled` …) |
+| `EditRow.svelte` | `onRemove?` + `removeLabel` (zusammen), `inset?` (Kachel-Optik), `class?` (Inhalt, z. B. Grid) – `<li>` in `<ul class="flex flex-col gap-2">`; ohne `onRemove` Platzhalter-Spalte |
+| `Chip.svelte` | `onclick?` (Inhalt wird Button), `onRemove?` + `removeLabel`, `class?` – Liste `<ul class="flex flex-wrap gap-1.5">` |
+| `SelectCard.svelte` | `pressed`, `onclick`, `label?` (aria-label), `class?` – `aria-pressed`, Check-Badge wenn an |
+| `NavRow.svelte` | `onclick`, `meta?: Snippet` (rechts), `current?` (aria-current), `class?` – Liste `<ul class="flex flex-col gap-1">` |
+| `Section.svelte` | `title`, `aside?: Snippet` (hinter Titel), `class?` |
+| `EmptyState.svelte` | `variant?: "block" \| "inline" \| "center"` (Standard `block`), `status?` (role=status), `class?` |
+| `Hint.svelte` | `live?` (aria-live polite), `class?` |
+| `Field.svelte` | `label`, `for` (id des Controls), `optional?`, `hint?` |
+| `SwitchField.svelte` | `id`, `label`, `checked` (bindable), `hint?`, `disabled?` |
+| `StatBar.svelte` | `value`, `max`, `class` (Füllfarbe, `STATS[i].bar`) |
+| `TabTrigger.svelte` | wie `Tabs.Trigger` (`value`, `children` …) – aktiv `bg-primary` |
+| `SegmentItem.svelte` | wie `ToggleGroup.Item` (`value`, `children` …) – an `bg-primary`; Root `variant="outline" size="sm"` |

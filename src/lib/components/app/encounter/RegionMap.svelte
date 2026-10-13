@@ -5,7 +5,7 @@
   import type { MapPlace, RegionMap } from "$lib/types.ts";
   import type { Attachment } from "svelte/attachments";
   import { tick } from "svelte";
-  import { Button } from "$lib/components/ui/button/index.ts";
+  import { EmptyState, IconButton, Panel } from "$lib/components/kit";
   import ZoomIn from "@lucide/svelte/icons/zoom-in";
   import ZoomOut from "@lucide/svelte/icons/zoom-out";
   import Maximize from "@lucide/svelte/icons/maximize";
@@ -256,10 +256,9 @@
   {/if}
 {/snippet}
 
-<section class="panel flex min-h-0 flex-col">
-  <h2 class="panel-header px-4 py-2 text-sm">Karte {region}</h2>
+<Panel title="Karte {region}" flush bodyClass="flex flex-col">
   {#await mapPromise}
-    <p class="p-4 text-sm text-muted-foreground">Karte wird geladen …</p>
+    <EmptyState>Karte wird geladen …</EmptyState>
   {:then map}
     {#if map}
       {@const places = map.places.filter((p) => !p.games || p.games.includes(gameId)).sort((a, b) => order(a) - order(b))}
@@ -345,17 +344,15 @@
           </svg>
         </div>
         <div class="absolute right-4 bottom-4 flex flex-col gap-1">
-          <Button variant="secondary" size="icon" aria-label="Hineinzoomen" title="Hineinzoomen" onclick={() => zoomCenter(map, 1.5)}>
+          <IconButton variant="secondary" label="Hineinzoomen" onclick={() => zoomCenter(map, 1.5)}>
             <ZoomIn />
-          </Button>
-          <Button variant="secondary" size="icon" aria-label="Herauszoomen" title="Herauszoomen" disabled={!zoomed} onclick={() => zoomCenter(map, 1 / 1.5)}>
+          </IconButton>
+          <IconButton variant="secondary" label="Herauszoomen" disabled={!zoomed} onclick={() => zoomCenter(map, 1 / 1.5)}>
             <ZoomOut />
-          </Button>
-          <Button
+          </IconButton>
+          <IconButton
             variant="secondary"
-            size="icon"
-            aria-label="Ganze Karte"
-            title="Ganze Karte"
+            label="Ganze Karte"
             disabled={!zoomed}
             onclick={() => {
               commit();
@@ -363,7 +360,7 @@
             }}
           >
             <Maximize />
-          </Button>
+          </IconButton>
         </div>
       </div>
       <div aria-hidden="true" class="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-panel-border px-4 py-2 text-xs text-muted-foreground">
@@ -373,9 +370,9 @@
       </div>
     {/if}
   {:catch}
-    <p class="p-4 text-sm text-muted-foreground">Für {region} gibt es noch keine Karte.</p>
+    <EmptyState>Für {region} gibt es noch keine Karte.</EmptyState>
   {/await}
-</section>
+</Panel>
 
 {#if tip}
   <div

@@ -1,8 +1,7 @@
 <script lang="ts">
-  import XIcon from "@lucide/svelte/icons/x";
-  import { Button } from "$lib/components/ui/button/index.js";
   import { Input } from "$lib/components/ui/input/index.js";
   import * as Select from "$lib/components/ui/select/index.js";
+  import { EditRow } from "$lib/components/kit";
   import { updateEntry } from "$lib/runs.svelte.ts";
   import type { Evolution, PokemonEntry } from "$lib/types.ts";
   import SpeciesPicker from "../list/SpeciesPicker.svelte";
@@ -28,10 +27,14 @@
   const isMethod = (v: string): v is Evolution["method"] => Object.hasOwn(METHODS, v);
 </script>
 
-<div class="flex flex-col gap-2">
+<ul class="flex flex-col gap-2">
   {#each evolutions as evo, i (i)}
     {@const method = METHODS[evo.method]}
-    <div class="grid grid-cols-[minmax(0,1fr)_8rem_minmax(0,1fr)_auto] items-center gap-2">
+    <EditRow
+      class="grid grid-cols-[minmax(0,1fr)_8rem_minmax(0,1fr)]"
+      removeLabel="Entwicklung {i + 1} entfernen"
+      onRemove={() => setAll(evolutions.filter((_, j) => j !== i))}
+    >
       <SpeciesPicker
         value={evo.target}
         label="Entwicklung {i + 1} Ziel"
@@ -60,12 +63,9 @@
         aria-label="{method.label} für Entwicklung {i + 1}"
         oninput={(e) => patch(i, { value: e.currentTarget.value })}
       />
-      <Button variant="ghost" size="icon" aria-label="Entwicklung {i + 1} entfernen" onclick={() => setAll(evolutions.filter((_, j) => j !== i))}>
-        <XIcon />
-      </Button>
-    </div>
+    </EditRow>
   {/each}
-  <div class="flex items-center gap-2">
+  <EditRow>
     <SpeciesPicker
       value={null}
       allowFreeText
@@ -73,6 +73,5 @@
       placeholder="Entwicklung hinzufügen …"
       onSelect={(target) => setAll([...evolutions, { target, method: "level", value: "" }])}
     />
-    <span class="size-8 shrink-0" aria-hidden="true"></span>
-  </div>
-</div>
+  </EditRow>
+</ul>

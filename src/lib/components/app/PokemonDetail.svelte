@@ -1,9 +1,8 @@
 <script lang="ts">
   import CheckIcon from "@lucide/svelte/icons/check";
   import MapPinIcon from "@lucide/svelte/icons/map-pin";
-  import XIcon from "@lucide/svelte/icons/x";
-  import { Button } from "$lib/components/ui/button/index.js";
   import { Textarea } from "$lib/components/ui/textarea/index.js";
+  import { EditRow, EmptyState, Hint, NavRow, Panel } from "$lib/components/kit";
   import { allLocations, findSightings } from "$lib/encounters.ts";
   import { app, showLocation, updateEntry } from "$lib/runs.svelte.ts";
   import { CATEGORY_LABELS, ENCOUNTER_METHOD_LABELS } from "$lib/types.ts";
@@ -88,42 +87,33 @@
     {/each}
   </div>
   {#if types.length >= 2}
-    <p class="mt-2 text-xs text-muted-foreground">Höchstens zwei Typen. Wähle einen ab, um ihn zu ersetzen.</p>
+    <Hint class="mt-2">Höchstens zwei Typen. Wähle einen ab, um ihn zu ersetzen.</Hint>
   {/if}
 {/snippet}
 
 {#snippet abilitiesBody()}
-  <div class="flex flex-col gap-2">
+  <ul class="flex flex-col gap-2">
     {#each abilities as ability, i (i)}
-      <div class="flex items-center gap-2">
+      <EditRow removeLabel="{ability} entfernen" onRemove={() => setAbilities(abilities.filter((_, j) => j !== i))}>
         <NamePicker
           items={app.data?.abilities ?? []}
           value={ability}
           label="Fähigkeit {i + 1}"
           onSelect={(name) => setAbilities(abilities.map((a, j) => (j === i ? name : a)))}
         />
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label="{ability} entfernen"
-          onclick={() => setAbilities(abilities.filter((_, j) => j !== i))}
-        >
-          <XIcon />
-        </Button>
-      </div>
+      </EditRow>
     {/each}
     {#if abilities.length < MAX_ABILITIES}
-      <div class="flex items-center gap-2">
+      <EditRow>
         <NamePicker
           items={app.data?.abilities ?? []}
           value=""
           placeholder="Fähigkeit hinzufügen …"
           onSelect={(name) => !abilities.includes(name) && setAbilities([...abilities, name])}
         />
-        <span class="size-8 shrink-0" aria-hidden="true"></span>
-      </div>
+      </EditRow>
     {/if}
-  </div>
+  </ul>
 {/snippet}
 
 {#snippet locationsBody()}
@@ -131,26 +121,20 @@
     <ul class="flex flex-col gap-1">
       {#each sightings as s (s.location.id)}
         <li>
-          <button
-            type="button"
-            class="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm hover:bg-accent hover:text-accent-foreground"
-            onclick={() => showLocation(s.location.id)}
-          >
+          <NavRow onclick={() => showLocation(s.location.id)}>
             <MapPinIcon class="size-4 shrink-0 text-primary" />
             <span class="font-medium">{s.location.name}</span>
-            <span class="ml-auto text-xs text-muted-foreground">
-              {s.methods.map((m) => ENCOUNTER_METHOD_LABELS[m]).join(", ")}
-            </span>
-          </button>
+            {#snippet meta()}{s.methods.map((m) => ENCOUNTER_METHOD_LABELS[m]).join(", ")}{/snippet}
+          </NavRow>
         </li>
       {/each}
     </ul>
   {:else if !app.original}
-    <p class="text-sm text-muted-foreground">
+    <EmptyState variant="inline">
       Noch keine Fundorte. Trage das Pokémon in der Routenansicht bei einem Ort ein.
-    </p>
+    </EmptyState>
   {:else}
-    <p class="text-sm text-muted-foreground">In diesem Spiel nicht wild anzutreffen.</p>
+    <EmptyState variant="inline">In diesem Spiel nicht wild anzutreffen.</EmptyState>
   {/if}
 {/snippet}
 
@@ -166,66 +150,58 @@
 
 <div class="@container h-full overflow-y-auto">
   {#if id === null || !species}
-    <div class="grid h-full place-items-center p-6 text-center text-sm text-muted-foreground">
-      Wähle links ein Pokémon aus.
-    </div>
+    <EmptyState variant="center">Wähle links ein Pokémon aus.</EmptyState>
   {:else}
     <div class="flex flex-col gap-3">
-      <header class="panel overflow-hidden">
-        <div class="panel-header flex items-baseline gap-3">
+      <Panel bodyClass="flex items-center gap-4">
+        {#snippet header()}
           <span class="tabular-nums">Nr. {String(species.id).padStart(3, "0")}</span>
           <h1 class="text-lg">{species.name}</h1>
+        {/snippet}
+        <div class="grid size-32 shrink-0 place-items-center rounded-lg bg-panel-inset">
+          <Sprite id={species.id} size={96} class="[image-rendering:pixelated]" />
         </div>
-        <div class="flex items-center gap-4 p-4">
-          <div class="grid size-32 shrink-0 place-items-center rounded-lg bg-panel-inset">
-            <Sprite id={species.id} size={96} class="[image-rendering:pixelated]" />
-          </div>
-          <div class="flex flex-col gap-2">
-            {#if headerTypes.length}
-              <div class="flex gap-1.5">
-                {#each headerTypes as t (t)}
-                  <TypeBadge id={t} size="md" />
-                {/each}
-              </div>
-            {/if}
-            <p class="text-sm text-muted-foreground">Eingeführt in Generation {species.generation}</p>
-          </div>
+        <div class="flex flex-col gap-2">
+          {#if headerTypes.length}
+            <div class="flex gap-1.5">
+              {#each headerTypes as t (t)}
+                <TypeBadge id={t} size="md" />
+              {/each}
+            </div>
+          {/if}
+          <p class="text-sm text-muted-foreground">Eingeführt in Generation {species.generation}</p>
         </div>
-      </header>
+      </Panel>
 
       {#if app.original && !original}
-        <p class="panel p-4 text-sm text-muted-foreground">
-          Für dieses Spiel liefert PokeAPI keine Daten zu diesem Pokémon (kommt vermutlich nicht vor).
-        </p>
+        <Panel>
+          <EmptyState variant="inline">
+            Für dieses Spiel liefert PokeAPI keine Daten zu diesem Pokémon (kommt vermutlich nicht vor).
+          </EmptyState>
+        </Panel>
       {/if}
       <!-- Paare teilen Zeile und Höhe; ein einzelner letzter Abschnitt nimmt die volle Breite -->
       <div class="grid gap-3 @5xl:grid-cols-2">
         {#each ordered as category (category)}
-          <section
-            class="panel overflow-hidden @5xl:[&:last-child:nth-child(odd)]:col-span-2"
-            aria-labelledby="detail-{category}"
-          >
-            <h2 id="detail-{category}" class="panel-header text-sm">{CATEGORY_LABELS[category]}</h2>
-            <div class="p-4">
-              {#if original && category !== "locations" && category !== "note"}
-                <OriginalSection {category} pokemon={original} />
-              {:else if category === "types"}
-                {@render typesBody()}
-              {:else if category === "moves"}
-                <MovesEditor speciesId={species.id} {entry} />
-              {:else if category === "stats"}
-                <StatsEditor speciesId={species.id} {entry} />
-              {:else if category === "abilities"}
-                {@render abilitiesBody()}
-              {:else if category === "evolutions"}
-                <EvolutionsEditor speciesId={species.id} {entry} />
-              {:else if category === "locations"}
-                {@render locationsBody()}
-              {:else}
-                {@render noteBody()}
-              {/if}
-            </div>
-          </section>
+          <Panel title={CATEGORY_LABELS[category]} class="@5xl:[&:last-child:nth-child(odd)]:col-span-2">
+            {#if original && category !== "locations" && category !== "note"}
+              <OriginalSection {category} pokemon={original} />
+            {:else if category === "types"}
+              {@render typesBody()}
+            {:else if category === "moves"}
+              <MovesEditor speciesId={species.id} {entry} />
+            {:else if category === "stats"}
+              <StatsEditor speciesId={species.id} {entry} />
+            {:else if category === "abilities"}
+              {@render abilitiesBody()}
+            {:else if category === "evolutions"}
+              <EvolutionsEditor speciesId={species.id} {entry} />
+            {:else if category === "locations"}
+              {@render locationsBody()}
+            {:else}
+              {@render noteBody()}
+            {/if}
+          </Panel>
         {/each}
       </div>
     </div>

@@ -42,6 +42,21 @@ Projektbeschreibung, Funktionen und Nicht-Ziele: `README.md`. Stack und Aufbau o
 - Farben nur über Theme-Variablen (`@theme` / shadcn-Tokens), keine Hex-Werte in Komponenten.
 - Alles per Tastatur bedienbar, sichtbarer Fokus, ausreichender Kontrast.
 - UI-Texte auf Deutsch.
+- **UI-Bausteine aus `$lib/components/kit`** (dünne Schicht über shadcn in `ui/`, Übersicht in
+  `docs/ARCHITECTURE.md`). Neue Elemente immer daraus bzw. aus `ui/` bauen, keine Ad-hoc-Panels,
+  -Zeilen, -Chips oder -Leertexte in Ansichten; `panel`/`panel-header` nicht von Hand schreiben.
+  - Kasten mit Titelleiste: `Panel` (`title`/`header`, Zähler und Knöpfe in `actions`, nie im Titel).
+  - Nur-Icon-Knopf: `IconButton label="…"`, in Kopfzeilen `onHeader size="icon-sm"`. Entfernen = `XIcon`.
+  - Bearbeitbare Liste: `EditRow` (Hinzufügen-Zeile ohne `onRemove`). Pillen: `Chip`. Klickbare
+    Listenzeile: `NavRow`. Kachel zum Abhaken: `SelectCard`. Unterabschnitt: `Section`.
+  - Leer/Laden/Fehler: `EmptyState`, Erklärtext: `Hint`. Formulare: `Field`, `SwitchField`. Tabs:
+    `TabTrigger`, Segmente/Filter: `SegmentItem`. Wertbalken: `StatBar`.
+  - Fehlt etwas: `kit/` erweitern (sobald ein Muster zweimal vorkommt, inkl. Barrel `index.ts`,
+    zweites Vorkommen gleich umstellen) statt lokal nachzubauen. Varianten nur über Props; `class`
+    nur für Layout (Größe, Raster, overflow), nicht für Farben oder Abstände des Bausteins.
+  - Maße: Kopfzeile `min-h-11`, Body `p-3`, `gap-3` zwischen Panels, `gap-2` zwischen Zeilen,
+    `gap-1` in Navigationslisten, Icon-Knopf `size-8`. Aktiv (Tabs/Segmente) `bg-primary`, Auswahl
+    in Listen `bg-panel-header`.
 
 ## Ablauf bei Änderungen
 

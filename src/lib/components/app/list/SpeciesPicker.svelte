@@ -5,6 +5,7 @@
   import * as Popover from "$lib/components/ui/popover/index.js";
   import { app } from "$lib/runs.svelte.ts";
   import { searchSpecies } from "$lib/search.ts";
+  import { Hint } from "$lib/components/kit";
   import Sprite from "./Sprite.svelte";
 
   let {
@@ -76,9 +77,7 @@
           </Command.Item>
         {/each}
         {#if matches.length > MAX}
-          <p class="px-2 py-1.5 text-xs text-muted-foreground">
-            {matches.length - MAX} weitere Treffer – Suche eingrenzen
-          </p>
+          <Hint class="px-2 py-1.5">{matches.length - MAX} weitere Treffer – Suche eingrenzen</Hint>
         {/if}
         {#if allowFreeText && freeText}
           <Command.Item value="free-text" onSelect={() => pick(freeText)}>„{freeText}“ verwenden</Command.Item>

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { Chip, EmptyState, Hint, NavRow, Section, StatBar } from "$lib/components/kit";
   import { app, showSpecies } from "$lib/runs.svelte.ts";
   import type { Category, Evolution, OriginalPokemon } from "$lib/types.ts";
   import Sprite from "../list/Sprite.svelte";
@@ -38,9 +39,7 @@
       {@const value = pokemon.stats[s.key]}
       <span class="text-sm">{s.label}</span>
       <span class="text-right text-sm tabular-nums">{value}</span>
-      <div class="h-2.5 overflow-hidden rounded-full bg-stat-track" aria-hidden="true">
-        <div class={["h-full rounded-full", s.bar]} style:width="{(value / MAX) * 100}%"></div>
-      </div>
+      <StatBar {value} max={MAX} class={s.bar} />
     {/each}
     <span class="text-sm font-semibold">Summe</span>
     <span class="text-right text-sm font-semibold tabular-nums">{total}</span>
@@ -50,25 +49,20 @@
     <ul class="flex flex-col gap-1">
       {#each pokemon.evolutions as e, i (i)}
         <li>
-          <button
-            type="button"
-            class="flex w-full items-center gap-2 rounded-md px-2 py-1 text-left text-sm hover:bg-accent hover:text-accent-foreground"
-            onclick={() => showSpecies(e.target)}
-          >
+          <NavRow onclick={() => showSpecies(e.target)}>
             <Sprite id={e.target} size={40} />
             <span class="font-medium">{speciesName(e.target)}</span>
-            <span class="ml-auto text-xs text-muted-foreground">{evoText(e)}</span>
-          </button>
+            {#snippet meta()}{evoText(e)}{/snippet}
+          </NavRow>
         </li>
       {/each}
     </ul>
   {:else}
-    <p class="text-sm text-muted-foreground">Entwickelt sich in diesem Spiel nicht weiter.</p>
+    <EmptyState variant="inline">Entwickelt sich in diesem Spiel nicht weiter.</EmptyState>
   {/if}
 {:else if category === "moves"}
   <div class="flex flex-col gap-4">
-    <section class="flex flex-col gap-2" aria-labelledby="orig-moves-level">
-      <h3 id="orig-moves-level" class="text-sm font-semibold text-muted-foreground">Level-Up</h3>
+    <Section title="Level-Up">
       <table class="text-sm">
         <thead class="sr-only">
           <tr><th scope="col">Level</th><th scope="col">Attacke</th></tr>
@@ -82,25 +76,24 @@
           {/each}
         </tbody>
       </table>
-    </section>
+    </Section>
     {#if pokemon.tmMoves.length || app.original?.tutor}
-      <section class="flex flex-col gap-2" aria-labelledby="orig-moves-tm">
-        <h3 id="orig-moves-tm" class="text-sm font-semibold text-muted-foreground">
-          {app.original?.tutor ? "Lehrer-Attacken" : "TM/VM"}
-        </h3>
+      <Section title={app.original?.tutor ? "Lehrer-Attacken" : "TM/VM"}>
         {#if app.original?.tutor}
-          <p class="text-xs text-muted-foreground">PokeAPI hat für dieses Spiel kaum Lehrer-Daten, die Liste ist unvollständig.</p>
+          <Hint>PokeAPI hat für dieses Spiel kaum Lehrer-Daten, die Liste ist unvollständig.</Hint>
         {/if}
         <ul class="flex flex-wrap gap-1.5">
           {#each pokemon.tmMoves as move (move)}
             {@const label = app.original?.machines[move]}
-            <li class="rounded-md border border-border bg-secondary px-2 py-0.5 text-sm text-secondary-foreground">
-              {#if label}<span class="text-xs text-muted-foreground tabular-nums">{label}</span>{/if}
-              {moveName(move)}
+            <li>
+              <Chip>
+                {#if label}<span class="text-xs text-muted-foreground tabular-nums">{label}</span>{/if}
+                {moveName(move)}
+              </Chip>
             </li>
           {/each}
         </ul>
-      </section>
+      </Section>
     {/if}
   </div>
 {/if}

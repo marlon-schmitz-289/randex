@@ -5,8 +5,8 @@
   import { addCustomLocation, countSpecies } from "$lib/encounters.ts";
   import { normalize } from "$lib/search.ts";
   import type { Location } from "$lib/types.ts";
-  import { Button } from "$lib/components/ui/button/index.js";
   import { Input } from "$lib/components/ui/input/index.js";
+  import { EmptyState, IconButton, NavRow, Panel } from "$lib/components/kit";
 
   let { locations }: { locations: Location[] } = $props();
 
@@ -41,8 +41,7 @@
   }
 </script>
 
-<section class="panel flex min-h-0 flex-col">
-  <h2 class="panel-header px-4 py-2 text-sm">Routen ({locations.length})</h2>
+<Panel title="Routen ({locations.length})" flush bodyClass="flex flex-col" footer={app.original ? undefined : addForm}>
   <div class="p-3">
     <Input type="search" placeholder="Route suchen …" aria-label="Route suchen" bind:value={query} />
   </div>
@@ -50,32 +49,32 @@
     {#each shown as loc (loc.id)}
       {@const n = countSpecies(app.encounters, loc.id)}
       <li>
-        <button
-          type="button"
-          class="flex w-full items-center justify-between gap-2 rounded-md border-l-4 border-transparent px-3 py-1.5 text-left text-sm hover:bg-accent hover:text-accent-foreground aria-[current=true]:border-panel-header aria-[current=true]:bg-panel-header aria-[current=true]:text-panel-header-foreground"
-          aria-current={app.selectedLocationId === loc.id || undefined}
-          onclick={() => (app.selectedLocationId = loc.id)}
-        >
+        <NavRow current={app.selectedLocationId === loc.id} onclick={() => (app.selectedLocationId = loc.id)}>
           <span class="truncate">{loc.name}</span>
-          {#if n}
-            <span class="shrink-0 rounded-full bg-primary px-2 text-xs text-primary-foreground">
-              {n}<span class="sr-only"> Pokémon</span>
-            </span>
-          {/if}
-        </button>
+          {#snippet meta()}
+            {#if n}
+              <span class="rounded-full bg-primary px-2 text-primary-foreground">
+                {n}<span class="sr-only"> Pokémon</span>
+              </span>
+            {/if}
+          {/snippet}
+        </NavRow>
       </li>
     {:else}
-      <li class="px-3 py-2 text-sm text-muted-foreground">
-        {query.trim() ? "Keine Treffer." : app.original ? "Keine Routen für dieses Spiel." : "Keine Routen für dieses Spiel. Lege unten eine eigene an."}
+      <li>
+        <EmptyState variant="inline" class="px-2 py-2">
+          {query.trim() ? "Keine Treffer." : app.original ? "Keine Routen für dieses Spiel." : "Keine Routen für dieses Spiel. Lege unten eine eigene an."}
+        </EmptyState>
       </li>
     {/each}
   </ul>
-  {#if !app.original}
-    <form class="flex gap-2 border-t border-panel-border p-3" onsubmit={add}>
-      <Input placeholder="Eigene Route …" aria-label="Name der eigenen Route" bind:value={newName} />
-      <Button type="submit" size="icon" aria-label="Route hinzufügen" disabled={!newName.trim()}>
-        <PlusIcon />
-      </Button>
-    </form>
-  {/if}
-</section>
+</Panel>
+
+{#snippet addForm()}
+  <form class="flex w-full gap-2" onsubmit={add}>
+    <Input placeholder="Eigene Route …" aria-label="Name der eigenen Route" bind:value={newName} />
+    <IconButton type="submit" variant="default" label="Route hinzufügen" disabled={!newName.trim()}>
+      <PlusIcon />
+    </IconButton>
+  </form>
+{/snippet}
