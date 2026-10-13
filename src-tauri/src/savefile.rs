@@ -1,5 +1,5 @@
-//! Liest Team, Boxen, Beutel, Orden, Pokédex und Trainerdaten aus Spielständen (Gen 1–7).
-//! Formate nach PKHeX (PKHeX.Core/Saves, PokeCrypto, Items/Bags).
+//! Liest Team, Boxen, Beutel, Orden, Pokédex und Trainerdaten aus Spielständen (Gen 1–9).
+//! Formate nach PKHeX (PKHeX.Core/Saves, PokeCrypto, Items/Bags, SwishCrypto).
 
 use serde::Serialize;
 
@@ -82,10 +82,17 @@ pub struct SaveData {
     team: Vec<Mon>,
     boxes: Vec<BoxData>,
     bag: Vec<Pocket>,
-    /// Bit i = i-ter Orden in Spielreihenfolge (wie static/data/badges.json); `None` = nicht im Spielstand (Gen 7)
-    badges: Option<u16>,
+    /// Bit i = i-ter Orden in Spielreihenfolge (wie static/data/badges.json)
+    badges: u16,
+    /// Welche Orden-Bits der Spielstand kennt; die übrigen (z. B. Prüfungen in Gen 7) bleiben in der App manuell
+    #[serde(rename = "knownBadges")]
+    known_badges: u16,
     /// Im Pokédex als gefangen markierte Nationaldex-Nummern
     caught: Vec<u16>,
+    /// Schwert/Schild: gefangene Regionaldex-Nummern je Dex (Galar, Rüstungsinsel, Kronen-Schneelande); die App
+    /// ordnet sie über ihre Regionaldex-Listen Arten zu
+    #[serde(rename = "caughtDex", skip_serializing_if = "Vec::is_empty")]
+    caught_dex: Vec<Vec<u16>>,
     /// Name des Spielers
     trainer: String,
     money: u32,
@@ -316,8 +323,10 @@ fn gen1(data: &[u8]) -> Result<SaveData, String> {
         team,
         boxes,
         bag: vec![gb_pocket("items", &data[0x25C9..], 20), gb_pocket("pc", &data[0x27E6..], 50)],
-        badges: Some(u16::from(data[0x2602])),
+        badges: u16::from(data[0x2602]),
+        known_badges: u16::MAX,
         caught: dex_flags(&data[0x25A3..], 151),
+        caught_dex: vec![],
         trainer: gb_text(&data[0x2598..][..11], G1_CHARS),
         money: bcd(&data[0x25F3..][..3]),
         played: [u16::from(data[0x2CED]), u16::from(data[0x2CEF]), u16::from(data[0x2CF0])],
@@ -393,8 +402,10 @@ fn gen2(data: &[u8], g: &Gen2) -> Result<SaveData, String> {
             Pocket { id: "tms", items: machines },
             gb_pocket("pc", &data[pc..], 50),
         ],
-        badges: Some(u16::from_le_bytes([data[g.badges], data[g.badges + 1]])),
+        badges: u16::from_le_bytes([data[g.badges], data[g.badges + 1]]),
+        known_badges: u16::MAX,
         caught: dex_flags(&data[g.dex..], 251),
+        caught_dex: vec![],
         trainer: gb_text(&data[0x200B..][..11], G2_CHARS),
         money: u24_be(data, g.money),
         played: [u16_be(data, g.time), u16::from(data[g.time + 2]), u16::from(data[g.time + 3])],
@@ -416,6 +427,10 @@ pub fn parse(game_id: &str, data: &[u8]) -> Result<SaveData, String> {
         "diamond" | "pearl" => gen4(data, &DP),
         "platinum" => gen4(data, &PT),
         "heartgold" | "soulsilver" => gen4(data, &HGSS),
+        "sword" | "shield" => swsh(data),
+        "brilliant-diamond" | "shining-pearl" => bdsp(data),
+        "legends-arceus" => legends_arceus(data),
+        "scarlet" | "violet" => scarlet_violet(data),
         "x" | "y" => gen67(data, &XY),
         "omega-ruby" | "alpha-sapphire" => gen67(data, &ORAS),
         "sun" | "moon" => gen67(data, &SM),
@@ -495,8 +510,10 @@ fn gen3(data: &[u8], g: &Gen3) -> Result<SaveData, String> {
         team,
         boxes,
         bag,
-        badges: Some(bits & 0xFF),
+        badges: bits & 0xFF,
+        known_badges: u16::MAX,
         caught: dex_flags(&blocks[0x28..], 386),
+        caught_dex: vec![],
         trainer: gen3_text(&blocks[..8]),
         money,
         played: [u16_at(&blocks, 0x0E), u16::from(blocks[0x10]), u16::from(blocks[0x11])],
@@ -694,8 +711,10 @@ fn gen4(data: &[u8], g: &Gen4) -> Result<SaveData, String> {
         team,
         boxes,
         bag,
-        badges: Some(u16::from(t[0x1A]) | kanto << 8),
+        badges: u16::from(t[0x1A]) | kanto << 8,
+        known_badges: u16::MAX,
         caught: dex_flags(&general[g.dex + 4..], 493),
+        caught_dex: vec![],
         trainer: gen4_text(&t[..16]),
         money: u32_at(t, 0x14),
         played: [u16_at(t, 0x22), u16::from(t[0x24]), u16::from(t[0x25])],
@@ -806,22 +825,31 @@ fn packed_pocket(id: &'static str, d: &[u8], bits: u32) -> Pocket {
 
 /// PK6/PK7/PB7 (232 Bytes, im Team 260): mit der Encryption Constant verschlüsselt, vier Blöcke à 56 Bytes.
 /// `None` = leer oder Ei.
-fn pk67_mon(m: &[u8], party: bool, max: u16) -> Result<Option<Mon>, String> {
-    if m[..232].iter().all(|&b| b == 0) {
+/// Entschlüsselt und entmischt ein Pokémon ab Gen 6 (vier Blöcke à `block` Bytes, Seed = Encryption Constant).
+/// `None` = leerer Platz.
+fn decrypt_ec(m: &[u8], block: usize) -> Result<Option<Vec<u8>>, String> {
+    let size = 8 + 4 * block;
+    if m[..size].iter().all(|&b| b == 0) {
         return Ok(None);
     }
     let ec = u32_at(m, 0);
-    let mut stored = m[8..232].to_vec();
+    let mut stored = m[8..size].to_vec();
     crypt5(&mut stored, ec);
     if checksum(&stored) != u16_at(m, 6) {
         return Err(wrong_game());
     }
     let sv = ((ec >> 13) & 31) as usize % 24;
-    let mut d = m[..232].to_vec();
+    let mut d = m[..size].to_vec();
     for i in 0..4 {
         let pos = usize::from(BLOCK_POSITION[sv * 4 + i]);
-        d[8 + i * 56..][..56].copy_from_slice(&stored[pos * 56..][..56]);
+        d[8 + i * block..][..block].copy_from_slice(&stored[pos * block..][..block]);
     }
+    Ok(Some(d))
+}
+
+fn pk67_mon(m: &[u8], party: bool, max: u16) -> Result<Option<Mon>, String> {
+    let Some(d) = decrypt_ec(m, 56)? else { return Ok(None) };
+    let ec = u32_at(m, 0);
     let species_id = u16_at(&d, 0x08);
     let ivs = u32_at(&d, 0x74);
     if species_id == 0 || (ivs >> 30) & 1 == 1 {
@@ -887,8 +915,10 @@ fn gen67(data: &[u8], g: &Gen67) -> Result<SaveData, String> {
         team,
         boxes,
         bag,
-        badges: g.badges.map(|o| u16::from(data[o])),
+        badges: g.badges.map_or(0, |o| u16::from(data[o])),
+        known_badges: if g.badges.is_some() { u16::MAX } else { 0 },
         caught: dex_flags(&data[g.dex..], g.dex_max),
+        caught_dex: vec![],
         trainer: utf16_text(&data[g.trainer..][..0x1A]),
         money: u32_at(data, g.money),
         played: [u16_at(data, g.played), u16::from(data[g.played + 2]), u16::from(data[g.played + 3])],
@@ -935,11 +965,364 @@ fn lgpe(data: &[u8]) -> Result<SaveData, String> {
         team,
         boxes,
         bag: pockets.iter().map(|&(id, ofs, slots)| packed_pocket(id, &data[ofs..][..slots * 4], 15)).collect(),
-        badges: None,
+        // System-Flags FSYS_GYM_CLEAR_* (s0012–s0019): EventWork ab 0x1200, Flags nach 1000 Werten, System ab Flag 128
+        badges: (0..8).filter(|i| data[0x21A0 + (140 + i) / 8] >> ((140 + i) % 8) & 1 == 1).fold(0, |bits, i| bits | 1 << i),
+        known_badges: 0xFF,
         caught: dex_flags(&data[0x2A88..], 809),
+        caught_dex: vec![],
         trainer: utf16_text(&data[0x1038..][..0x1A]),
         money: u32_at(data, 0x4C04),
         played: [u16_at(data, 0x45400), u16::from(data[0x45402]), u16::from(data[0x45403])],
+    })
+}
+
+/// Gen-8/9-Pokémon-Format: PK8/PB8/PK9 (Blöcke à 80 Bytes) bzw. PA8 (Legenden: Arceus, 88 Bytes)
+struct Pk8 {
+    block: usize,
+    nick: usize,
+    moves: usize,
+    ivs: usize,
+    /// Aktuelle KP liegen in den Box-Daten, die übrigen Teamwerte dahinter
+    hp: usize,
+    /// Karmesin/Purpur speichern eine interne Artnummer
+    internal: bool,
+    max: u16,
+}
+
+const PK8: Pk8 = Pk8 { block: 80, nick: 0x58, moves: 0x72, ivs: 0x8C, hp: 0x8A, internal: false, max: 898 };
+const PB8: Pk8 = Pk8 { max: 493, ..PK8 };
+const PK9: Pk8 = Pk8 { internal: true, max: 1025, ..PK8 };
+const PA8: Pk8 = Pk8 { block: 88, nick: 0x60, moves: 0x54, ivs: 0x94, hp: 0x92, internal: false, max: 905 };
+
+/// Karmesin/Purpur: Abweichung interne Nr. → Nationaldex ab 917 (PKHeX SpeciesConverter)
+const G9_INTERNAL_TO_NATIONAL: [i8; 109] = [65, -1, -1, -1, -1, 31, 31, 47, 47, 29, 29, 53, 31, 31, 46, 44, 30, 30, -7, -7, -7, 13, 13, -2, -2, 23, 23, 24, -21, -21, 27, 27, 47, 47, 47, 26, 14, -33, -33, -33, -17, -17, 3, -29, 12, -12, -31, -31, -31, 3, 3, -24, -24, -44, -44, -30, -30, -28, -28, 23, 23, 6, 7, 29, 8, 3, 4, 4, 20, 4, 23, 6, 3, 3, 4, -1, 13, 9, 7, 5, 7, 9, 9, -43, -43, -43, -68, -68, -68, -58, -58, -25, -29, -31, 6, -1, 6, 0, 0, 0, 3, 3, 4, 2, 3, 3, -5, -12, -12];
+
+fn g9_shift(n: u16, table: &[i8]) -> u16 {
+    match n.checked_sub(917).and_then(|i| table.get(usize::from(i))) {
+        Some(&d) => (i32::from(n) + i32::from(d)) as u16,
+        None => n,
+    }
+}
+
+fn pk8_mon(m: &[u8], f: &Pk8, party: bool) -> Result<Option<Mon>, String> {
+    let Some(d) = decrypt_ec(m, f.block)? else { return Ok(None) };
+    let raw = u16_at(&d, 0x08);
+    let species_id = if f.internal { g9_shift(raw, &G9_INTERNAL_TO_NATIONAL) } else { raw };
+    let ivs = u32_at(&d, f.ivs);
+    if species_id == 0 || (ivs >> 30) & 1 == 1 {
+        return Ok(None);
+    }
+    if species_id > f.max {
+        return Err(wrong_game());
+    }
+    let stored = 8 + 4 * f.block;
+    let (level, stats) = if party {
+        let mut p = m[stored..stored + 0x10].to_vec();
+        crypt5(&mut p, u32_at(m, 0));
+        let s = |o: usize| u16_at(&p, o);
+        let stats = PartyStats { hp: u16_at(&d, f.hp), max_hp: s(2), atk: s(4), def: s(6), spe: s(8), spa: s(10), spd: s(12) };
+        (Some(p[0]), Some(stats))
+    } else {
+        (None, None)
+    };
+    Ok(Some(Mon {
+        species_id,
+        nickname: (ivs >> 31 == 1).then(|| utf16_text(&d[f.nick..f.nick + 0x1A])),
+        exp: u32_at(&d, 0x10),
+        item: u16_at(&d, 0x0A),
+        moves: moves(&d[f.moves..]),
+        nature: Some(d[0x20]),
+        ivs: StatSet::ivs(ivs),
+        evs: StatSet::evs(&d[0x26..]),
+        level,
+        stats,
+    }))
+}
+
+/// Team: 6 Plätze à `size` Bytes, danach die Anzahl
+fn pk8_team(d: &[u8], f: &Pk8, size: usize) -> Result<Vec<Mon>, String> {
+    let count = usize::from(*d.get(6 * size).ok_or_else(wrong_game)?);
+    if count > 6 {
+        return Err(wrong_game());
+    }
+    d.chunks_exact(size).take(count).map(|m| pk8_mon(m, f, true)).filter_map(Result::transpose).collect()
+}
+
+/// Boxen à 30 Plätzen (`slot` Bytes je Platz), Namen à 0x22 Bytes UTF-16
+fn pk8_boxes(d: &[u8], names: &[u8], f: &Pk8, slot: usize, count: usize) -> Vec<BoxData> {
+    (0..count)
+        .map(|b| BoxData {
+            name: names.get(b * 0x22..(b + 1) * 0x22).map_or_else(String::new, utf16_text),
+            mons: (0..30)
+                .map(|i| d.get((b * 30 + i) * slot..(b * 30 + i + 1) * slot).and_then(|m| pk8_mon(m, f, false).ok().flatten()))
+                .collect(),
+        })
+        .collect()
+}
+
+/// SwishCrypto-Pad (PKHeX StaticXorpad), wirkt mit Periode 0x7F
+const SWISH_PAD: [u8; 0x7F] = [
+    0xA0, 0x92, 0xD1, 0x06, 0x07, 0xDB, 0x32, 0xA1, 0xAE, 0x01, 0xF5, 0xC5, 0x1E, 0x84, 0x4F, 0xE3, 0x53, 0xCA, 0x37, 0xF4,
+    0xA7, 0xB0, 0x4D, 0xA0, 0x18, 0xB7, 0xC2, 0x97, 0xDA, 0x5F, 0x53, 0x2B, 0x75, 0xFA, 0x48, 0x16, 0xF8, 0xD4, 0x8A, 0x6F,
+    0x61, 0x05, 0xF4, 0xE2, 0xFD, 0x04, 0xB5, 0xA3, 0x0F, 0xFC, 0x44, 0x92, 0xCB, 0x32, 0xE6, 0x1B, 0xB9, 0xB1, 0x2E, 0x01,
+    0xB0, 0x56, 0x53, 0x36, 0xD2, 0xD1, 0x50, 0x3D, 0xDE, 0x5B, 0x2E, 0x0E, 0x52, 0xFD, 0xDF, 0x2F, 0x7B, 0xCA, 0x63, 0x50,
+    0xA4, 0x67, 0x5D, 0x23, 0x17, 0xC0, 0x52, 0xE1, 0xA6, 0x30, 0x7C, 0x2B, 0xB6, 0x70, 0x36, 0x5B, 0x2A, 0x27, 0x69, 0x33,
+    0xF5, 0x63, 0x7B, 0x36, 0x3F, 0x26, 0x9B, 0xA3, 0xED, 0x7A, 0x53, 0x00, 0xA4, 0x48, 0xB3, 0x50, 0x9E, 0x14, 0xA0, 0x52,
+    0xDE, 0x7E, 0x10, 0x2B, 0x1B, 0x77, 0x6E,
+];
+
+/// Schlüsselstrom eines Blocks (PKHeX SCXorShift32)
+struct XorShift {
+    state: u32,
+    counter: u32,
+}
+
+impl XorShift {
+    fn advance(mut s: u32) -> u32 {
+        s ^= s << 2;
+        s ^= s >> 15;
+        s ^ (s << 13)
+    }
+
+    fn new(key: u32) -> Self {
+        let state = (0..key.count_ones()).fold(key, |s, _| Self::advance(s));
+        XorShift { state, counter: 0 }
+    }
+
+    fn byte(&mut self) -> u8 {
+        let b = (self.state >> (self.counter * 8)) as u8;
+        if self.counter == 3 {
+            self.state = Self::advance(self.state);
+            self.counter = 0;
+        } else {
+            self.counter += 1;
+        }
+        b
+    }
+
+    fn u32(&mut self) -> u32 {
+        u32::from_le_bytes([self.byte(), self.byte(), self.byte(), self.byte()])
+    }
+}
+
+/// Switch-Spielstand (Schwert/Schild, Legenden: Arceus, Karmesin/Purpur) → Blöcke nach Schlüssel.
+/// Die SHA-256-Prüfsumme am Ende wird nicht geprüft: ein falsches Spiel oder eine defekte Datei fällt beim
+/// Zerlegen der Blöcke bzw. beim Fehlen der benötigten Blöcke auf.
+fn swish_blocks(data: &[u8]) -> Result<std::collections::HashMap<u32, Vec<u8>>, String> {
+    let payload: Vec<u8> = data
+        .get(..data.len().checked_sub(0x20).ok_or_else(wrong_game)?)
+        .ok_or_else(wrong_game)?
+        .iter()
+        .enumerate()
+        .map(|(i, &b)| b ^ SWISH_PAD[i % 0x7F])
+        .collect();
+    let mut blocks = std::collections::HashMap::new();
+    let mut o = 0;
+    let take = |o: &mut usize, n: usize| -> Result<&[u8], String> {
+        let s = payload.get(*o..*o + n).ok_or_else(wrong_game)?;
+        *o += n;
+        Ok(s)
+    };
+    while o < payload.len() {
+        let key = u32_at(take(&mut o, 4)?, 0);
+        let mut x = XorShift::new(key);
+        let raw = match take(&mut o, 1)?[0] ^ x.byte() {
+            // Bool-Blöcke tragen ihren Wert im Typ (1 = falsch, 2 = wahr), ohne Daten
+            t @ 1..=3 => {
+                blocks.insert(key, vec![u8::from(t == 2)]);
+                continue;
+            }
+            4 => {
+                let n = (u32_at(take(&mut o, 4)?, 0) ^ x.u32()) as usize;
+                take(&mut o, n)?.to_vec()
+            }
+            5 => {
+                let n = (u32_at(take(&mut o, 4)?, 0) ^ x.u32()) as usize;
+                let size = swish_size(take(&mut o, 1)?[0] ^ x.byte())?;
+                take(&mut o, n.checked_mul(size).ok_or_else(wrong_game)?)?.to_vec()
+            }
+            t => take(&mut o, swish_size(t)?)?.to_vec(),
+        };
+        blocks.insert(key, raw.iter().map(|&b| b ^ x.byte()).collect());
+    }
+    Ok(blocks)
+}
+
+/// Größe eines Werts je Typcode (PKHeX SCTypeCode)
+fn swish_size(t: u8) -> Result<usize, String> {
+    match t {
+        3 | 8 | 12 => Ok(1),
+        9 | 13 => Ok(2),
+        10 | 14 | 16 => Ok(4),
+        11 | 15 | 17 => Ok(8),
+        _ => Err(wrong_game()),
+    }
+}
+
+/// Gen-8/9-Taschen mit u32 je Platz: Item in Bit 0–10, Anzahl in Bit 15–24 (PKHeX InventoryItem8)
+fn pocket8(id: &'static str, d: &[u8]) -> Pocket {
+    let items = d
+        .chunks_exact(4)
+        .map(|c| u32_at(c, 0))
+        .map(|v| [(v & 0x7FF) as u16, ((v >> 15) & 0x3FF) as u16])
+        .filter(|&[item, count]| item != 0 && count != 0)
+        .collect();
+    Pocket { id, items }
+}
+
+fn swsh(data: &[u8]) -> Result<SaveData, String> {
+    let b = swish_blocks(data)?;
+    let block = |k: u32| b.get(&k).map(Vec::as_slice).ok_or_else(wrong_game);
+    let items = block(0x1177_C2C4)?;
+    let pockets = [
+        ("medicine", 0, 60),
+        ("balls", 0xF0, 30),
+        ("battle", 0x168, 20),
+        ("berries", 0x1B8, 80),
+        ("items", 0x2F8, 550),
+        ("tms", 0xB90, 210),
+        ("treasure", 0xED8, 100),
+        ("candy", 0x1068, 100),
+        ("keyItems", 0x11F8, 64),
+    ];
+    let misc = block(0x1B88_2B09)?;
+    let played = block(0x8CBB_FD90)?;
+    // Pokédex je Regionaldex (Galar, Rüstungsinsel, Kronen-Schneelande): Einträge à 0x30, Gefangen-Bit ab 0x20
+    let caught_dex = [0x4716_C404, 0x3F93_6BA9, 0x3C93_66F0]
+        .iter()
+        .map(|k| {
+            b.get(k).map_or_else(Vec::new, |d| {
+                (0..d.len() / 0x30).filter(|i| d[i * 0x30 + 0x20] & 1 == 1).map(|i| i as u16 + 1).collect()
+            })
+        })
+        .collect();
+    Ok(SaveData {
+        team: pk8_team(block(0x2985_FE5D)?, &PK8, 0x158)?,
+        boxes: pk8_boxes(block(0x0D66_012C)?, block(0x1972_2C89)?, &PK8, 0x158, 32),
+        bag: pockets.iter().map(|&(id, o, n)| pocket8(id, &items[o..o + n * 4])).collect(),
+        badges: u16::from(misc[0]),
+        known_badges: u16::MAX,
+        caught: vec![],
+        caught_dex,
+        trainer: utf16_text(&block(0xF25C_070E)?[0xB0..0xCA]),
+        money: u32_at(misc, 4),
+        played: [u16_at(played, 0), u16::from(played[2]), u16::from(played[3])],
+    })
+}
+
+fn legends_arceus(data: &[u8]) -> Result<SaveData, String> {
+    let b = swish_blocks(data)?;
+    let block = |k: u32| b.get(&k).map(Vec::as_slice).ok_or_else(wrong_game);
+    let played = block(0xC4FA_7C8C)?;
+    // Forschungseinträge à 0x58 ab 0x70, Anzahl gefangener Exemplare bei +0x0A.
+    // shortcut: PKHeX prüft die Fang-Flags der Formen-Statistik (braucht seine Formen-Tabelle); die Fanganzahl
+    // stimmt im Spiel überein, nur von PKHeX eingefügte Pokémon zählen hier schon als gefangen
+    let dex = block(0x0216_8706)?;
+    let caught = (1..=905u16).filter(|&s| dex.get(0x70 + 0x58 * usize::from(s) + 0x0A..).is_some_and(|e| e.len() >= 2 && u16_at(e, 0) > 0)).collect();
+    Ok(SaveData {
+        team: pk8_team(block(0x2985_FE5D)?, &PA8, 0x178)?,
+        boxes: pk8_boxes(block(0x47E1_CEAB)?, block(0x1972_2C89)?, &PA8, 0x168, 32),
+        bag: vec![
+            pocket("items", block(0x9FE2_790A)?, 0),
+            pocket("keyItems", block(0x59A4_D0C3)?, 0),
+            pocket("pc", block(0x8E43_4F0D)?, 0),
+        ],
+        // Adelige statt Orden, nicht als Flags auslesbar
+        badges: 0,
+        known_badges: 0,
+        caught,
+        caught_dex: vec![],
+        trainer: utf16_text(&block(0xF25C_070E)?[0x20..0x3A]),
+        money: b.get(&0x3279_D927).filter(|d| d.len() >= 4).map_or(0, |d| u32_at(d, 0)),
+        played: [u16_at(played, 0), u16::from(played[2]), u16::from(played[3])],
+    })
+}
+
+fn scarlet_violet(data: &[u8]) -> Result<SaveData, String> {
+    let b = swish_blocks(data)?;
+    let block = |k: u32| b.get(&k).map(Vec::as_slice).ok_or_else(wrong_game);
+    // Items nach Item-Nummer à 0x10: Tasche (u32), Anzahl (i32)
+    const POCKETS: [&str; 10] =
+        ["medicine", "balls", "battle", "berries", "items", "tms", "treasure", "picnic", "keyItems", "materials"];
+    let items = block(0x21C9_BD44)?;
+    let bag = POCKETS
+        .iter()
+        .enumerate()
+        .map(|(p, &id)| Pocket {
+            id,
+            items: items
+                .chunks_exact(0x10)
+                .enumerate()
+                .filter(|(_, e)| u32_at(e, 0) as usize == p && u32_at(e, 4) != 0)
+                .map(|(i, e)| [i as u16, u32_at(e, 4).min(u32::from(u16::MAX)) as u16])
+                .collect(),
+        })
+        .collect();
+    // Seit 2.0.1 nur noch der Kitakami-Block (0x20 je Art, gefangen = Formen-Bits ≠ 0), sonst Paldea (0x18, Zustand ≥ 3)
+    let caught = match b.get(&0xF5D7_C0E2).filter(|d| !d.is_empty()) {
+        Some(d) => g9_dex(d, 0x20, |e| u32_at(e, 0) != 0),
+        None => g9_dex(block(0x0DEA_AEBD)?, 0x18, |e| u32_at(e, 0) >= 3),
+    };
+    let played = block(0xEDAF_F794)?;
+    Ok(SaveData {
+        team: pk8_team(block(0x3AA1_A9AD)?, &PK9, 0x158)?,
+        boxes: pk8_boxes(block(0x0D66_012C)?, block(0x1972_2C89)?, &PK9, 0x158, 32),
+        bag,
+        // Arenen als Bool-Blöcke FSYS_YMAP_SCENARIO_GYM_CLEAR_* in Orden-Reihenfolge (Käfer, Pflanze, Elektro,
+        // Wasser, Normal, Geist, Psycho, Eis); Titanen und Team Star haben kein eindeutiges Flag → manuell
+        badges: [0x8485_AC3A, 0x2621_6312, 0x815F_4601, 0x1645_2421, 0x9457_390D, 0x1C5C_88A5, 0xD024_9A05, 0x0A92_99BC]
+            .iter()
+            .enumerate()
+            .filter(|&(_, k)| b.get(k).is_some_and(|v| v.first() == Some(&1)))
+            .fold(0, |bits, (i, _)| bits | 1 << i),
+        known_badges: 0xFF,
+        caught,
+        caught_dex: vec![],
+        trainer: utf16_text(&block(0xE3E8_9BD1)?[0x10..0x2A]),
+        money: b.get(&0x4F35_D0DD).filter(|d| d.len() >= 4).map_or(0, |d| u32_at(d, 0)),
+        played: [0, 4, 8].map(|o| u32_at(played, o).min(u32::from(u16::MAX)) as u16),
+    })
+}
+
+/// Pokédex-Einträge nach interner Artnummer → gefangene Nationaldex-Nummern
+fn g9_dex(d: &[u8], size: usize, caught: impl Fn(&[u8]) -> bool) -> Vec<u16> {
+    let mut out: Vec<u16> = d
+        .chunks_exact(size)
+        .enumerate()
+        .filter(|&(i, e)| i > 0 && caught(e))
+        .map(|(i, _)| g9_shift(i as u16, &G9_INTERNAL_TO_NATIONAL))
+        .filter(|&s| s <= 1025)
+        .collect();
+    out.sort_unstable();
+    out
+}
+
+/// Strahlender Diamant/Leuchtende Perle: unverschlüsselt, feste Offsets (Größe je Spielversion)
+fn bdsp(data: &[u8]) -> Result<SaveData, String> {
+    if ![0xE9828, 0xEDC20, 0xEED8C, 0xEF0A4].contains(&data.len()) {
+        return Err(wrong_game());
+    }
+    let status = &data[0x79BB4..0x79C04];
+    let played = &data[0x79C04..];
+    // shortcut: Items stehen nach Item-Nummer ohne Taschen-Zuordnung (die steckt in PKHeX-Itemlisten), alle in „Items“
+    let items = data[0x563C..0x563C + 3000 * 0x10]
+        .chunks_exact(0x10)
+        .enumerate()
+        .filter(|(_, e)| u32_at(e, 0) != 0)
+        .map(|(i, e)| [i as u16, u32_at(e, 0).min(u32::from(u16::MAX)) as u16])
+        .collect();
+    Ok(SaveData {
+        team: pk8_team(&data[0x14098..], &PB8, 0x158)?,
+        boxes: pk8_boxes(&data[0x14EF4..0x14EF4 + 40 * 30 * 0x158], &data[0x148AA..0x148AA + 40 * 0x22], &PB8, 0x158, 40),
+        bag: vec![Pocket { id: "items", items }],
+        // System-Flags BADGE_ID_* (124–131, in Orden-Reihenfolge), je als i32 im FlagWork-Block ab 0x4 + 0x4650
+        badges: (0..8).filter(|i| u32_at(data, 0x4 + 0x4650 + (124 + i) * 4) == 1).fold(0, |bits, i| bits | 1 << i),
+        known_badges: 0xFF,
+        caught: (1..=493).filter(|&s| u32_at(data, 0x7A328 + (usize::from(s) - 1) * 4) >= 3).collect(),
+        caught_dex: vec![],
+        trainer: utf16_text(&status[..0x1A]),
+        money: u32_at(status, 0x20),
+        played: [u16_at(played, 0), u16::from(played[2]), u16::from(played[3])],
     })
 }
 
@@ -1000,8 +1383,10 @@ fn gen5(data: &[u8], misc: usize, dex: usize) -> Result<SaveData, String> {
         team,
         boxes,
         bag,
-        badges: Some(u16::from(data[misc + 4])),
+        badges: u16::from(data[misc + 4]),
+        known_badges: u16::MAX,
         caught: dex_flags(&data[dex + 8..], 649),
+        caught_dex: vec![],
         trainer: utf16_text(&data[TRAINER + 4..][..16]),
         money: u32_at(data, misc),
         played: [u16_at(data, TRAINER + 0x24), u16::from(data[TRAINER + 0x26]), u16::from(data[TRAINER + 0x27])],
@@ -1140,7 +1525,7 @@ mod tests {
         let mons = [g3_mon(7, 25, 12, false), g3_mon(123_456, 280, 50, false), g3_mon(5, 1, 1, true)];
         for (a, b) in [(4, 9), (9, 4)] {
             let s = parse("firered", &g3_save(a, b, &mons)).unwrap();
-            assert_eq!(s.badges, Some(0b101));
+            assert_eq!(s.badges, 0b101);
             assert_eq!(s.caught, [1, 26]);
             assert_eq!((s.trainer.as_str(), s.money, s.played), ("Rot", 3000, [12, 34, 56]));
             // intern 280 = Nationaldex 255 (Flemmli)
@@ -1184,7 +1569,7 @@ mod tests {
         d[g + HGSS.bag + 0x520..][..4].copy_from_slice(&[17, 0, 2, 0]); // Medizin: Trank × 2
         let s = parse("soulsilver", &d).unwrap();
         assert_eq!(summary(&s.team), [(155, None, Some(7))]);
-        assert_eq!((s.trainer.as_str(), s.money, s.played, s.badges), ("Lyra", 3000, [5, 6, 7], Some(0x103)));
+        assert_eq!((s.trainer.as_str(), s.money, s.played, s.badges), ("Lyra", 3000, [5, 6, 7], 0x103));
         assert_eq!(s.caught, [1]);
         assert_eq!(s.bag[4], Pocket { id: "medicine", items: vec![[17, 2]] });
         assert_eq!(s.boxes.len(), 18);
@@ -1222,7 +1607,7 @@ mod tests {
         let nick = list + 8 + 6 * 44 + 6 * 11;
         d[nick..nick + 2].copy_from_slice(&[0x8F, 0x50]); // „P“
         let s = parse("red", &d).unwrap();
-        assert_eq!((s.trainer.as_str(), s.money, s.badges, s.caught.as_slice()), ("Rot", 3000, Some(0b101), &[1u16][..]));
+        assert_eq!((s.trainer.as_str(), s.money, s.badges, s.caught.as_slice()), ("Rot", 3000, 0b101, &[1u16][..]));
         assert_eq!(summary(&s.team), [(25, Some("P"), Some(23))]);
         let t = &s.team[0];
         assert_eq!((t.exp, t.ivs.hp, t.ivs.spa, t.ivs.spd, t.nature), (12_167, 11, 3, 3, None));
@@ -1275,12 +1660,115 @@ mod tests {
         assert_eq!((t.exp, t.nature, t.evs.hp, t.ivs.atk, &t.moves), (12_167, Some(15), 252, 13, &vec![84]));
         assert_eq!(t.stats.as_ref().map(|st| st.max_hp), Some(63));
         assert_eq!(s.boxes[0].mons[1].as_ref().map(|m| (m.species_id, m.level)), Some((25, None)));
-        assert_eq!((s.trainer.as_str(), s.money, s.played, s.badges), ("Serena", 5000, [3, 4, 5], Some(0b11)));
+        assert_eq!((s.trainer.as_str(), s.money, s.played, s.badges), ("Serena", 5000, [3, 4, 5], 0b11));
         assert_eq!(s.caught, [25]);
         assert_eq!(s.bag[3], Pocket { id: "medicine", items: vec![[17, 2]] });
         assert!(parse("x", &d[..XY.size - 1]).is_err());
         // S/M: andere Größe, keine Orden
         assert!(parse("sun", &d).is_err());
+    }
+
+    /// PK8/PK9 im Team-Format (0x158 Bytes)
+    fn g8_mon(ec: u32, species: u16, level: u8) -> Vec<u8> {
+        let mut logical = vec![0u8; 0x140];
+        logical[0..2].copy_from_slice(&species.to_le_bytes());
+        logical[0x08..0x0C].copy_from_slice(&12_167u32.to_le_bytes());
+        logical[0x18] = 15; // Wesen (0x20 − 8)
+        logical[0x1E] = 252; // KP-EV
+        logical[0x6A..0x6C].copy_from_slice(&84u16.to_le_bytes());
+        logical[0x82..0x84].copy_from_slice(&60u16.to_le_bytes()); // aktuelle KP
+        logical[0x84..0x88].copy_from_slice(&(13u32 << 5).to_le_bytes());
+        let chk = checksum(&logical);
+        let mut stored = shuffle(&logical, ((ec >> 13) & 31) as usize % 24, 80);
+        crypt5(&mut stored, ec);
+        let mut party = vec![0u8; 0x10];
+        party[0] = level;
+        party[2..4].copy_from_slice(&63u16.to_le_bytes());
+        crypt5(&mut party, ec);
+        let mut m = vec![0u8; 0x158];
+        m[0..4].copy_from_slice(&ec.to_le_bytes());
+        m[6..8].copy_from_slice(&chk.to_le_bytes());
+        m[8..0x148].copy_from_slice(&stored);
+        m[0x148..].copy_from_slice(&party);
+        m
+    }
+
+    /// Blöcke wie im Spiel verschlüsseln (Gegenstück zu `swish_blocks`): (Schlüssel, Typ, Daten)
+    fn swish_encode(blocks: &[(u32, u8, Vec<u8>)]) -> Vec<u8> {
+        let mut out = vec![];
+        for (key, kind, data) in blocks {
+            let mut x = XorShift::new(*key);
+            out.extend(key.to_le_bytes());
+            out.push(kind ^ x.byte());
+            match kind {
+                4 => out.extend((data.len() as u32 ^ x.u32()).to_le_bytes()),
+                5 => {
+                    out.extend((data.len() as u32 ^ x.u32()).to_le_bytes());
+                    out.push(8 ^ x.byte()); // Byte-Array
+                }
+                _ => {}
+            }
+            out.extend(data.iter().map(|&b| b ^ x.byte()));
+        }
+        for (i, b) in out.iter_mut().enumerate() {
+            *b ^= SWISH_PAD[i % 0x7F];
+        }
+        out.extend([0u8; 0x20]); // Prüfsumme wird nicht geprüft
+        out
+    }
+
+    #[test]
+    fn gen8_swsh() {
+        let obj = |n: usize| vec![0u8; n];
+        let mut party = obj(6 * 0x158 + 1);
+        party[..0x158].copy_from_slice(&g8_mon(0x1234_5678, 25, 23));
+        party[6 * 0x158] = 1;
+        let mut items = obj(0x11F8 + 64 * 4);
+        items[..4].copy_from_slice(&(17u32 | 2 << 15).to_le_bytes()); // Medizin: Trank × 2
+        let mut misc = obj(0x10);
+        misc[0] = 0b11;
+        misc[4..8].copy_from_slice(&5000u32.to_le_bytes());
+        let mut status = obj(0x110);
+        for (i, u) in "Hop".encode_utf16().enumerate() {
+            status[0xB0 + i * 2..][..2].copy_from_slice(&u.to_le_bytes());
+        }
+        let mut galar = obj(0x30 * 400);
+        galar[193 * 0x30 + 0x20] = 1; // Galar-Nr. 194
+        let data = swish_encode(&[
+            (1, 2, vec![]),                  // Bool
+            (2, 10, vec![1, 2, 3, 4]),       // UInt32
+            (3, 5, vec![7, 8, 9]),           // Byte-Array
+            (0x2985_FE5D, 4, party),
+            (0x0D66_012C, 4, obj(32 * 30 * 0x158)),
+            (0x1972_2C89, 4, obj(32 * 0x22)),
+            (0x1177_C2C4, 4, items),
+            (0x1B88_2B09, 4, misc),
+            (0x8CBB_FD90, 4, vec![3, 0, 4, 5, 0, 0, 0, 0]),
+            (0xF25C_070E, 4, status),
+            (0x4716_C404, 4, galar),
+        ]);
+        let b = swish_blocks(&data).unwrap();
+        // Bool-Block (Typ 2 = wahr) als [1]
+        assert_eq!((&b[&1], &b[&2], &b[&3]), (&vec![1], &vec![1, 2, 3, 4], &vec![7, 8, 9]));
+        let s = parse("shield", &data).unwrap();
+        assert_eq!(summary(&s.team), [(25, None, Some(23))]);
+        let t = &s.team[0];
+        assert_eq!((t.exp, t.nature, t.evs.hp, t.ivs.atk, &t.moves), (12_167, Some(15), 252, 13, &vec![84]));
+        assert_eq!(t.stats.as_ref().map(|st| (st.hp, st.max_hp)), Some((60, 63)));
+        assert_eq!((s.trainer.as_str(), s.money, s.played, s.badges), ("Hop", 5000, [3, 4, 5], 0b11));
+        assert_eq!(s.caught_dex, [vec![194], vec![], vec![]]);
+        assert_eq!(s.bag[0], Pocket { id: "medicine", items: vec![[17, 2]] });
+        assert_eq!(s.boxes.len(), 32);
+        // Kaputte Datei: Block-Länge zeigt über das Ende hinaus
+        assert!(parse("sword", &data[..data.len() / 2]).is_err());
+        assert!(parse("scarlet", &data).is_err());
+    }
+
+    #[test]
+    fn gen9_species() {
+        // Karmesin/Purpur: Nationaldex 917 (Tarundel) ist intern 918
+        assert_eq!(g9_shift(918, &G9_INTERNAL_TO_NATIONAL), 917);
+        assert_eq!(g9_shift(25, &G9_INTERNAL_TO_NATIONAL), 25);
     }
 
     fn g5_mon(pid: u32, species: u16, level: u8, nick: Option<&str>) -> Vec<u8> {
@@ -1331,7 +1819,7 @@ mod tests {
         d[box2..box2 + 136].copy_from_slice(&mons[1][..136]);
         d[0x18400 + 0x7D8..0x18400 + 0x7DC].copy_from_slice(&[17, 0, 7, 0]);
         let s = parse("white-2", &d).unwrap();
-        assert_eq!(s.badges, Some(0xFF));
+        assert_eq!(s.badges, 0xFF);
         assert_eq!(s.caught, [2, 649]);
         assert_eq!((s.trainer.as_str(), s.money, s.played), ("Lisa", 123_456, [101, 2, 3]));
         assert_eq!(summary(&s.team), [(495, None, Some(5)), (571, Some("Zoroark♀"), Some(42))]);
@@ -1340,7 +1828,7 @@ mod tests {
         assert_eq!(s.boxes[1].mons[0].as_ref().map(|m| (m.species_id, m.level)), Some((571, None)));
         assert!(s.boxes[0].mons.iter().all(Option::is_none));
         assert_eq!(s.bag[3], Pocket { id: "medicine", items: vec![[17, 7]] });
-        assert_eq!(parse("black", &d).unwrap().badges, Some(0));
+        assert_eq!(parse("black", &d).unwrap().badges, 0);
         assert!(parse("black", &[0; 0x80000]).is_err_and(|e| e.contains("leer")));
         assert!(parse("black", &d[..0x40000]).is_err());
         assert!(parse("x", &d).is_err());

@@ -318,7 +318,8 @@ export const TEAM_SIZE = 6;
 export const SAVE_GAMES = new Set([
   "red", "blue", "yellow", "gold", "silver", "crystal", "ruby", "sapphire", "emerald", "firered", "leafgreen", "diamond", "pearl", "platinum", "heartgold", "soulsilver",
   "black", "white", "black-2", "white-2", "x", "y", "omega-ruby", "alpha-sapphire", "sun", "moon", "ultra-sun", "ultra-moon",
-  "lets-go-pikachu", "lets-go-eevee",
+  "lets-go-pikachu", "lets-go-eevee", "sword", "shield", "brilliant-diamond", "shining-pearl", "legends-arceus", "scarlet",
+  "violet",
 ]);
 
 export interface PartyStats {
@@ -356,7 +357,8 @@ export interface SaveBox {
 }
 
 export type PocketId =
-  | "items" | "keyItems" | "balls" | "tms" | "berries" | "medicine" | "mail" | "battle" | "zCrystals" | "candy" | "pc";
+  | "items" | "keyItems" | "balls" | "tms" | "berries" | "medicine" | "mail" | "battle" | "zCrystals" | "candy"
+  | "treasure" | "picnic" | "materials" | "pc";
 
 export interface SavePocket {
   id: PocketId;

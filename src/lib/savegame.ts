@@ -10,6 +10,9 @@ export const POCKET_LABELS: Record<PocketId, string> = {
   battle: "Kampf-Items",
   zCrystals: "Z-Kristalle",
   candy: "Bonbons",
+  treasure: "Schätze",
+  picnic: "Picknick",
+  materials: "Materialien",
   keyItems: "Basis-Items",
   pc: "PC",
 };

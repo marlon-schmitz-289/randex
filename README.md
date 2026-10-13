@@ -84,7 +84,7 @@ Bekannte Grenzen (Datenlage in PokeAPI):
 
 ### Spielstand
 
-- Pro Run zuschaltbar (Gen 1–7): Spielstand-Datei einlesen (`.sav`, `.dsv`, `.srm`; 3DS: `main`, Let's Go: `savedata.bin`)
+- Pro Run zuschaltbar (Gen 1–9): Spielstand-Datei einlesen (`.sav`, `.dsv`, `.srm`; 3DS/Switch: `main`, Let's Go: `savedata.bin`)
 - Tab „Spielstand“ mit Team (Level, KP, Werte, Attacken, Item), Boxen (Level aus EXP) und Beutel
 - Übernimmt Team, Orden und Feldfähigkeiten (VM im Beutel) in den Fortschritt und gefangene Pokémon in den
   Pokédex (nur ergänzend, manuell Abgehaktes bleibt); zeigt Name, Geld und Spielzeit im Fortschritt

@@ -351,9 +351,13 @@ export async function importSave(): Promise<void> {
   const generation = app.data?.game.generation;
   if (!run || !generation) return;
   try {
-    const save = await invoke<(Omit<SaveSnapshot, "readAt"> & { badges: number | null; caught: number[] }) | null>("read_save", {
-      gameId: run.gameId,
-    });
+    type Read = Omit<SaveSnapshot, "readAt"> & {
+      badges: number;
+      knownBadges: number;
+      caught: number[];
+      caughtDex?: number[][];
+    };
+    const save = await invoke<Read | null>("read_save", { gameId: run.gameId });
     if (!save) return;
     const [badges, fieldMoves, saveData] = await Promise.all([
       loadBadges(run.gameId),
@@ -361,14 +365,23 @@ export async function importSave(): Promise<void> {
       loadSavegameData(),
     ]);
     if (app.current?.id !== run.id) return;
-    const { badges: owned, caught, ...snapshot } = save;
+    const { badges: owned, knownBadges, caught: national, caughtDex, ...snapshot } = save;
+    // Schwert/Schild: Regionaldex-Nummern je Dex (Galar, Rüstungsinsel, Kronen-Schneelande) → Arten
+    const dexes = app.data?.dexes ?? [];
+    const caught = [
+      ...national,
+      ...(caughtDex ?? []).flatMap((nums, d) => nums.flatMap((n) => dexes[d]?.species[n - 1] ?? [])),
+    ];
     mutate((r) => {
       r.team = save.team.map((m) => {
         const nickname = ownNickname(m, app.data?.speciesById.get(m.speciesId)?.name);
         return nickname ? { speciesId: m.speciesId, nickname, level: m.level } : { speciesId: m.speciesId, level: m.level };
       });
-      // Gen 7 speichert keine Orden-Flags: dann bleibt der abgehakte Stand
-      if (owned !== null) r.badges = badges.filter((_, i) => owned & (1 << i)).map((b) => b.id);
+      // Nur Orden, die der Spielstand kennt, übernehmen; die übrigen (z. B. Prüfungen in Gen 7) bleiben wie abgehakt
+      const had = new Set(r.badges ?? []);
+      r.badges = badges
+        .filter((b, i) => (knownBadges & (1 << i) ? owned & (1 << i) : had.has(b.id)))
+        .map((b) => b.id);
       r.caught = [...new Set([...(r.caught ?? []), ...caught])];
       r.fieldMoves = [...new Set([...(r.fieldMoves ?? []), ...fieldMovesInBag(fieldMoves, snapshot.bag, saveData, generation)])];
       r.save = { ...snapshot, readAt: Date.now() };
