@@ -54,7 +54,7 @@
         role="combobox"
         aria-expanded={open}
         aria-label={ariaLabel && `${ariaLabel}: ${label || placeholder}`}
-        class="w-full min-w-0 justify-between font-normal"
+        class="w-full min-w-0 shrink justify-between font-normal"
       >
         <span class={["truncate", !label && "text-muted-foreground"]}>{label || placeholder}</span>
         <ChevronsUpDown class="shrink-0 opacity-50" />

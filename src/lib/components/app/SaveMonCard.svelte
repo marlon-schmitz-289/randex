@@ -20,7 +20,7 @@
   const moveNames = $derived(new Map(app.data?.moves.map((m) => [m.id, m.name])));
 </script>
 
-<section class="panel flex flex-col">
+<section class="panel flex min-w-0 flex-col">
   <div class="panel-header flex min-h-11 items-center gap-2 px-4 py-1.5 text-sm">
     <span class="truncate">{nick ?? species}</span>
     <span class="ml-auto shrink-0 tabular-nums">Lv. {level}</span>

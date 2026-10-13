@@ -65,11 +65,14 @@
       </Button>
     </div>
   {/each}
-  <SpeciesPicker
-    value={null}
-    allowFreeText
-    exclude={[speciesId]}
-    placeholder="Entwicklung hinzufügen …"
-    onSelect={(target) => setAll([...evolutions, { target, method: "level", value: "" }])}
-  />
+  <div class="flex items-center gap-2">
+    <SpeciesPicker
+      value={null}
+      allowFreeText
+      exclude={[speciesId]}
+      placeholder="Entwicklung hinzufügen …"
+      onSelect={(target) => setAll([...evolutions, { target, method: "level", value: "" }])}
+    />
+    <span class="size-8 shrink-0" aria-hidden="true"></span>
+  </div>
 </div>

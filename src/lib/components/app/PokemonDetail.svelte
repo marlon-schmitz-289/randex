@@ -7,7 +7,7 @@
   import { allLocations, findSightings } from "$lib/encounters.ts";
   import { app, showLocation, updateEntry } from "$lib/runs.svelte.ts";
   import { CATEGORY_LABELS, ENCOUNTER_METHOD_LABELS } from "$lib/types.ts";
-  import type { EncounterMethod, PokemonEntry, TypeId } from "$lib/types.ts";
+  import type { Category, EncounterMethod, PokemonEntry, TypeId } from "$lib/types.ts";
   import EvolutionsEditor from "./detail/EvolutionsEditor.svelte";
   import MovesEditor from "./detail/MovesEditor.svelte";
   import NamePicker from "./detail/NamePicker.svelte";
@@ -25,9 +25,12 @@
   const original = $derived(id === null ? undefined : app.original?.pokemon[id]);
   const headerTypes = $derived(app.original ? (original?.types ?? []) : types);
   // Ohne Originaldaten zur Art bleiben nur Fundorte und Notiz.
+  // Breit paarweise nebeneinander (Typen | Fähigkeiten, Attacken | Entwicklungen, Stats | Fundorte)
+  const PAIRED_ORDER: Category[] = ["types", "abilities", "moves", "evolutions", "stats", "locations", "note"];
   const categories = $derived(
     app.original && !original ? app.activeCategories.filter((c) => c === "locations" || c === "note") : app.activeCategories,
   );
+  const ordered = $derived(PAIRED_ORDER.filter((c) => categories.includes(c)));
   const abilities = $derived(entry.abilities ?? []);
   /** Auch gespeicherte Typen aus anderen Spielen (z. B. Fee in Gen 5), damit sie abwählbar bleiben. */
   const typeChoices = $derived([
@@ -110,12 +113,15 @@
       </div>
     {/each}
     {#if abilities.length < MAX_ABILITIES}
-      <NamePicker
-        items={app.data?.abilities ?? []}
-        value=""
-        placeholder="Fähigkeit hinzufügen …"
-        onSelect={(name) => !abilities.includes(name) && setAbilities([...abilities, name])}
-      />
+      <div class="flex items-center gap-2">
+        <NamePicker
+          items={app.data?.abilities ?? []}
+          value=""
+          placeholder="Fähigkeit hinzufügen …"
+          onSelect={(name) => !abilities.includes(name) && setAbilities([...abilities, name])}
+        />
+        <span class="size-8 shrink-0" aria-hidden="true"></span>
+      </div>
     {/if}
   </div>
 {/snippet}
@@ -158,13 +164,13 @@
   />
 {/snippet}
 
-<div class="h-full overflow-y-auto">
+<div class="@container h-full overflow-y-auto">
   {#if id === null || !species}
     <div class="grid h-full place-items-center p-6 text-center text-sm text-muted-foreground">
       Wähle links ein Pokémon aus.
     </div>
   {:else}
-    <div class="mx-auto flex max-w-3xl flex-col gap-4 p-4">
+    <div class="flex flex-col gap-3">
       <header class="panel overflow-hidden">
         <div class="panel-header flex items-baseline gap-3">
           <span class="tabular-nums">Nr. {String(species.id).padStart(3, "0")}</span>
@@ -192,30 +198,36 @@
           Für dieses Spiel liefert PokeAPI keine Daten zu diesem Pokémon (kommt vermutlich nicht vor).
         </p>
       {/if}
-      {#each categories as category (category)}
-        <section class="panel overflow-hidden" aria-labelledby="detail-{category}">
-          <h2 id="detail-{category}" class="panel-header text-sm">{CATEGORY_LABELS[category]}</h2>
-          <div class="p-4">
-            {#if original && category !== "locations" && category !== "note"}
-              <OriginalSection {category} pokemon={original} />
-            {:else if category === "types"}
-              {@render typesBody()}
-            {:else if category === "moves"}
-              <MovesEditor speciesId={species.id} {entry} />
-            {:else if category === "stats"}
-              <StatsEditor speciesId={species.id} {entry} />
-            {:else if category === "abilities"}
-              {@render abilitiesBody()}
-            {:else if category === "evolutions"}
-              <EvolutionsEditor speciesId={species.id} {entry} />
-            {:else if category === "locations"}
-              {@render locationsBody()}
-            {:else}
-              {@render noteBody()}
-            {/if}
-          </div>
-        </section>
-      {/each}
+      <!-- Paare teilen Zeile und Höhe; ein einzelner letzter Abschnitt nimmt die volle Breite -->
+      <div class="grid gap-3 @5xl:grid-cols-2">
+        {#each ordered as category (category)}
+          <section
+            class="panel overflow-hidden @5xl:[&:last-child:nth-child(odd)]:col-span-2"
+            aria-labelledby="detail-{category}"
+          >
+            <h2 id="detail-{category}" class="panel-header text-sm">{CATEGORY_LABELS[category]}</h2>
+            <div class="p-4">
+              {#if original && category !== "locations" && category !== "note"}
+                <OriginalSection {category} pokemon={original} />
+              {:else if category === "types"}
+                {@render typesBody()}
+              {:else if category === "moves"}
+                <MovesEditor speciesId={species.id} {entry} />
+              {:else if category === "stats"}
+                <StatsEditor speciesId={species.id} {entry} />
+              {:else if category === "abilities"}
+                {@render abilitiesBody()}
+              {:else if category === "evolutions"}
+                <EvolutionsEditor speciesId={species.id} {entry} />
+              {:else if category === "locations"}
+                {@render locationsBody()}
+              {:else}
+                {@render noteBody()}
+              {/if}
+            </div>
+          </section>
+        {/each}
+      </div>
     </div>
   {/if}
 </div>

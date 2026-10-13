@@ -228,6 +228,11 @@
 @layer base {
   * {
     @apply border-border;
+    /* Scrollbars überall ausgeblendet, Scrollen bleibt möglich */
+    scrollbar-width: none;
+  }
+  *::-webkit-scrollbar {
+    display: none;
   }
   html,
   body {

@@ -112,13 +112,14 @@
     </ul>
   </section>
 
-  <div class="flex min-h-0 flex-col gap-3 overflow-y-auto">
+  <!-- Wie links: Rahmen bleiben ganz sichtbar, nur der Inhalt scrollt -->
+  <div class="flex min-h-0 flex-col gap-3">
     {#await progress then [badges, fieldMoves]}
-      <section class="panel">
+      <section class="panel flex min-h-0 flex-col">
         <h2 class="panel-header px-4 py-2 text-sm">
           Orden ({badges.filter((b) => owned.badges.has(b.id)).length}/{badges.length})
         </h2>
-        <div class="space-y-4 p-3">
+        <div class="min-h-0 space-y-4 overflow-y-auto p-3">
           {#each groups(badges) as [group, list] (group)}
             <div>
               {#if group}<h3 class="mb-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase">{group}</h3>{/if}
@@ -134,11 +135,11 @@
         </div>
       </section>
       {#if fieldMoves.length}
-        <section class="panel">
+        <section class="panel flex min-h-40 flex-1 flex-col">
           <h2 class="panel-header px-4 py-2 text-sm">
             Feldfähigkeiten ({fieldMoves.filter((f) => owned.fieldMoves.has(f.id)).length}/{fieldMoves.length})
           </h2>
-          <div class="grid grid-cols-[repeat(auto-fill,minmax(16rem,1fr))] gap-2 p-3">
+          <div class="grid min-h-0 grid-cols-[repeat(auto-fill,minmax(16rem,1fr))] content-start gap-2 overflow-y-auto p-3">
             {#each fieldMoves as f (f.id)}
               {@const badge = f.badge && badges.find((b) => b.id === f.badge)?.name}
               {@render card(

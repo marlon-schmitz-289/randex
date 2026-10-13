@@ -78,7 +78,7 @@
   {:else}
     {#await loaded then [data, original]}
       <Tabs.Content value="team" class="min-h-0 overflow-y-auto">
-        <div class="grid grid-cols-[repeat(auto-fill,minmax(20rem,1fr))] gap-3">
+        <div class="grid grid-cols-3 gap-3">
           {#each save.team as mon, i (i)}
             <SaveMonCard {mon} {data} />
           {:else}

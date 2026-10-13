@@ -95,11 +95,14 @@
         {/each}
       </ul>
     {/if}
-    <NamePicker
-      items={moves}
-      value=""
-      placeholder="TM/VM-Attacke hinzufügen …"
-      onSelect={(move) => !tmMoves.includes(move) && setTmMoves([...tmMoves, move])}
-    />
+    <div class="flex items-center gap-2">
+      <NamePicker
+        items={moves}
+        value=""
+        placeholder="TM/VM-Attacke hinzufügen …"
+        onSelect={(move) => !tmMoves.includes(move) && setTmMoves([...tmMoves, move])}
+      />
+      <span class="size-8 shrink-0" aria-hidden="true"></span>
+    </div>
   </section>
 </div>
