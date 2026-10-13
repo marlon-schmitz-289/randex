@@ -9,6 +9,8 @@
   import ZoomIn from "@lucide/svelte/icons/zoom-in";
   import ZoomOut from "@lucide/svelte/icons/zoom-out";
   import Maximize from "@lucide/svelte/icons/maximize";
+  import Footprints from "@lucide/svelte/icons/footprints";
+  import { Button } from "$lib/components/ui/button/index.js";
 
 
   const region = $derived(app.data?.game.region ?? "");
@@ -261,7 +263,9 @@
     <EmptyState>Karte wird geladen …</EmptyState>
   {:then map}
     {#if map}
-      {@const places = map.places.filter((p) => !p.games || p.games.includes(gameId)).sort((a, b) => order(a) - order(b))}
+      {@const inGame = map.places.filter((p) => !p.games || p.games.includes(gameId))}
+      {@const places = inGame.filter((p) => p.kind !== "roaming").sort((a, b) => order(a) - order(b))}
+      {@const roaming = inGame.filter((p) => p.kind === "roaming")}
       {@const b = boxOf(map, view)}
       {@const zoomed = b.w < full(map).w}
       <div class="relative min-h-0 flex-1 p-2">
@@ -343,6 +347,25 @@
             {/each}
           </svg>
         </div>
+        {#if roaming.length}
+          <!-- Wandernde Pokémon haben keinen festen Ort: immer oben links, unabhängig von Zoom und Ausschnitt -->
+          <ul class="absolute top-4 left-4 flex flex-col items-start gap-1" aria-label="Wandernde Pokémon">
+            {#each roaming as p (p.id)}
+              {@const selected = app.selectedLocationId === p.id}
+              <li>
+                <Button
+                  variant={selected ? "default" : "secondary"}
+                  size="sm"
+                  aria-current={selected || undefined}
+                  title={hint(p, count(p.id))}
+                  onclick={() => (app.selectedLocationId = p.id)}
+                >
+                  <Footprints /> {p.label}
+                </Button>
+              </li>
+            {/each}
+          </ul>
+        {/if}
         <div class="absolute right-4 bottom-4 flex flex-col gap-1">
           <IconButton variant="secondary" label="Hineinzoomen" onclick={() => zoomCenter(map, 1.5)}>
             <ZoomIn />

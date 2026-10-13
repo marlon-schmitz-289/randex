@@ -111,7 +111,8 @@ export interface MapPlace {
   /** Location.id der Region; Orte ohne Encounter (nur zur Orientierung): "deco-<slug>" */
   id: string;
   label: string;
-  kind: "city" | "route" | "water" | "cave" | "landmark";
+  /** roaming = wandernde Pokémon: kein Punkt auf der Karte, sondern ein Knopf in der Ecke (points werden ignoriert) */
+  kind: "city" | "route" | "water" | "cave" | "landmark" | "roaming";
   /**
    * 1 Punkt = Markierung, ab 2 Punkten = Linie (Route/Seeweg). Beide Linienenden schließen an (≤ 6 Einheiten)
    * an einen Ein-Punkt-Ort, an die Linie eines anderen Ortes oder an den Kartenrand an. Echte Sackgassen
