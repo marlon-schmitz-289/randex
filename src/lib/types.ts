@@ -171,9 +171,17 @@ export interface OriginalData {
   /** tmMoves sind Lehrer-Attacken (Legenden: Arceus) */
   tutor?: true;
   pokemon: Record<number, OriginalPokemon>;
-  /** locationId → Methode → [speciesId, minLevel, maxLevel]; {} = keine Encounter-Daten in PokeAPI */
-  encounters: Record<string, Partial<Record<EncounterMethod, [number, number, number][]>>>;
+  /** locationId → Methode → Zeilen; {} = keine Encounter-Daten in PokeAPI */
+  encounters: Record<string, Partial<Record<EncounterMethod, OriginalEncounter[]>>>;
 }
+
+/**
+ * [speciesId, minLevel, maxLevel, Häufigkeit in %, Bedingung, Bereich]; leere Enden fehlen, Handgepflegtes hat nur
+ * die ersten drei. Häufigkeit je Tageszeit [morgens, tagsüber, nachts] oder Jahreszeit [Frühling, Sommer, Herbst,
+ * Winter], 0 = dann nicht da. Bedingung = Alternativen als Schlüssel, mit Leerzeichen getrennt (z. B. "swarm-yes"),
+ * Bereich z. B. "1.UG" (nur bei Orten mit mehreren).
+ */
+export type OriginalEncounter = [number, number, number, (number | number[])?, string?, string?];
 
 export interface OriginalPokemon {
   types: TypeId[];

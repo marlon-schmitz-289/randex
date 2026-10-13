@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
-  abilitiesAt, evolutionOf, mergeEncounters, parseCsv, pickEvolutions, slotCount, statsAt, typesAt,
+  abilitiesAt, areaLabel, encounterRows, evolutionOf, mergeEncounters, parseCsv, pickEvolutions, slotCount, statsAt, typesAt,
 } from "./generate-data.mjs";
 
 const SPECIAL_KEY = "\0special";
@@ -185,4 +185,30 @@ test("mergeEncounters: ungültige Ergänzungen brechen ab", () => {
     [{ "hoenn-route-101": { walk: [[72, "5", 5]] } }, /ungültige Level/],
   ];
   for (const [extra, msg] of bad) assert.throws(() => mergeEncounters(mergeInput(extra)), msg);
+});
+
+test("encounterRows: Häufigkeit je Tageszeit, Bedingungen, Bereiche", () => {
+  const r = (sp, rarity, extra = {}) => ({ area: "EG", sp, min: 5, max: 5, rarity, dim: "", cond: "", ...extra });
+  assert.deepEqual(encounterRows([
+    r(16, 20), r(16, 10, { min: 3 }),
+    r(19, 10, { dim: "time-morning" }), r(19, 10, { dim: "time-day" }), r(163, 10, { dim: "time-night" }),
+    r(41, 30, { area: "1.UG" }),
+    r(25, 5, { cond: "swarm-yes" }),
+    ...["normal", "overcast", "raining", "thunderstorm", "intense-sun", "snowing", "snowstorm", "sandstorm", "fog"]
+      .map((w) => r(52, 5, { cond: `weather-${w}` })),
+    r(53, 5, { cond: "weather-raining" }), r(53, 5, { cond: "weather-fog" }),
+  ]), [
+    [16, 3, 5, 30, "", "EG"], [19, 5, 5, [10, 10, 0], "", "EG"], [163, 5, 5, [0, 0, 10], "", "EG"], [52, 5, 5, 5, "", "EG"],
+    [25, 5, 5, 5, "swarm-yes", "EG"], [53, 5, 5, 5, "weather-raining weather-fog", "EG"],
+    [41, 5, 5, 30, "", "1.UG"],
+  ]);
+  assert.deepEqual(encounterRows([r(16, 20, { area: "" })]), [[16, 5, 5, 20]]);
+});
+
+test("areaLabel: deutscher Klammertext, sonst Stockwerk aus dem Identifier", () => {
+  assert.equal(areaLabel("b1f", "Mondberg (1.UG)"), "1.UG");
+  assert.equal(areaLabel("1f", undefined), "EG");
+  assert.equal(areaLabel("3f", undefined), "2.OG");
+  assert.equal(areaLabel("b2f-a", undefined), "2.UG A");
+  assert.equal(areaLabel("main", "Route 9"), "Hauptbereich");
 });

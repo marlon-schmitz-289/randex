@@ -9,6 +9,7 @@
   import { Button } from "$lib/components/ui/button/index.js";
   import Sprite from "$lib/components/app/list/Sprite.svelte";
   import SpeciesPicker from "$lib/components/app/list/SpeciesPicker.svelte";
+  import EncounterList from "./EncounterList.svelte";
   import { Chip, EmptyState, Panel, Section } from "$lib/components/kit";
 
   let { location }: { location: Location } = $props();
@@ -27,7 +28,7 @@
   });
   const missing = $derived(ENCOUNTER_METHODS.filter((m) => !methods.includes(m)));
   const entryCount = $derived(app.current ? countSpecies(app.current.encounters, location.id) : 0);
-  // Ohne Randomizer: Original-Fundorte mit Level, schreibgeschützt
+  // Ohne Randomizer: Original-Fundorte mit Level und Häufigkeit, schreibgeschützt
   const original = $derived(app.original?.encounters[location.id]);
   const originalMethods = $derived(ENCOUNTER_METHODS.filter((m) => original?.[m]?.length));
 
@@ -45,7 +46,7 @@
   }
 </script>
 
-<Panel title={location.name} bodyClass="space-y-4 overflow-y-auto">
+<Panel title={location.name} bodyClass="space-y-3 overflow-y-auto">
   {#snippet actions()}
     {#if isCustom}
       <Button variant="ghost" size="xs" onclick={() => (entryCount ? (confirmOpen = true) : removeLocation())}>
@@ -55,18 +56,8 @@
   {/snippet}
   {#if app.original}
     {#each originalMethods as method (method)}
-      <Section title={ENCOUNTER_METHOD_LABELS[method]}>
-        <ul class="flex flex-wrap gap-2">
-          {#each original?.[method] ?? [] as [id, min, max] (id)}
-            <li>
-              <Chip onclick={() => showSpecies(id)}>
-                <Sprite {id} size={32} />
-                {speciesName(id)}
-                <span class="text-xs text-muted-foreground tabular-nums">Lv. {min === max ? min : `${min}–${max}`}</span>
-              </Chip>
-            </li>
-          {/each}
-        </ul>
+      <Section title={ENCOUNTER_METHOD_LABELS[method]} collapsible>
+        <EncounterList {method} rows={original?.[method] ?? []} />
       </Section>
     {:else}
       <EmptyState variant="inline">Hier gibt es keine wilden Pokémon.</EmptyState>
@@ -75,7 +66,7 @@
     {#each methods as method (method)}
       {@const ids = app.current?.encounters[location.id]?.[method] ?? []}
       {@const max = app.current?.wildMatching ? location.slots?.[method] : undefined}
-      <Section title={ENCOUNTER_METHOD_LABELS[method]}>
+      <Section title={ENCOUNTER_METHOD_LABELS[method]} collapsible>
         {#snippet aside()}
           {#if max}
             <span

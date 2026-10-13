@@ -67,6 +67,19 @@ const METHOD_ORDER = [
 
 const SPECIAL = "\0special";
 
+// Tages-/Jahreszeit werden Spalten der Häufigkeit (Reihenfolge = Spalten)
+const DIMS = [
+  ["time-morning", "time-day", "time-night"],
+  ["season-spring", "season-summer", "season-autumn", "season-winter"],
+];
+// Angezeigte Sonderbedingungen (Texte in der App); Encounter mit anderen (Story, Items, Großmoor …) fehlen in den Originaldaten
+const CONDITIONS = new Set([
+  "swarm-yes", "radar-on", "slot2-ruby", "slot2-sapphire", "slot2-emerald", "slot2-firered", "slot2-leafgreen",
+  "radio-hoenn", "radio-sinnoh", "bug-catching-contest-yes", "headbutt-tree-common", "headbutt-tree-rare", "headbutt-tree-secret",
+  ...["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((d) => `weekday-${d}`),
+  ...["normal", "overcast", "raining", "thunderstorm", "intense-sun", "snowing", "snowstorm", "sandstorm", "fog"].map((w) => `weather-${w}`),
+]);
+
 const at = (map, key, make) => map.get(key) ?? map.set(key, make()).get(key);
 const group = (rows, key) => {
   const m = new Map();
@@ -192,6 +205,74 @@ export function slotCount(byVariant) {
   const variants = [...byVariant].filter(([k]) => k !== "" && k !== SPECIAL);
   if (!variants.length) return always.size;
   return Math.max(...variants.map(([, set]) => new Set([...always, ...set]).size));
+}
+
+/**
+ * Encounter-Zeilen eines (Ort, Methode) → [speciesId, min, max, Häufigkeit, Bedingungen, Bereich], leere Enden gekürzt;
+ * Bedingungen = Alternativen, mit Leerzeichen getrennt.
+ * raw: { area, sp, min, max, rarity, dim (DIMS-Wert oder ""), cond (Wert aus CONDITIONS oder "") }, Bereiche in
+ * Anzeigereihenfolge.
+ * Häufigkeit = Summe der Slot-Anteile; mit Tages-/Jahreszeit ein Wert je Spalte, sind alle gleich, eine Zahl.
+ * Gleiche Zeilen mit verschiedener Bedingung derselben Art (z. B. Wetter) werden zusammengefasst; deckt das alle
+ * Werte ab, entfällt die Bedingung.
+ */
+export function encounterRows(raw) {
+  const groups = new Map();
+  for (const r of raw) {
+    const g = at(groups, `${r.area}\0${r.cond}`, () => ({ area: r.area, cond: r.cond, species: new Map() }));
+    const s = at(g.species, r.sp, () => ({ min: r.min, max: r.max, rarity: new Map() }));
+    s.min = Math.min(s.min, r.min);
+    s.max = Math.max(s.max, r.max);
+    s.rarity.set(r.dim, (s.rarity.get(r.dim) ?? 0) + r.rarity);
+  }
+  const rows = [];
+  for (const g of groups.values()) {
+    const dims = DIMS.find((d) => [...g.species.values()].some((s) => d.some((v) => s.rarity.has(v))));
+    for (const [sp, s] of g.species) {
+      const base = s.rarity.get("") ?? 0;
+      const per = dims?.map((v) => base + (s.rarity.get(v) ?? 0));
+      rows.push({ area: g.area, conds: g.cond ? [g.cond] : [], sp, min: s.min, max: s.max, chance: !per ? base : new Set(per).size > 1 ? per : per[0] });
+    }
+  }
+  const family = (c) => c.split("-")[0];
+  // Wetter/Wochentag: einer gilt immer; Kopfnuss-Bäume: alle am Ort vorkommenden. Schwarm, GBA-Slot … sind nie "immer".
+  const seen = new Map();
+  for (const r of rows) for (const c of r.conds) at(seen, `${r.area}\0${family(c)}`, () => new Set()).add(c);
+  const full = (area, f) =>
+    f === "headbutt" ? seen.get(`${area}\0${f}`).size
+    : f === "weather" || f === "weekday" ? [...CONDITIONS].filter((c) => family(c) === f).length
+    : Infinity;
+  const merged = new Map();
+  for (const r of rows) {
+    const key = [r.area, r.sp, r.min, r.max, r.chance, r.conds.map(family)].join("\0");
+    const m = merged.get(key);
+    if (m) m.conds.push(...r.conds);
+    else merged.set(key, { ...r, conds: [...r.conds] });
+  }
+  const top = (c) => (Array.isArray(c) ? Math.max(...c) : c);
+  const areaOrder = new Map();
+  for (const r of raw) if (!areaOrder.has(r.area)) areaOrder.set(r.area, areaOrder.size);
+  return [...merged.values()]
+    .map((r) => {
+      const all = r.conds.length > 0 && r.conds.length === full(r.area, family(r.conds[0]));
+      const label = all ? "" : r.conds.join(" ");
+      return { ...r, label };
+    })
+    .sort((a, b) => areaOrder.get(a.area) - areaOrder.get(b.area) || a.label.localeCompare(b.label, "de") || top(b.chance) - top(a.chance) || a.sp - b.sp)
+    .map((r) => {
+      const e = [r.sp, r.min, r.max, r.chance, r.label, r.area];
+      while (e.at(-1) === "") e.pop();
+      return e;
+    });
+}
+
+/** Bereichsname ohne Ortsnamen: "Mondberg (1.UG)" → "1.UG"; ohne deutschen Text Stockwerk aus dem Identifier. */
+export function areaLabel(identifier, de) {
+  const p = de?.match(/\(([^)]+)\)$/);
+  if (p) return p[1];
+  const f = identifier.match(/^(b)?(\d+)f(?:-([a-z]))?$/);
+  if (f) return (f[1] ? `${f[2]}.UG` : f[2] === "1" ? "EG" : `${f[2] - 1}.OG`) + (f[3] ? ` ${f[3].toUpperCase()}` : "");
+  return identifier === "main" ? "Hauptbereich" : humanize(identifier);
 }
 
 /**
@@ -370,7 +451,7 @@ async function main() {
     conditions, conditionValues, conditionMap, pokemonTypes, pokemonTypesPast, pokemonAbilities, pokemonAbilitiesPast,
     pokemonStats, pokemonStatsPast, pokemonMoves, machines, items, itemNames, evolutionRows, evolutionTriggers,
     pokemonForms, itemIndices, experience, natures, natureNames, pokedexes, pokedexProse, pokedexGroups,
-    dexNumbers, moveChangelog] = await Promise.all([
+    dexNumbers, moveChangelog, areaProse] = await Promise.all([
     "versions", "version_groups", "pokemon_species", "pokemon_species_names", "moves", "move_names",
     "abilities", "ability_names", "types", "type_names", "regions", "locations", "location_names", "location_areas",
     "encounters", "encounter_slots", "encounter_methods", "pokemon",
@@ -379,7 +460,7 @@ async function main() {
     "pokemon_stats", "pokemon_stats_past", "pokemon_moves", "machines", "items", "item_names",
     "pokemon_evolution", "evolution_triggers", "pokemon_forms", "item_game_indices", "experience",
     "natures", "nature_names", "pokedexes", "pokedex_prose", "pokedex_version_groups", "pokemon_dex_numbers",
-    "move_changelog",
+    "move_changelog", "location_area_prose",
   ].map(csv));
 
   const groupGen = new Map(versionGroups.map((g) => [g.id, +g.generation_id]));
@@ -457,35 +538,41 @@ async function main() {
     encValues.get(m.encounter_id).push(valueInfo.get(m.encounter_condition_value_id));
   }
   /** null = Sonderbedingung, sonst Varianten-Schlüssel ("" = immer) */
-  const variantOf = (encId) => {
-    const vals = encValues.get(encId) ?? [];
+  const variantOf = (vals) => {
     if (vals.some((v) => !v.isDefault && !VARIANT.has(v.cond) && !UNION.has(v.cond))) return null;
     return vals.filter((v) => VARIANT.has(v.cond)).map((v) => v.name).sort().join("+");
   };
 
   // version slug -> locationId -> method -> variant -> Set<speciesId>
   const perGame = new Map();
-  // version slug -> Location-Slug -> method -> speciesId -> [min, max] (Originaldaten, ohne Sonderbedingungen)
-  const levelsPerGame = new Map();
+  // version slug -> Location-Slug -> method -> Rohzeilen für encounterRows (Originaldaten)
+  const rawPerGame = new Map();
+  const dimValues = new Set(DIMS.flat());
   const maxRaid = methods.find((m) => m.identifier === "max-raid")?.id;
-  const slotRaw = new Map(slots.map((s) => [s.id, s.encounter_method_id]));
-  for (const e of encounters) {
+  const slotRaw = new Map(slots.map((s) => [s.id, { method: s.encounter_method_id, rarity: +s.rarity }]));
+  for (const e of [...encounters].sort((a, b) => a.location_area_id - b.location_area_id)) {
     const slug = verSlug.get(e.version_id);
     const loc = areaLoc.get(e.location_area_id);
     const m = slotMethod.get(e.encounter_slot_id);
     if (!slug || !loc || !m) continue;
     const byVariant = at(at(at(perGame, slug, () => new Map()), loc, () => new Map()), m, () => new Map());
-    const variant = variantOf(e.id);
+    const vals = encValues.get(e.id) ?? [];
+    const variant = variantOf(vals);
     const sp = +speciesOf.get(e.pokemon_id);
     // Methode bleibt sichtbar, auch wenn sie nur unter Sonderbedingungen vorkommt (dann 0 Slots)
     const set = at(byVariant, variant ?? SPECIAL, () => new Set());
     set.add(sp);
-    if (variant === null || slotRaw.get(e.encounter_slot_id) === maxRaid) continue;
-    const bySpecies = at(at(at(levelsPerGame, slug, () => new Map()), locById.get(loc).identifier, () => new Map()), m, () => new Map());
-    const range = bySpecies.get(sp);
-    if (range) bySpecies.set(sp, [Math.min(range[0], +e.min_level), Math.max(range[1], +e.max_level)]);
-    else bySpecies.set(sp, [+e.min_level, +e.max_level]);
+    const slot = slotRaw.get(e.encounter_slot_id);
+    const conds = vals.filter((v) => CONDITIONS.has(v.name)).map((v) => v.name);
+    if (slot.method === maxRaid || conds.length > 1 || vals.some((v) => !v.isDefault && !dimValues.has(v.name) && !CONDITIONS.has(v.name))) continue;
+    at(at(at(rawPerGame, slug, () => new Map()), locById.get(loc).identifier, () => new Map()), m, () => []).push({
+      area: e.location_area_id, sp, min: +e.min_level, max: +e.max_level, rarity: slot.rarity,
+      dim: vals.find((v) => dimValues.has(v.name))?.name ?? "", cond: conds[0] ?? "",
+    });
   }
+  const areaName = names(areaProse, "location_area_id");
+  const areaById = new Map(areas.map((a) => [a.id, a]));
+  const areaText = (id) => areaLabel(areaById.get(id).identifier, areaName(+id));
 
   const toLocation = (id, byMethod) => {
     const l = locById.get(id);
@@ -510,9 +597,12 @@ async function main() {
       list = locations.filter((l) => l.region_id === rid).map((l) => toLocation(l.id, new Map()));
     }
     const enc = {};
-    for (const [loc, byMethod] of levelsPerGame.get(g.id) ?? []) {
+    for (const [loc, byMethod] of rawPerGame.get(g.id) ?? []) {
+      // Bereich nur nennen, wenn der Ort mehrere hat
+      const multi = new Set([...byMethod.values()].flat().map((r) => r.area)).size > 1;
       for (const m of METHOD_ORDER.filter((x) => byMethod.has(x))) {
-        (enc[loc] ??= {})[m] = [...byMethod.get(m)].map(([sp, [min, max]]) => [sp, min, max]).sort((a, b) => a[0] - b[0]);
+        const rows = encounterRows(byMethod.get(m).map((r) => ({ ...r, area: multi ? areaText(r.area) : "" })));
+        if (rows.length) (enc[loc] ??= {})[m] = rows;
       }
     }
     const { places } = await readJson(path.join(DATA, "maps", `${g.region.toLowerCase()}.json`));

@@ -165,7 +165,7 @@ Dünne App-Schicht über shadcn (`ui/`), Import über `$lib/components/kit`. All
 | `Chip.svelte` | `onclick?` (Inhalt wird Button), `onRemove?` + `removeLabel`, `class?` – Liste `<ul class="flex flex-wrap gap-1.5">` |
 | `SelectCard.svelte` | `pressed`, `onclick`, `label?` (aria-label), `class?` – `aria-pressed`, Check-Badge wenn an |
 | `NavRow.svelte` | `onclick`, `meta?: Snippet` (rechts), `current?` (aria-current), `class?` – Liste `<ul class="flex flex-col gap-1">` |
-| `Section.svelte` | `title`, `aside?: Snippet` (hinter Titel), `class?` |
+| `Section.svelte` | `title`, `aside?: Snippet` (hinter Titel), `collapsible?` (Karte, Kopfzeile klappt ein, anfangs offen), `class?` |
 | `EmptyState.svelte` | `variant?: "block" \| "inline" \| "center"` (Standard `block`), `status?` (role=status), `class?` |
 | `Hint.svelte` | `live?` (aria-live polite), `class?` |
 | `Field.svelte` | `label`, `for` (id des Controls), `optional?`, `hint?` |

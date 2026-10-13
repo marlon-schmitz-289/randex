@@ -113,7 +113,7 @@ export function loadOriginal(gameId: string): Promise<Original> {
     const speciesEncounters: Encounters = Object.fromEntries(
       Object.entries(data.encounters).map(([loc, byMethod]) => [
         loc,
-        Object.fromEntries(Object.entries(byMethod).map(([m, list]) => [m, list.map(([id]) => id)])),
+        Object.fromEntries(Object.entries(byMethod).map(([m, list]) => [m, [...new Set(list.map(([id]) => id))]])),
       ]),
     );
     return { ...data, movesById: new Map(moves.map((m) => [m.id, m.name])), speciesEncounters };
