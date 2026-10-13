@@ -283,6 +283,10 @@ export interface Run {
   badges?: string[];
   /** Abgehakte FieldMove.id. Fehlt in älteren Runs. */
   fieldMoves?: string[];
+  /** Gewählter Pokédex (Pokedex.id oder "national"); fehlt = ohne Randomizer der erste Regional-Dex, sonst National. */
+  dexId?: string;
+  /** Im Pokédex als gefangen abgehakte Species-IDs. Fehlt in älteren Runs. */
+  caught?: number[];
   /** Spielstand-Ansicht an; nur `true` wird gespeichert. */
   saveGame?: true;
   /** Zuletzt eingelesener Spielstand; bleibt beim Ausschalten erhalten. */
@@ -389,4 +393,4 @@ export interface Sighting {
   method: EncounterMethod;
 }
 
-export type View = "pokemon" | "routes" | "progress" | "save";
+export type View = "pokemon" | "pokedex" | "routes" | "progress" | "save";

@@ -16,6 +16,7 @@
   import Trash from "@lucide/svelte/icons/trash-2";
   import Upload from "@lucide/svelte/icons/upload";
   import BookOpen from "@lucide/svelte/icons/book-open";
+  import BookCheck from "@lucide/svelte/icons/book-check";
   import Gamepad from "@lucide/svelte/icons/gamepad-2";
   import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
@@ -34,6 +35,7 @@
   import PokemonList from "./list/PokemonList.svelte";
   import PokemonDetail from "./PokemonDetail.svelte";
   import EncounterView from "./encounter/EncounterView.svelte";
+  import PokedexView from "./PokedexView.svelte";
   import ProgressView from "./ProgressView.svelte";
   import SaveView from "./SaveView.svelte";
 
@@ -60,7 +62,7 @@
     }
   }
 
-  const isView = (v: string): v is View => v === "pokemon" || v === "routes" || v === "progress" || v === "save";
+  const isView = (v: string): v is View => v === "pokemon" || v === "pokedex" || v === "routes" || v === "progress" || v === "save";
 </script>
 
 <div class="flex h-dvh flex-col">
@@ -107,6 +109,7 @@
       <Tabs.Root value={app.view} onValueChange={(v) => isView(v) && (app.view = v)} class="mx-auto">
         <Tabs.List aria-label="Ansicht">
           <TabTrigger value="pokemon"><BookOpen /> Pokémon</TabTrigger>
+          <TabTrigger value="pokedex"><BookCheck /> Pokédex</TabTrigger>
           <TabTrigger value="routes"><MapIcon /> Routen</TabTrigger>
           <TabTrigger value="progress"><Trophy /> Fortschritt</TabTrigger>
           {#if app.current.saveGame}
@@ -158,6 +161,8 @@
           <PokemonList />
           <PokemonDetail />
         </div>
+      {:else if app.view === "pokedex"}
+        <PokedexView />
       {:else if app.view === "routes"}
         <EncounterView />
       {:else if app.view === "save"}

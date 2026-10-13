@@ -141,7 +141,7 @@ Alle Komponenten lesen/schreiben über `app` und die Funktionen aus `runs.svelte
 | `src/routes/+page.svelte` | – (rendert `AppShell`, ruft `initRuns()`) |
 | `AppShell.svelte` | – Kopfzeile, Run-Wechsler, Export/Import/Löschen, Ansicht Pokémon ⇄ Routen ⇄ Fortschritt, Hell/Dunkel (`mode-watcher`), Leerzustand ohne Run |
 | `RunDialog.svelte` | `open: boolean` (bindable), `run?: Run` (fehlt = Anlegen) – Name, Spiel (nach Gen gruppiert), Seed, Schalter „Randomizer-Run“, Notiz; nur mit Randomizer: Wilde Pokémon, Kategorie-Toggles (nur `categoriesForGeneration`) |
-| `list/PokemonList.svelte` | – Suche, Filter (nur mit Randomizer), Typfilter (Run- oder Originaltypen), ↑↓, Tippen fokussiert Suche (nur ohne Fokus in Eingabefeld/Dialog) |
+| `list/PokemonList.svelte` | – Suche, Filter (nur mit Randomizer), Typfilter (Run- oder Originaltypen), ↑↓, Tippen fokussiert Suche (nur ohne Fokus in Eingabefeld/Dialog), Dex-Wahl über `list/DexSelect` (`Run.dexId`, Standard ohne Randomizer: erster Regional-Dex; `app.dex`/`app.dexSpecies`/`app.dexNumber`) |
 | `list/TypeBadge.svelte` | `id: TypeId`, `size?: "sm" \| "md"`, `class?` |
 | `list/Sprite.svelte` | `id: number`, `size?: number` (px, Standard 40), `class?` – lazy, feste Größe, Platzhalter bei Fehler |
 | `list/SpeciesPicker.svelte` | `value?: number \| string \| null`, `onSelect: (v: number \| string) => void`, `allowFreeText?: boolean`, `exclude?: number[]`, `placeholder?: string` – Popover + Command über `app.data.species` |
@@ -150,6 +150,7 @@ Alle Komponenten lesen/schreiben über `app` und die Funktionen aus `runs.svelte
 | `encounter/EncounterView.svelte`, `encounter/*` | – Ortsliste (Suche, `app.selectedLocationId`), Editor pro Methode, `SpeciesPicker` (`allowFreeText=false`), Methode hinzufügen, eigene Orte anlegen/löschen; ohne Randomizer schreibgeschützt mit Level aus `app.original`; Klick auf Pokémon → `showSpecies` |
 | `encounter/RegionMap.svelte` | – schematische Regionskarte (`loadRegionMap`), Klick auf Ort → Encounter-Liste |
 | `ProgressView.svelte` | – Team (bis 6), Orden (`loadBadges`) und Feldfähigkeiten (`loadFieldMoves`) zum Abhaken |
+| `PokedexView.svelte` | – Pokédex des gewählten Dex zum Abhaken (`Run.caught`, `toggleCaught`), Fortschritt, Suche, Filter Gefangen/Fehlend |
 | `SaveView.svelte` | – nur mit `run.saveGame`: Spielstand laden (`importSave`), Unter-Tabs Team/Boxen/Beutel aus `run.save` (`loadSavegameData`) |
 
 ## UI-Bausteine (`src/lib/components/kit/`)

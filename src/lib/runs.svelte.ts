@@ -4,7 +4,9 @@ import { categoriesForGeneration, loadBadges, loadGameData, loadGames, loadOrigi
 import { applyPatch, patchEntry } from "./entry.ts";
 import { ownNickname } from "./savegame.ts";
 import { SCHEMA_VERSION } from "./types.ts";
-import type { Category, Encounters, Game, PokemonEntry, Run, RunSummary, SaveSnapshot, View, WildMatching } from "./types.ts";
+import type {
+  Category, Encounters, Game, Pokedex, PokemonEntry, Run, RunSummary, SaveSnapshot, Species, View, WildMatching,
+} from "./types.ts";
 
 export interface RunInput {
   name: string;
@@ -56,6 +58,25 @@ class App {
     if (!current || !data) return [];
     const all = categoriesForGeneration(data.game.generation);
     return this.original ? all : all.filter((c) => current.enabledCategories.includes(c));
+  });
+  /** Gewählter Pokédex, null = National. Gespeicherter Dex aus einem anderen Spiel gilt als Standard. */
+  readonly dex: Pokedex | null = $derived.by(() => {
+    const dexes = this.data?.dexes ?? [];
+    const id = this.current?.dexId;
+    if (id === "national") return null;
+    return dexes.find((d) => d.id === id) ?? (this.original ? (dexes[0] ?? null) : null);
+  });
+  /** Arten des Dex in Dex-Reihenfolge; ohne Randomizer nur Arten mit Originaldaten. Stabil für den Namensindex. */
+  readonly dexSpecies: Species[] = $derived.by(() => {
+    const { data, original, dex } = this;
+    if (!data) return [];
+    const list = dex ? dex.species.flatMap((id) => data.speciesById.get(id) ?? []) : data.species;
+    return original ? list.filter((s) => original.pokemon[s.id]) : list;
+  });
+  /** Nummer im gewählten Dex (Regional-Nr.), sonst National-Nr. */
+  readonly dexNumber = $derived.by(() => {
+    const map = this.dex && new Map(this.dex.species.map((id, i) => [id, i + 1]));
+    return (id: number) => map?.get(id) ?? id;
   });
   /** Ohne Randomizer die Original-Fundorte, sonst die eingetragenen. */
   readonly encounters: Encounters = $derived(this.original?.speciesEncounters ?? this.current?.encounters ?? {});
@@ -262,6 +283,20 @@ export async function deleteRun(id: string): Promise<void> {
     rememberRun(null);
     if (app.runs[0]) await openRun(app.runs[0].id);
   }
+}
+
+export function setDex(id: string): void {
+  mutate((r) => {
+    r.dexId = id;
+  });
+}
+
+export function toggleCaught(speciesId: number): void {
+  mutate((r) => {
+    const set = new Set(r.caught ?? []);
+    if (!set.delete(speciesId)) set.add(speciesId);
+    r.caught = [...set];
+  });
 }
 
 export function updateEntry(speciesId: number, patch: Partial<PokemonEntry>): void {
