@@ -238,6 +238,9 @@
   body {
     @apply h-full bg-background text-foreground;
     font-family: var(--font-sans);
+    /* App-Fenster: nur Listen/Panels scrollen, die Seite selbst weder scrollen noch nachfedern */
+    overflow: hidden;
+    overscroll-behavior: none;
   }
   body {
     background-image: repeating-linear-gradient(
