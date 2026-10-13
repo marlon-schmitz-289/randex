@@ -43,6 +43,8 @@ const GAMES = [
   ["legends-arceus", "Legenden: Arceus", "Hisui"],
   ["scarlet", "Karmesin", "Paldea"], ["violet", "Purpur", "Paldea"],
 ];
+// Pokédexe ohne (passenden) deutschen Namen in PokeAPI
+const DEX_NAME = { alola: "Alola", melemele: "Mele-Mele", akala: "Akala", ulaula: "Ula-Ula", poni: "Poni", kitakami: "Kitakami" };
 // Regionen, deren deutscher Name vom PokeAPI-Identifier abweicht
 const REGION_SLUG = { Einall: "unova" };
 
@@ -346,7 +348,8 @@ async function main() {
     typeRows, typeNames, regions, locations, locationNames, areas, encounters, slots, methods, pokemonRows,
     conditions, conditionValues, conditionMap, pokemonTypes, pokemonTypesPast, pokemonAbilities, pokemonAbilitiesPast,
     pokemonStats, pokemonStatsPast, pokemonMoves, machines, items, itemNames, evolutionRows, evolutionTriggers,
-    pokemonForms, itemIndices, experience, natures, natureNames] = await Promise.all([
+    pokemonForms, itemIndices, experience, natures, natureNames, pokedexes, pokedexProse, pokedexGroups,
+    dexNumbers] = await Promise.all([
     "versions", "version_groups", "pokemon_species", "pokemon_species_names", "moves", "move_names",
     "abilities", "ability_names", "types", "type_names", "regions", "locations", "location_names", "location_areas",
     "encounters", "encounter_slots", "encounter_methods", "pokemon",
@@ -354,7 +357,7 @@ async function main() {
     "pokemon_types", "pokemon_types_past", "pokemon_abilities", "pokemon_abilities_past",
     "pokemon_stats", "pokemon_stats_past", "pokemon_moves", "machines", "items", "item_names",
     "pokemon_evolution", "evolution_triggers", "pokemon_forms", "item_game_indices", "experience",
-    "natures", "nature_names",
+    "natures", "nature_names", "pokedexes", "pokedex_prose", "pokedex_version_groups", "pokemon_dex_numbers",
   ].map(csv));
 
   const groupGen = new Map(versionGroups.map((g) => [g.id, +g.generation_id]));
@@ -372,6 +375,28 @@ async function main() {
     .sort((a, b) => a.id - b.id);
   if (species.length !== MAX_SPECIES) throw new Error(`${species.length} statt ${MAX_SPECIES} Species`);
   await json(path.join(DATA, "species.json"), species);
+
+  // Regionale Pokédexe je Spiel in Dex-Reihenfolge; National = alle Arten, daher nicht gespeichert
+  const dexName = names(pokedexProse, "pokedex_id");
+  const dexSpecies = new Map();
+  for (const r of [...dexNumbers].sort((a, b) => a.pokedex_number - b.pokedex_number)) {
+    if (+r.species_id > MAX_SPECIES) continue;
+    if (!dexSpecies.has(r.pokedex_id)) dexSpecies.set(r.pokedex_id, []);
+    dexSpecies.get(r.pokedex_id).push(+r.species_id);
+  }
+  const dexById = new Map(pokedexes.map((d) => [d.id, d]));
+  const dexes = Object.fromEntries(games.map((g) => {
+    const vg = versionBySlug.get(g.id).version_group_id;
+    const list = pokedexGroups.filter((r) => r.version_group_id === vg && dexById.get(r.pokedex_id)?.is_main_series === "1")
+      .map((r) => {
+        const slug = dexById.get(r.pokedex_id).identifier.replace(/^(original|updated|extended)-/, "");
+        const name = DEX_NAME[slug] ?? dexName(+r.pokedex_id).replace(/^(Original|Aktualisiertes|Erweitertes|Neue|Updated) /, "");
+        return { id: slug, name, species: dexSpecies.get(r.pokedex_id) ?? [] };
+      })
+      .filter((d) => d.species.length && d.id !== "national");
+    return [g.id, list];
+  }));
+  await json(path.join(DATA, "dexes.json"), dexes);
 
   const mName = names(moveNames, "move_id");
   const moves = moveRows.filter((r) => +r.id < 10000)

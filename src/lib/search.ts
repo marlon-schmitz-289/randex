@@ -8,6 +8,8 @@ export interface SearchOptions {
   type: TypeId | null;
   /** Typen für den Typfilter (Run-Einträge oder Originaldaten); fehlt = Typfilter findet nichts. */
   typesOf?: (speciesId: number) => readonly TypeId[] | undefined;
+  /** Angezeigte Nummer (z. B. im Regional-Dex) für die Nummernsuche; fehlt = National-Nr. */
+  numberOf?: (speciesId: number) => number | undefined;
 }
 
 /** Kleinschreibung ohne Diakritika. */
@@ -51,7 +53,7 @@ export function searchSpecies(species: readonly Species[], run: Run | null, opts
 
     let tier = 0;
     if (num !== null) {
-      if (s.id !== num) continue;
+      if ((opts.numberOf?.(s.id) ?? s.id) !== num) continue;
     } else if (q) {
       const n = names[i];
       tier = n.startsWith(q) ? 0 : n.includes(q) ? 1 : isSubsequence(n, q) ? 2 : -1;

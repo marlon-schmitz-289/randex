@@ -11,6 +11,7 @@ const files: Record<string, unknown> = {
   "/data/types.json": [{ id: "dark", name: "Unlicht", generation: 2 }, { id: "fairy", name: "Fee", generation: 6 }],
   "/data/moves.json": [{ id: 1, name: "Pfund", generation: 1 }, { id: 2, name: "Zauberschein", generation: 6 }],
   "/data/abilities.json": [{ id: 1, name: "Duftnote", generation: 3 }, { id: 2, name: "Flauschigkeit", generation: 7 }],
+  "/data/dexes.json": { black: [{ id: "unova", name: "Einall", species: [1] }] },
   "/data/locations/red.json": [],
   "/data/locations/black.json": [],
   "/data/locations/nope.json": [],
@@ -40,6 +41,7 @@ test("Schwarz (Gen 5) filtert neuere Arten, Typen, Attacken, Fähigkeiten", asyn
   assert.deepEqual(d.moves.map((m) => m.id), [1]);
   assert.deepEqual(d.abilities.map((a) => a.id), [1]);
   assert.equal(d.speciesById.get(650), undefined);
+  assert.deepEqual(d.dexes.map((x) => x.id), ["unova"]);
 });
 
 test("Rot (Gen 1): keine Fähigkeiten, auch nicht als Kategorie", async () => {

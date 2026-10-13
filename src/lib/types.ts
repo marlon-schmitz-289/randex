@@ -122,6 +122,14 @@ export interface MapPlace {
   games?: string[];
 }
 
+/** static/data/dexes.json – Record<gameId, Pokedex[]>, nur regionale Dexe (National = alle Arten). */
+export interface Pokedex {
+  id: string;
+  name: string;
+  /** Species-IDs in Dex-Reihenfolge */
+  species: number[];
+}
+
 /** static/data/badges.json – Record<gameId, Badge[]>, in Spielreihenfolge. */
 export interface Badge {
   id: string;

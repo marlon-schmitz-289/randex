@@ -23,6 +23,7 @@
   let query = $state("");
   let filter = $state<EntryFilter>("all");
   let type = $state<TypeId | "all">("all");
+  let dexId = $state("national");
   let scrollTop = $state(0);
   let viewH = $state(0);
   let searchEl = $state<HTMLInputElement | null>(null);
@@ -31,14 +32,19 @@
   // Typfilter aus einem anderen Spiel (z. B. Fee nach Wechsel auf Gen 5) gilt als „Alle Typen“.
   const activeType = $derived(type !== "all" && app.data?.typesById.has(type) ? type : null);
   // Ohne Randomizer nur Arten mit Originaldaten; eigenes $derived, damit der Namensindex (WeakMap) stabil bleibt.
+  // Dex aus einem anderen Spiel gilt als National.
+  const dex = $derived(app.data?.dexes.find((d) => d.id === dexId) ?? null);
+  const dexNumber = $derived(dex && new Map(dex.species.map((id, i) => [id, i + 1])));
   const species = $derived.by(() => {
     const { data, original } = app;
     if (!data) return [];
-    return original ? data.species.filter((s) => original.pokemon[s.id]) : data.species;
+    const list = dex ? dex.species.flatMap((id) => data.speciesById.get(id) ?? []) : data.species;
+    return original ? list.filter((s) => original.pokemon[s.id]) : list;
   });
+  const numberOf = (id: number) => dexNumber?.get(id) ?? id;
   const typesOf = (id: number) => (app.original ? app.original.pokemon[id]?.types : app.current?.pokemon[id]?.types);
   const activeFilter = $derived(app.original ? "all" : filter);
-  const results = $derived(searchSpecies(species, app.current, { query, filter: activeFilter, type: activeType, typesOf }));
+  const results = $derived(searchSpecies(species, app.current, { query, filter: activeFilter, type: activeType, typesOf, numberOf }));
   const isFilter = (v: string): v is EntryFilter => FILTERS.some((f) => f.value === v);
   const first = $derived(Math.max(0, Math.floor(scrollTop / ROW) - OVERSCAN));
   const last = $derived(Math.min(results.length, Math.ceil((scrollTop + viewH) / ROW) + OVERSCAN));
@@ -132,6 +138,19 @@
         {/each}
       </Select.Content>
     </Select.Root>
+    {#if app.data?.dexes.length}
+      <Select.Root type="single" value={dex?.id ?? "national"} onValueChange={(v) => (dexId = v)}>
+        <Select.Trigger size="sm" class="max-w-full min-w-36" aria-label="Pokédex">
+          <span class="truncate">{dex?.name ?? "National"}</span>
+        </Select.Trigger>
+        <Select.Content>
+          <Select.Item value="national">National</Select.Item>
+          {#each app.data.dexes as d (d.id)}
+            <Select.Item value={d.id}>{d.name}</Select.Item>
+          {/each}
+        </Select.Content>
+      </Select.Root>
+    {/if}
   </div>
   <Hint live>{results.length} Pokémon</Hint>
 
@@ -162,7 +181,7 @@
               class="size-full rounded-none py-0 focus-visible:-outline-offset-2"
             >
               <Sprite id={s.id} size={40} />
-              <span class="w-11 shrink-0 text-xs tabular-nums {selected ? '' : 'text-muted-foreground'}">#{String(s.id).padStart(3, "0")}</span>
+              <span class="w-11 shrink-0 text-xs tabular-nums {selected ? '' : 'text-muted-foreground'}">#{String(numberOf(s.id)).padStart(3, "0")}</span>
               <span class="min-w-0 flex-1 truncate font-medium">{s.name}</span>
               {#each types as t (t)}
                 <TypeBadge id={t} size="sm" />

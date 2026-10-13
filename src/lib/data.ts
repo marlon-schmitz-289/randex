@@ -1,7 +1,7 @@
 import { CATEGORIES } from "./types.ts";
 import type {
-  Ability, Badge, Category, Encounters, FieldMove, Game, Location, Move, OriginalData, RegionMap, SavegameData, Species,
-  TypeInfo,
+  Ability, Badge, Category, Encounters, FieldMove, Game, Location, Move, OriginalData, Pokedex, RegionMap, SavegameData,
+  Species, TypeInfo,
 } from "./types.ts";
 
 export interface GameData {
@@ -13,6 +13,8 @@ export interface GameData {
   moves: Move[];
   abilities: Ability[];
   locations: Location[];
+  /** Regionale Pokédexe des Spiels */
+  dexes: Pokedex[];
 }
 
 async function getJson<T>(path: string): Promise<T> {
@@ -46,13 +48,14 @@ export const loadGames = (): Promise<Game[]> => baseFile<Game[]>("games");
 
 export function loadGameData(gameId: string): Promise<GameData> {
   return cached(games, gameId, async () => {
-    const [all, species, types, moves, abilities, locations] = await Promise.all([
+    const [all, species, types, moves, abilities, locations, dexes] = await Promise.all([
       loadGames(),
       baseFile<Species[]>("species"),
       baseFile<TypeInfo[]>("types"),
       baseFile<Move[]>("moves"),
       baseFile<Ability[]>("abilities"),
       getJson<Location[]>(`/data/locations/${encodeURIComponent(gameId)}.json`),
+      baseFile<Record<string, Pokedex[]>>("dexes"),
     ]);
     const game = all.find((g) => g.id === gameId);
     if (!game) throw new Error(`Unbekanntes Spiel: ${gameId}`);
@@ -68,6 +71,7 @@ export function loadGameData(gameId: string): Promise<GameData> {
       moves: moves.filter((m) => m.generation <= gen),
       abilities: gen < ABILITIES_FROM_GEN ? [] : abilities.filter((a) => a.generation <= gen),
       locations,
+      dexes: dexes[gameId] ?? [],
     };
   });
 }

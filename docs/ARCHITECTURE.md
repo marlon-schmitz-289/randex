@@ -21,6 +21,7 @@ existiert (Species, Typen, Attacken, Fähigkeiten) plus die Orte des Spiels. Fä
 | `data/games.json` | `Game[]`, Erscheinungsreihenfolge |
 | `data/species.json` | `Species[]`, nach id |
 | `data/moves.json`, `data/abilities.json` | `Move[]`, `Ability[]`, nach name |
+| `data/dexes.json` | `Record<gameId, Pokedex[]>`, regionale Dexe in Dex-Reihenfolge (National = alle Arten) |
 | `data/types.json` | `TypeInfo[]` (ohne unknown/shadow/stellar) |
 | `data/locations/<gameId>.json` | `Location[]`, existiert für jedes Spiel |
 | `data/original/<gameId>.json` | `OriginalData` für Runs ohne Randomizer: Typen/Fähigkeiten/Stats nach Generation, Level- und TM/VM-Attacken der Version-Group, Entwicklungen, Fundorte mit Level |

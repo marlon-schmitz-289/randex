@@ -40,6 +40,13 @@ test("Nummernsuche mit und ohne #/Nullen", () => {
   assert.deepEqual(searchSpecies(species, null, { ...all, query: "#" }), []);
 });
 
+test("Nummernsuche nutzt die angezeigte (regionale) Nummer", () => {
+  const regional = new Map([[172, 1], [25, 2]]);
+  const numberOf = (id: number) => regional.get(id) ?? id;
+  assert.deepEqual(ids(searchSpecies(species, null, { ...all, query: "2", numberOf })), [25]);
+  assert.deepEqual(ids(searchSpecies(species, null, { ...all, query: "25", numberOf })), []);
+});
+
 test("Rang: Präfix vor Teilstring vor Teilfolge", () => {
   const q = (query: string) => ids(searchSpecies(species, null, { ...all, query }));
   assert.deepEqual(q("chu"), [25, 26, 172]);
