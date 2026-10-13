@@ -2,6 +2,7 @@
   import { Chip, EmptyState, Hint, NavRow, Section, StatBar } from "$lib/components/kit";
   import { app, showSpecies } from "$lib/runs.svelte.ts";
   import type { Category, Evolution, OriginalPokemon } from "$lib/types.ts";
+  import ItemIcon from "../ItemIcon.svelte";
   import Sprite from "../list/Sprite.svelte";
   import TypeBadge from "../list/TypeBadge.svelte";
   import { MAX, STATS } from "./StatsEditor.svelte";
@@ -18,6 +19,13 @@
 
   const moveName = (id: number) => app.original?.movesById.get(id) ?? `#${id}`;
   const speciesName = (id: number) => app.data?.speciesById.get(id)?.name ?? `#${id}`;
+  // "TM05" → tm-<typ>.png, "VM01" → hm-…, "TR12" → tr-…
+  const DISC: Record<string, string> = { TM: "tm", VM: "hm", TR: "tr" };
+  function disc(move: number): string | undefined {
+    const label = app.original?.machines[move];
+    const type = app.original?.machineTypes[move];
+    return label && type && `/items/${DISC[label.slice(0, 2)]}-${type}.png`;
+  }
   const evoText = (e: Evolution) => (e.method === "level" ? `Level ${e.value}` : e.value);
 </script>
 
@@ -82,14 +90,15 @@
         {#if app.original?.tutor}
           <Hint>PokeAPI hat für dieses Spiel kaum Lehrer-Daten, die Liste ist unvollständig.</Hint>
         {/if}
-        <ul class="flex flex-wrap gap-1.5">
+        <ul class="grid grid-cols-[repeat(auto-fill,minmax(12rem,1fr))] gap-x-3 text-sm">
           {#each pokemon.tmMoves as move (move)}
             {@const label = app.original?.machines[move]}
-            <li>
-              <Chip>
-                {#if label}<span class="text-xs text-muted-foreground tabular-nums">{label}</span>{/if}
-                {moveName(move)}
-              </Chip>
+            <li class="flex min-w-0 items-center gap-2">
+              {#if label}
+                <ItemIcon src={disc(move)} />
+                <span class="w-10 shrink-0 text-xs text-muted-foreground tabular-nums">{label}</span>
+              {/if}
+              <span class="truncate">{moveName(move)}</span>
             </li>
           {/each}
         </ul>

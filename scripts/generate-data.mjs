@@ -370,7 +370,7 @@ async function main() {
     conditions, conditionValues, conditionMap, pokemonTypes, pokemonTypesPast, pokemonAbilities, pokemonAbilitiesPast,
     pokemonStats, pokemonStatsPast, pokemonMoves, machines, items, itemNames, evolutionRows, evolutionTriggers,
     pokemonForms, itemIndices, experience, natures, natureNames, pokedexes, pokedexProse, pokedexGroups,
-    dexNumbers] = await Promise.all([
+    dexNumbers, moveChangelog] = await Promise.all([
     "versions", "version_groups", "pokemon_species", "pokemon_species_names", "moves", "move_names",
     "abilities", "ability_names", "types", "type_names", "regions", "locations", "location_names", "location_areas",
     "encounters", "encounter_slots", "encounter_methods", "pokemon",
@@ -379,6 +379,7 @@ async function main() {
     "pokemon_stats", "pokemon_stats_past", "pokemon_moves", "machines", "items", "item_names",
     "pokemon_evolution", "evolution_triggers", "pokemon_forms", "item_game_indices", "experience",
     "natures", "nature_names", "pokedexes", "pokedex_prose", "pokedex_version_groups", "pokemon_dex_numbers",
+    "move_changelog",
   ].map(csv));
 
   const groupGen = new Map(versionGroups.map((g) => [g.id, +g.generation_id]));
@@ -579,9 +580,9 @@ async function main() {
       ?? iconByName.get(slug.replace(/-\d+$/, ""));
     if (icon) (saveIcons[r.generation_id] ??= {})[r.game_index] = icon;
   }
-  // Fortschritt: VM/TM-Discs und Item-Icons der Feldfähigkeiten
-  const fieldIcons = ["normal", "flying", "water", "fighting"].flatMap((t) => [`hm/${t}`, `tm/${t}`])
-    .concat(["key-item/eon-flute", "key-item/rotom-bike-1"]);
+  // TM/TR-Discs aller Typen (Attackenlisten, Fortschritt), VM-Discs, Item-Icons der Feldfähigkeiten
+  const fieldIcons = TYPE_ORDER.flatMap((t) => [`tm/${t}`, `tr/${t}`])
+    .concat(["normal", "flying", "water", "fighting"].map((t) => `hm/${t}`), ["key-item/eon-flute", "key-item/rotom-bike-1"]);
   const noFile = await itemSprites(new Set([...Object.values(saveIcons).flatMap(Object.values), ...fieldIcons]));
   for (const icons of Object.values(saveIcons)) {
     for (const [idx, p] of Object.entries(icons)) {
@@ -618,6 +619,16 @@ async function main() {
   const statsBy = group(pokemonStats, "pokemon_id"), statsPastBy = group(pokemonStatsPast, "pokemon_id");
   const movesByVg = group(pokemonMoves.filter((r) => moveIds.has(+r.move_id)), "version_group_id");
 
+  // Typ einer Attacke in der Version-Group: Changelog-Zeilen enthalten den Typ *vor* der Änderung
+  const moveTypeNow = new Map(moveRows.map((m) => [+m.id, typeSlug.get(m.type_id)]));
+  const typeChanges = group(moveChangelog.filter((c) => c.type_id), "move_id");
+  const moveTypeAt = (moveId, vgId) => {
+    const later = (typeChanges.get(String(moveId)) ?? [])
+      .filter((c) => vgOrder.get(c.changed_in_version_group_id) > vgOrder.get(vgId))
+      .sort((a, b) => vgOrder.get(a.changed_in_version_group_id) - vgOrder.get(b.changed_in_version_group_id));
+    return later.length ? typeSlug.get(later[0].type_id) : moveTypeNow.get(moveId);
+  };
+
   const originalStats = [];
   for (const g of games) {
     const vg = vgById.get(versionBySlug.get(g.id).version_group_id);
@@ -641,6 +652,7 @@ async function main() {
     const ctx = { order: vgOrder, gameOrder: vgOrder.get(evoVg), regionId: regionId.get(REGION_SLUG[g.region] ?? g.region.toLowerCase()), locRegion };
     const label = (moveId) => (NO_TM_NUMBERS.has(vg.identifier) ? undefined : machineLabel.get(`${vg.id}:${moveId}`));
     const machinesUsed = {};
+    const machineTypes = {};
     const pokemon = {};
     for (const id of [...inGame].sort((a, b) => a - b)) {
       const pid = formOf.get(id);
@@ -650,7 +662,11 @@ async function main() {
         .map((r) => [`${r.level}:${r.move_id}`, [+r.level, +r.move_id]])).values()];
       const tmMoves = [...new Set(rs.filter((r) => r.pokemon_move_method_id === tmMethod).map((r) => +r.move_id))]
         .sort((a, b) => (label(a) ?? "").localeCompare(label(b) ?? "", "en", { numeric: true }) || a - b);
-      for (const m of tmMoves) if (label(m)) machinesUsed[m] = label(m);
+      for (const m of tmMoves) {
+        if (!label(m)) continue;
+        machinesUsed[m] = label(m);
+        machineTypes[m] = moveTypeAt(m, vg.id);
+      }
       const evoRows = (evoBySource.get(id) ?? []).filter((r) => inGame.has(r.evolved_species_id)
         && formFits(r.required_pokemon_form_id, id) && formFits(r.evolved_pokemon_form_id, r.evolved_species_id));
       const evolutions = [...new Map(pickEvolutions(evoRows, ctx)
@@ -664,7 +680,7 @@ async function main() {
       };
     }
     const enc = encByGame.get(g.id);
-    await json(path.join(DATA, "original", `${g.id}.json`), { machines: machinesUsed, ...(TUTOR_INSTEAD_OF_TM.has(vg.identifier) && { tutor: true }), pokemon, encounters: enc });
+    await json(path.join(DATA, "original", `${g.id}.json`), { machines: machinesUsed, machineTypes, ...(TUTOR_INSTEAD_OF_TM.has(vg.identifier) && { tutor: true }), pokemon, encounters: enc });
     originalStats.push(`${g.id}:${inGame.size}/${Object.keys(enc).length}`);
   }
   console.log(`Originaldaten (Arten/Orte): ${originalStats.join(" ")}`);

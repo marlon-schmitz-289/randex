@@ -166,6 +166,8 @@ export interface FieldMove {
 export interface OriginalData {
   /** Move-ID → "TM24"/"VM03"/"TR05" (nur Attacken mit Nummer) */
   machines: Record<number, string>;
+  /** Move-ID → Typ der Attacke in diesem Spiel (Farbe der Disc), gleiche Schlüssel wie `machines` */
+  machineTypes: Record<number, TypeId>;
   /** tmMoves sind Lehrer-Attacken (Legenden: Arceus) */
   tutor?: true;
   pokemon: Record<number, OriginalPokemon>;
