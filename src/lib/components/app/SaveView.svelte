@@ -50,6 +50,13 @@
   const baseStats = (id: number, original: { pokemon: Record<number, { stats: Stats }> } | null): Stats | undefined =>
     app.current?.pokemon[id]?.stats ?? (statsRandomized ? undefined : original?.pokemon[id]?.stats);
 
+  /** Attacke einer TM/VM laut Item-Name („TM24“) aus den Originaldaten; mit Randomizer evtl. anders belegt */
+  function machineMove(name: string, original: { machines: Record<number, string> } | null): string | undefined {
+    if (app.current?.randomized !== false) return undefined;
+    const id = Object.entries(original?.machines ?? {}).find(([, label]) => label === name)?.[0];
+    return id ? app.data?.moves.find((m) => m.id === Number(id))?.name : undefined;
+  }
+
   function selectBox(index: number) {
     if (save) chosen = { readAt: save.readAt, index };
   }
@@ -171,9 +178,13 @@
             {#if pocket.items.length}
               <ul class="grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] gap-2 text-sm">
                 {#each pocket.items as [item, count], i (i)}
+                  {@const name = itemName(data, generation, item)}
+                  {@const move = machineMove(name, original)}
                   <li class="flex items-center gap-3 rounded-md border border-panel-border bg-panel-inset/50 py-1 pr-3 pl-1">
                     <ItemIcon src={itemIcon(data, generation, item)} />
-                    <span class="min-w-0 flex-1 truncate">{itemName(data, generation, item)}</span>
+                    <span class="min-w-0 flex-1 truncate">
+                      {name}{#if move}<span class="text-muted-foreground"> · {move}</span>{/if}
+                    </span>
                     <span class="text-muted-foreground tabular-nums">×{count}</span>
                   </li>
                 {/each}
