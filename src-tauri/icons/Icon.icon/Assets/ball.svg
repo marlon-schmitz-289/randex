@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024"><g transform="translate(512 512) scale(1.57) translate(-256 -256)">
+<defs><clipPath id="c"><circle cx="256" cy="256" r="232"/></clipPath></defs>
+<g clip-path="url(#c)">
+<rect width="512" height="512" fill="#f5d63d"/>
+<g fill="#3a8fd6"><polygon points="256,106 205.0,157.0 -195.0,-243.0 707.0,-243.0 307.0,157.0"/><polygon points="157.0,205.0 106,256 -300,256 -243.0,-195.0"/><polygon points="355.0,205.0 406,256 812,256 755.0,-195.0"/><polygon points="256,406 205.0,355.0 -195.0,755.0 707.0,755.0 307.0,355.0"/><polygon points="157.0,307.0 106,256 -300,256 -243.0,707.0"/><polygon points="355.0,307.0 406,256 812,256 755.0,707.0"/></g>
+<rect x="0" y="238" width="512" height="36" fill="#1b2027"/>
+</g>
+<circle cx="256" cy="256" r="232" fill="none" stroke="#1b2027" stroke-width="20"/>
+<circle cx="256" cy="256" r="56" fill="#1b2027"/>
+<circle cx="256" cy="256" r="36" fill="#e9edf2"/>
+<circle cx="256" cy="256" r="22" fill="none" stroke="#c3cad3" stroke-width="5"/>
+</g></svg>

@@ -65,6 +65,16 @@ jobs:
             echo NOTES_EOF
           } >> "$GITHUB_OUTPUT"
 
+      # macOS-26-Icon (Icon.icon): actool stürzt ohne stdin ab, wenn die Node-CLI es startet (tauri#15315)
+      - name: actool-Wrapper
+        if: startsWith(matrix.os, 'macos')
+        run: |
+          mkdir -p "$RUNNER_TEMP/bin"
+          printf '#!/bin/sh\nexec xcrun actool "$@" </dev/null\n' > "$RUNNER_TEMP/bin/actool"
+          chmod +x "$RUNNER_TEMP/bin/actool"
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+          xcodebuild -version
+
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
