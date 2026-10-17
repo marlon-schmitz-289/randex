@@ -1,7 +1,8 @@
 <script lang="ts">
   import PlusIcon from "@lucide/svelte/icons/plus";
   import Trash2Icon from "@lucide/svelte/icons/trash-2";
-  import { app, mutate, showSpecies } from "$lib/runs.svelte.ts";
+  import ExternalLinkIcon from "@lucide/svelte/icons/external-link";
+  import { app, mutate, openWiki, showSpecies } from "$lib/runs.svelte.ts";
   import { addEncounter, countSpecies, isCustomLocation, methodsFor, removeCustomLocation, removeEncounter } from "$lib/encounters.ts";
   import { ENCOUNTER_METHODS, ENCOUNTER_METHOD_LABELS } from "$lib/types.ts";
   import type { EncounterMethod, Location } from "$lib/types.ts";
@@ -10,7 +11,7 @@
   import Sprite from "$lib/components/app/list/Sprite.svelte";
   import SpeciesPicker from "$lib/components/app/list/SpeciesPicker.svelte";
   import EncounterList from "./EncounterList.svelte";
-  import { Chip, EmptyState, Panel, roving, Section } from "$lib/components/kit";
+  import { Chip, EmptyState, IconButton, Panel, roving, Section } from "$lib/components/kit";
 
   let { location }: { location: Location } = $props();
 
@@ -52,6 +53,10 @@
       <Button variant="ghost" size="xs" onclick={() => (entryCount ? (confirmOpen = true) : removeLocation())}>
         <Trash2Icon /> Route löschen
       </Button>
+    {:else}
+      <IconButton onHeader size="icon-sm" label="Im PokéWiki öffnen (Karten der Etagen)" onclick={() => void openWiki(location.name)}>
+        <ExternalLinkIcon />
+      </IconButton>
     {/if}
   {/snippet}
   {#if app.original}

@@ -391,3 +391,11 @@ export async function importSave(): Promise<void> {
     toast.error(`Spielstand konnte nicht gelesen werden: ${errText(e)}`);
   }
 }
+
+export async function openWiki(title: string): Promise<void> {
+  try {
+    await invoke("open_wiki", { title });
+  } catch (e) {
+    toast.error(errText(e));
+  }
+}

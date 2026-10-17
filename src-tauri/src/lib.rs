@@ -225,6 +225,35 @@ fn read_save(app: tauri::AppHandle, game_id: String) -> Result<Option<savefile::
     picked(dialog.blocking_pick_file())?.map(|p| read_save_from(&p, &game_id)).transpose()
 }
 
+/// Suche statt fester Seite: PokéWiki springt bei exaktem Titel direkt zum Artikel.
+fn wiki_url(title: &str) -> String {
+    let query: String = title
+        .bytes()
+        .map(|b| match b {
+            b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'.' | b'_' | b'~' => (b as char).to_string(),
+            _ => format!("%{b:02X}"),
+        })
+        .collect();
+    format!("https://www.pokewiki.de/index.php?search={query}")
+}
+
+#[tauri::command(async)]
+fn open_wiki(title: String) -> Result<(), String> {
+    let url = wiki_url(&title);
+    let mut cmd = if cfg!(windows) {
+        // explorer zerlegt URLs an Kommas, url.dll nimmt sie unverändert
+        let mut c = std::process::Command::new("rundll32");
+        c.arg("url.dll,FileProtocolHandler");
+        c
+    } else if cfg!(target_os = "macos") {
+        std::process::Command::new("open")
+    } else {
+        std::process::Command::new("xdg-open")
+    };
+    cmd.arg(&url).status().map_err(|e| format!("Browser konnte nicht geöffnet werden: {e}"))?;
+    Ok(())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let result = tauri::Builder::default()
@@ -232,7 +261,7 @@ pub fn run() {
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
         .invoke_handler(tauri::generate_handler![
-            list_runs, load_run, save_run, delete_run, export_run, import_run, read_save
+            list_runs, load_run, save_run, delete_run, export_run, import_run, read_save, open_wiki
         ])
         .run(tauri::generate_context!());
     if let Err(e) = result {
@@ -245,6 +274,12 @@ pub fn run() {
 mod tests {
     use super::*;
     use serde_json::json;
+
+    #[test]
+    fn wiki_url_kodiert_titel() {
+        assert_eq!(wiki_url("Bizarre Höhle"), "https://www.pokewiki.de/index.php?search=Bizarre%20H%C3%B6hle");
+        assert_eq!(wiki_url("a&b=c/d"), "https://www.pokewiki.de/index.php?search=a%26b%3Dc%2Fd");
+    }
 
     struct TmpDir(PathBuf);
 
