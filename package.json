@@ -1,6 +1,6 @@
 {
   "name": "randex",
-  "version": "0.1.14",
+  "version": "0.1.15",
   "description": "Tracker für Pokémon-Randomizer-Runs",
   "type": "module",
   "scripts": {
