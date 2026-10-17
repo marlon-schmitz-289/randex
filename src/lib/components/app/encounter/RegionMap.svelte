@@ -4,7 +4,7 @@
   import { countSpecies } from "$lib/encounters.ts";
   import type { MapPlace, RegionMap } from "$lib/types.ts";
   import type { Attachment } from "svelte/attachments";
-  import { tick } from "svelte";
+  import { tick, type Snippet } from "svelte";
   import { EmptyState, IconButton, Panel, roving } from "$lib/components/kit";
   import ZoomIn from "@lucide/svelte/icons/zoom-in";
   import ZoomOut from "@lucide/svelte/icons/zoom-out";
@@ -12,6 +12,8 @@
   import Footprints from "@lucide/svelte/icons/footprints";
   import { Button } from "$lib/components/ui/button/index.js";
 
+
+  let { actions }: { actions: Snippet } = $props();
 
   const region = $derived(app.data?.game.region ?? "");
   const gameId = $derived(app.data?.game.id ?? "");
@@ -258,7 +260,7 @@
   {/if}
 {/snippet}
 
-<Panel title="Karte {region}" flush bodyClass="flex flex-col">
+<Panel title="Karte {region}" {actions} flush bodyClass="flex flex-col">
   {#await mapPromise}
     <EmptyState>Karte wird geladen …</EmptyState>
   {:then map}

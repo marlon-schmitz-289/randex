@@ -3,8 +3,7 @@
   import MapIcon from "@lucide/svelte/icons/map";
   import { app } from "$lib/runs.svelte.ts";
   import { allLocations } from "$lib/encounters.ts";
-  import * as ToggleGroup from "$lib/components/ui/toggle-group/index.js";
-  import { EmptyState, Panel, SegmentItem } from "$lib/components/kit";
+  import { EmptyState, IconButton, Panel } from "$lib/components/kit";
   import LocationList from "./LocationList.svelte";
   import LocationEditor from "./LocationEditor.svelte";
   import RegionMap from "./RegionMap.svelte";
@@ -15,45 +14,38 @@
   let mode = $state<"list" | "map">("map");
 </script>
 
-<div class="flex h-full min-h-0 flex-col gap-3">
-  <ToggleGroup.Root
-    type="single"
-    variant="outline"
-    size="sm"
-    value={mode}
-    onValueChange={(v) => (mode = v === "list" ? "list" : "map")}
-    aria-label="Darstellung der Routen"
-    class="self-start"
-  >
-    <SegmentItem value="map"><MapIcon /> Karte</SegmentItem>
-    <SegmentItem value="list"><ListIcon /> Liste</SegmentItem>
-  </ToggleGroup.Root>
+{#snippet modeSwitch()}
+  {#if mode === "map"}
+    <IconButton onHeader size="icon-sm" label="Als Liste anzeigen" onclick={() => (mode = "list")}><ListIcon /></IconButton>
+  {:else}
+    <IconButton onHeader size="icon-sm" label="Als Karte anzeigen" onclick={() => (mode = "map")}><MapIcon /></IconButton>
+  {/if}
+{/snippet}
 
-  <div
-    class={[
-      "grid min-h-0 flex-1 gap-3",
-      mode === "list" ? "grid-cols-[minmax(16rem,22rem)_1fr]" : "grid-cols-[minmax(0,3fr)_minmax(22rem,2fr)]",
-    ]}
-  >
-    {#if mode === "list"}
-      <LocationList {locations} />
-    {:else}
-      <RegionMap />
-    {/if}
-    {#if selected}
-      {#key selected.id}
-        <LocationEditor location={selected} />
-      {/key}
-    {:else}
-      <Panel flush>
-        <EmptyState variant="center">
-          {#if mode === "map"}
-            Klicke auf der Karte auf eine Route oder einen Ort.
-          {:else}
-            Wähle links eine Route aus.
-          {/if}
-        </EmptyState>
-      </Panel>
-    {/if}
-  </div>
+<div
+  class={[
+    "grid h-full min-h-0 gap-3",
+    mode === "list" ? "grid-cols-[minmax(16rem,22rem)_1fr]" : "grid-cols-[minmax(0,3fr)_minmax(22rem,2fr)]",
+  ]}
+>
+  {#if mode === "list"}
+    <LocationList {locations} actions={modeSwitch} />
+  {:else}
+    <RegionMap actions={modeSwitch} />
+  {/if}
+  {#if selected}
+    {#key selected.id}
+      <LocationEditor location={selected} />
+    {/key}
+  {:else}
+    <Panel flush>
+      <EmptyState variant="center">
+        {#if mode === "map"}
+          Klicke auf der Karte auf eine Route oder einen Ort.
+        {:else}
+          Wähle links eine Route aus.
+        {/if}
+      </EmptyState>
+    </Panel>
+  {/if}
 </div>

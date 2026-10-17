@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { tick, untrack } from "svelte";
+  import { tick, untrack, type Snippet } from "svelte";
   import PlusIcon from "@lucide/svelte/icons/plus";
   import { app, mutate } from "$lib/runs.svelte.ts";
   import { addCustomLocation, countSpecies } from "$lib/encounters.ts";
@@ -8,7 +8,7 @@
   import { Input } from "$lib/components/ui/input/index.js";
   import { EmptyState, IconButton, NavRow, Panel } from "$lib/components/kit";
 
-  let { locations }: { locations: Location[] } = $props();
+  let { locations, actions }: { locations: Location[]; actions: Snippet } = $props();
 
   let query = $state("");
   let newName = $state("");
@@ -41,7 +41,7 @@
   }
 </script>
 
-<Panel title="Routen ({locations.length})" flush bodyClass="flex flex-col" footer={app.original ? undefined : addForm}>
+<Panel title="Routen ({locations.length})" {actions} flush bodyClass="flex flex-col" footer={app.original ? undefined : addForm}>
   <div class="p-3">
     <Input type="search" placeholder="Route suchen …" aria-label="Route suchen" bind:value={query} />
   </div>
