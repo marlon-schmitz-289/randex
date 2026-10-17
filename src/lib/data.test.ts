@@ -18,7 +18,10 @@ const files: Record<string, unknown> = {
   "/data/maps/einall.json": { width: 1, height: 1, land: [], places: [] },
   "/data/original/red.json": {
     machines: { 1: "TM01" },
-    pokemon: {},
+    pokemon: {
+      1: { evolutions: [{ target: 2, method: "level", value: 16 }] },
+      2: { evolutions: [{ target: 3, method: "level", value: 32 }] },
+    },
     encounters: { "kanto-route-1": { walk: [[16, 2, 5], [19, 2, 4]], "old-rod": [[129, 5, 5]] } },
   },
 };
@@ -73,4 +76,5 @@ test("loadOriginal: Species-Encounter aus den Tripeln, Move-Namen, Cache, Retry 
   assert.equal(calls.filter((c) => c === "/data/original/red.json").length, 2);
   assert.deepEqual(o.speciesEncounters, { "kanto-route-1": { walk: [16, 19], "old-rod": [129] } });
   assert.equal(o.movesById.get(1), "Pfund");
+  assert.deepEqual([...o.preEvolution], [[2, 1], [3, 2]]);
 });

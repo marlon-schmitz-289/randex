@@ -190,7 +190,7 @@
             {#if category === "catch"}
               <CatchCalculator captureRate={species.captureRate} types={headerTypes} />
             {:else if original && category !== "locations" && category !== "note"}
-              <OriginalSection {category} pokemon={original} />
+              <OriginalSection {category} id={species.id} pokemon={original} />
             {:else if category === "types"}
               {@render typesBody()}
             {:else if category === "moves"}

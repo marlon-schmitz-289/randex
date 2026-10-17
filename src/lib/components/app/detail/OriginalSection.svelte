@@ -1,5 +1,6 @@
 <script lang="ts">
   import { Chip, EmptyState, Hint, NavRow, Section, StatBar } from "$lib/components/kit";
+  import CornerDownRight from "@lucide/svelte/icons/corner-down-right";
   import { app, showSpecies } from "$lib/runs.svelte.ts";
   import type { Category, Evolution, OriginalPokemon } from "$lib/types.ts";
   import ItemIcon from "../ItemIcon.svelte";
@@ -7,7 +8,7 @@
   import TypeBadge from "../list/TypeBadge.svelte";
   import { MAX, STATS } from "./StatsEditor.svelte";
 
-  let { category, pokemon }: { category: Category; pokemon: OriginalPokemon } = $props();
+  let { category, id, pokemon }: { category: Category; id: number; pokemon: OriginalPokemon } = $props();
 
   const gen1 = $derived(app.data?.game.generation === 1);
   // Gen 1: ein Spezial-Wert (in spa und spd gespeichert), nur einmal anzeigen und zählen
@@ -27,6 +28,28 @@
     return label && type && `/items/${DISC[label.slice(0, 2)]}-${type}.png`;
   }
   const evoText = (e: Evolution) => (e.method === "level" ? `Level ${e.value}` : e.value);
+
+  type ChainRow = { id: number; depth: number; evo?: Evolution };
+  // Ganze Reihe ab der Grundstufe, Verzweigungen (z. B. Evoli) eingerückt
+  const chain = $derived.by(() => {
+    const o = app.original;
+    if (!o) return [];
+    const seen = new Set([id]);
+    let root = id;
+    for (let pre = o.preEvolution.get(root); pre !== undefined && !seen.has(pre); pre = o.preEvolution.get(root)) {
+      seen.add(pre);
+      root = pre;
+    }
+    const rows: ChainRow[] = [];
+    const walk = (row: ChainRow) => {
+      rows.push(row);
+      for (const e of o.pokemon[row.id]?.evolutions ?? []) {
+        if (!rows.some((r) => r.id === e.target)) walk({ id: e.target, depth: row.depth + 1, evo: e });
+      }
+    };
+    walk({ id: root, depth: 0 });
+    return rows;
+  });
 </script>
 
 {#if category === "types"}
@@ -53,20 +76,24 @@
     <span class="text-right text-sm font-semibold tabular-nums">{total}</span>
   </div>
 {:else if category === "evolutions"}
-  {#if pokemon.evolutions.length}
+  {#if chain.length > 1}
     <ul class="flex flex-col gap-1">
-      {#each pokemon.evolutions as e, i (i)}
-        <li>
-          <NavRow onclick={() => showSpecies(e.target)}>
-            <Sprite id={e.target} size={40} />
-            <span class="font-medium">{speciesName(e.target)}</span>
-            {#snippet meta()}{evoText(e)}{/snippet}
+      {#each chain as row (row.id)}
+        <!-- Pfeil unter der Sprite-Mitte der Vorstufe: je Stufe 3rem = Pfeil + Abstand + halber Sprite -->
+        <li class="flex items-center gap-1" style:padding-left={row.depth ? `${(row.depth - 1) * 3 + 1.75}rem` : undefined}>
+          {#if row.depth}
+            <CornerDownRight class="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+          {/if}
+          <NavRow current={row.id === id} onclick={() => showSpecies(row.id)} class="min-w-0">
+            <Sprite id={row.id} size={40} />
+            <span class="font-medium">{speciesName(row.id)}</span>
+            {#snippet meta()}{row.evo ? evoText(row.evo) : "Grundstufe"}{/snippet}
           </NavRow>
         </li>
       {/each}
     </ul>
   {:else}
-    <EmptyState variant="inline">Entwickelt sich in diesem Spiel nicht weiter.</EmptyState>
+    <EmptyState variant="inline">Entwickelt sich in diesem Spiel nicht.</EmptyState>
   {/if}
 {:else if category === "moves"}
   <div class="flex flex-col gap-4">

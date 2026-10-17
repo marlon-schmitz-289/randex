@@ -99,6 +99,8 @@ export interface Original extends OriginalData {
   movesById: Map<number, string>;
   /** Nur Species-IDs, gleiche Form wie Run.encounters → Helfer in encounters.ts funktionieren unverändert */
   speciesEncounters: Encounters;
+  /** Species-ID → Vorstufe, für die ganze Entwicklungsreihe */
+  preEvolution: Map<number, number>;
 }
 
 const originals = new Map<string, Promise<Original>>();
@@ -116,7 +118,10 @@ export function loadOriginal(gameId: string): Promise<Original> {
         Object.fromEntries(Object.entries(byMethod).map(([m, list]) => [m, [...new Set(list.map(([id]) => id))]])),
       ]),
     );
-    return { ...data, movesById: new Map(moves.map((m) => [m.id, m.name])), speciesEncounters };
+    const preEvolution = new Map(
+      Object.entries(data.pokemon).flatMap(([id, p]) => p.evolutions.map((e) => [e.target, Number(id)] as const)),
+    );
+    return { ...data, movesById: new Map(moves.map((m) => [m.id, m.name])), speciesEncounters, preEvolution };
   });
 }
 
