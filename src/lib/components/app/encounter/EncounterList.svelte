@@ -143,7 +143,7 @@
     {#if a.area}<h4 class="text-xs font-semibold">{a.area}</h4>{/if}
     <ul class="grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] gap-1">
       {#each a.rows as [id, min, max, chance, condition], j (j)}
-        <li>
+        <li data-species={id}>
           <NavRow onclick={() => showSpecies(id)}>
             <Sprite {id} size={32} />
             <span class="flex min-w-0 flex-col leading-tight">

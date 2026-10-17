@@ -132,7 +132,7 @@
             <ul class="grid flex-1 grid-cols-6 grid-rows-5 gap-2" aria-label={boxName(boxIndex)}>
               {#each box?.mons ?? [] as mon, i (i)}
                 {@const level = mon && levelOf(mon, data)}
-                <li class="rounded-md bg-panel-inset/50">
+                <li class="rounded-md bg-panel-inset/50" data-species={mon?.speciesId}>
                   {#if mon}
                     <SelectCard
                       class="flex size-full flex-col items-center justify-center"

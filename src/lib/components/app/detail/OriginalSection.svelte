@@ -80,7 +80,7 @@
     <ul class="flex flex-col gap-1">
       {#each chain as row (row.id)}
         <!-- Pfeil unter der Sprite-Mitte der Vorstufe: je Stufe 3rem = Pfeil + Abstand + halber Sprite -->
-        <li class="flex items-center gap-1" style:padding-left={row.depth ? `${(row.depth - 1) * 3 + 1.75}rem` : undefined}>
+        <li class="flex items-center gap-1" data-species={row.id} style:padding-left={row.depth ? `${(row.depth - 1) * 3 + 1.75}rem` : undefined}>
           {#if row.depth}
             <CornerDownRight class="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
           {/if}

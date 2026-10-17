@@ -32,6 +32,7 @@
   <div class="flex items-center gap-3">
     <button
       type="button"
+      data-species={mon.speciesId}
       class="shrink-0 rounded-md border border-panel-border bg-panel-inset hover:border-ring"
       title="{species} ansehen"
       onclick={() => showSpecies(mon.speciesId)}

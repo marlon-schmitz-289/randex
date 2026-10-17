@@ -38,6 +38,7 @@
   import PokedexView from "./PokedexView.svelte";
   import ProgressView from "./ProgressView.svelte";
   import SaveView from "./SaveView.svelte";
+  import SpeciesMenu from "./list/SpeciesMenu.svelte";
 
   let createOpen = $state(false);
   let editOpen = $state(false);
@@ -154,44 +155,46 @@
     </IconButton>
   </header>
 
-  <main class="min-h-0 flex-1 p-3">
-    {#if app.current && app.data}
-      {#if app.view === "pokemon"}
-        <div class="grid h-full grid-cols-[minmax(16rem,22rem)_1fr] gap-3">
-          <PokemonList />
-          <PokemonDetail />
-        </div>
-      {:else if app.view === "pokedex"}
-        <PokedexView />
-      {:else if app.view === "routes"}
-        <EncounterView />
-      {:else if app.view === "save"}
-        <SaveView />
-      {:else}
-        <ProgressView />
-      {/if}
-    {:else if app.loading}
-      <EmptyState variant="center" status>Lade …</EmptyState>
-    {:else}
-      <div class="grid h-full place-items-center">
-        <Panel
-          title={app.runs.length ? "Kein Run geöffnet" : "Noch kein Run"}
-          class="w-full max-w-md overflow-hidden"
-          bodyClass="grid gap-4"
-        >
-          <EmptyState variant="inline">
-            {app.runs.length
-              ? "Wähle oben einen Run oder lege einen neuen an."
-              : "Lege einen Run für dein randomisiertes Spiel an oder importiere einen gespeicherten."}
-          </EmptyState>
-          <div class="flex gap-2">
-            <Button onclick={() => (createOpen = true)}><Plus /> Neuer Run</Button>
-            <Button variant="outline" onclick={() => void importRunFromFile()}><Upload /> Importieren</Button>
+  <SpeciesMenu>
+    <main class="min-h-0 flex-1 p-3">
+      {#if app.current && app.data}
+        {#if app.view === "pokemon"}
+          <div class="grid h-full grid-cols-[minmax(16rem,22rem)_1fr] gap-3">
+            <PokemonList />
+            <PokemonDetail />
           </div>
-        </Panel>
-      </div>
-    {/if}
-  </main>
+        {:else if app.view === "pokedex"}
+          <PokedexView />
+        {:else if app.view === "routes"}
+          <EncounterView />
+        {:else if app.view === "save"}
+          <SaveView />
+        {:else}
+          <ProgressView />
+        {/if}
+      {:else if app.loading}
+        <EmptyState variant="center" status>Lade …</EmptyState>
+      {:else}
+        <div class="grid h-full place-items-center">
+          <Panel
+            title={app.runs.length ? "Kein Run geöffnet" : "Noch kein Run"}
+            class="w-full max-w-md overflow-hidden"
+            bodyClass="grid gap-4"
+          >
+            <EmptyState variant="inline">
+              {app.runs.length
+                ? "Wähle oben einen Run oder lege einen neuen an."
+                : "Lege einen Run für dein randomisiertes Spiel an oder importiere einen gespeicherten."}
+            </EmptyState>
+            <div class="flex gap-2">
+              <Button onclick={() => (createOpen = true)}><Plus /> Neuer Run</Button>
+              <Button variant="outline" onclick={() => void importRunFromFile()}><Upload /> Importieren</Button>
+            </div>
+          </Panel>
+        </div>
+      {/if}
+    </main>
+  </SpeciesMenu>
 </div>
 
 <RunDialog bind:open={createOpen} />

@@ -61,7 +61,7 @@
       <ul class="grid grid-cols-[repeat(auto-fill,minmax(8.5rem,1fr))] gap-2">
         {#each results as s (s.id)}
           {@const on = caught.has(s.id)}
-          <li>
+          <li data-species={s.id}>
             <SelectCard
               pressed={on}
               label="{s.name} gefangen"

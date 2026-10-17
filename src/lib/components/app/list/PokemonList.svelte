@@ -148,6 +148,7 @@
           {@const types = typesOf(s.id) ?? []}
           <div
             role="listitem"
+            data-species={s.id}
             aria-setsize={results.length}
             aria-posinset={first + i + 1}
             class="absolute inset-x-0"

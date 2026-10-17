@@ -161,7 +161,7 @@
           <span class="tabular-nums">Nr. {String(species.id).padStart(3, "0")}</span>
           <h1 class="text-lg">{species.name}</h1>
         {/snippet}
-        <div class="grid size-32 shrink-0 place-items-center rounded-lg bg-panel-inset">
+        <div class="grid size-32 shrink-0 place-items-center rounded-lg bg-panel-inset" data-species={species.id}>
           <Sprite id={species.id} size={96} class="[image-rendering:pixelated]" />
         </div>
         <div class="flex flex-col gap-2">

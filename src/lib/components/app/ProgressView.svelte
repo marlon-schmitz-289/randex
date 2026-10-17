@@ -98,7 +98,7 @@
       {#each team as m, i}
         {@const name = app.data?.speciesById.get(m.speciesId)?.name ?? `#${m.speciesId}`}
         <EditRow inset removeLabel="{name} aus dem Team entfernen" onRemove={() => mutate((r) => r.team?.splice(i, 1))}>
-          <button {@attach roving} type="button" class="shrink-0 rounded-md" title="{name} ansehen" onclick={() => showSpecies(m.speciesId)}>
+          <button {@attach roving} type="button" class="shrink-0 rounded-md" data-species={m.speciesId} title="{name} ansehen" onclick={() => showSpecies(m.speciesId)}>
             <Sprite id={m.speciesId} size={48} />
           </button>
           <div class="grid min-w-0 flex-1 gap-1">

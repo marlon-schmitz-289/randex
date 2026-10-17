@@ -84,7 +84,7 @@
         {/snippet}
         <ul class="flex flex-wrap gap-2">
           {#each ids as id (id)}
-            <li>
+            <li data-species={id}>
               <Chip
                 onclick={() => showSpecies(id)}
                 removeLabel="{speciesName(id)} entfernen"
