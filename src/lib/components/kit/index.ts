@@ -12,3 +12,4 @@ export { default as SwitchField } from "./SwitchField.svelte";
 export { default as StatBar } from "./StatBar.svelte";
 export { default as TabTrigger } from "./TabTrigger.svelte";
 export { default as SegmentItem } from "./SegmentItem.svelte";
+export { roving } from "./roving";

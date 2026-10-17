@@ -3,7 +3,7 @@
   import { app, mutate, showSpecies } from "$lib/runs.svelte.ts";
   import { loadBadges, loadFieldMoves, spriteUrl } from "$lib/data.ts";
   import { TEAM_SIZE, type Badge, type FieldMove, type TeamMember, type TypeId } from "$lib/types.ts";
-  import { EmptyState, EditRow, Panel, Section, SelectCard } from "$lib/components/kit";
+  import { EmptyState, EditRow, Panel, roving, Section, SelectCard } from "$lib/components/kit";
   import { Input } from "$lib/components/ui/input/index.js";
   import Sprite from "./list/Sprite.svelte";
   import SpeciesPicker from "./list/SpeciesPicker.svelte";
@@ -98,7 +98,7 @@
       {#each team as m, i}
         {@const name = app.data?.speciesById.get(m.speciesId)?.name ?? `#${m.speciesId}`}
         <EditRow inset removeLabel="{name} aus dem Team entfernen" onRemove={() => mutate((r) => r.team?.splice(i, 1))}>
-          <button type="button" class="shrink-0 rounded-md" title="{name} ansehen" onclick={() => showSpecies(m.speciesId)}>
+          <button {@attach roving} type="button" class="shrink-0 rounded-md" title="{name} ansehen" onclick={() => showSpecies(m.speciesId)}>
             <Sprite id={m.speciesId} size={48} />
           </button>
           <div class="grid min-w-0 flex-1 gap-1">

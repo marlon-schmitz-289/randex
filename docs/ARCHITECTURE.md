@@ -174,3 +174,8 @@ Dünne App-Schicht über shadcn (`ui/`), Import über `$lib/components/kit`. All
 | `StatBar.svelte` | `value`, `max`, `class` (Füllfarbe, `STATS[i].bar`) |
 | `TabTrigger.svelte` | wie `Tabs.Trigger` (`value`, `children` …) – aktiv `bg-primary` |
 | `SegmentItem.svelte` | wie `ToggleGroup.Item` (`value`, `children` …) – an `bg-primary`; Root `variant="outline" size="sm"` |
+
+**Tastatur:** Listen sind ein einziger Tab-Stopp (Roving Tabindex, `roving.ts`). `NavRow`, `SelectCard`,
+`Chip` und der Entfernen-Knopf von `EditRow` machen das selbst; weitere Knöpfe per `{@attach roving}`.
+Gruppe ist das nächste `ul`/`ol`/`role="list"`/`role="group"`, darin Pfeiltasten, Pos1, Ende. Hat die Liste
+einen Eintrag mit `aria-current`, folgt die Auswahl dem Fokus.

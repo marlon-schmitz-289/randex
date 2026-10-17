@@ -2,6 +2,7 @@
   import type { Snippet } from "svelte";
   import CheckIcon from "@lucide/svelte/icons/check";
   import { cn } from "$lib/utils";
+  import { roving } from "./roving";
 
   interface Props {
     pressed: boolean;
@@ -15,6 +16,7 @@
 </script>
 
 <button
+  {@attach roving}
   type="button"
   aria-pressed={pressed}
   aria-label={label}

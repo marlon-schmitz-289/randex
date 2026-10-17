@@ -10,7 +10,7 @@
   import Sprite from "$lib/components/app/list/Sprite.svelte";
   import SpeciesPicker from "$lib/components/app/list/SpeciesPicker.svelte";
   import EncounterList from "./EncounterList.svelte";
-  import { Chip, EmptyState, Panel, Section } from "$lib/components/kit";
+  import { Chip, EmptyState, Panel, roving, Section } from "$lib/components/kit";
 
   let { location }: { location: Location } = $props();
 
@@ -102,10 +102,10 @@
       </Section>
     {/each}
     {#if missing.length}
-      <div class="flex flex-wrap items-center gap-2 border-t border-panel-border pt-3">
+      <div class="flex flex-wrap items-center gap-2 border-t border-panel-border pt-3" role="group" aria-label="Methode hinzufügen">
         <span class="text-sm text-muted-foreground">Methode hinzufügen:</span>
         {#each missing as m (m)}
-          <Button variant="outline" size="xs" onclick={() => (added = [...added, m])}>
+          <Button {@attach roving} variant="outline" size="xs" onclick={() => (added = [...added, m])}>
             <PlusIcon /> {ENCOUNTER_METHOD_LABELS[m]}
           </Button>
         {/each}

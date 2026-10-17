@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
   import { cn } from "$lib/utils";
+  import { roving } from "./roving";
 
   interface Props {
     onclick: () => void;
@@ -14,6 +15,7 @@
 </script>
 
 <button
+  {@attach roving}
   type="button"
   aria-current={current || undefined}
   {onclick}

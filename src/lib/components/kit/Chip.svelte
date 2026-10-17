@@ -2,6 +2,7 @@
   import type { Snippet } from "svelte";
   import XIcon from "@lucide/svelte/icons/x";
   import { cn } from "$lib/utils";
+  import { roving } from "./roving";
   import IconButton from "./IconButton.svelte";
 
   type Props = {
@@ -31,12 +32,13 @@
   )}
 >
   {#if onclick}
-    <button type="button" class={inner} {onclick}>{@render children()}</button>
+    <button {@attach roving} type="button" class={inner} {onclick}>{@render children()}</button>
   {:else}
     <span class={inner}>{@render children()}</span>
   {/if}
   {#if onRemove}
     <IconButton
+      {@attach roving}
       size="icon-xs"
       class="rounded-full hover:bg-destructive hover:text-destructive-foreground"
       label={removeLabel ?? ""}

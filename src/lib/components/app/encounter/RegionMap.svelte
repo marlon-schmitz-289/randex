@@ -5,7 +5,7 @@
   import type { MapPlace, RegionMap } from "$lib/types.ts";
   import type { Attachment } from "svelte/attachments";
   import { tick } from "svelte";
-  import { EmptyState, IconButton, Panel } from "$lib/components/kit";
+  import { EmptyState, IconButton, Panel, roving } from "$lib/components/kit";
   import ZoomIn from "@lucide/svelte/icons/zoom-in";
   import ZoomOut from "@lucide/svelte/icons/zoom-out";
   import Maximize from "@lucide/svelte/icons/maximize";
@@ -328,6 +328,7 @@
                   class={cls}
                   role="button"
                   tabindex="0"
+                  {@attach roving}
                   aria-label="{p.label}, {h}"
                   aria-current={selected || undefined}
                   onclick={() => (app.selectedLocationId = p.id)}
@@ -354,6 +355,7 @@
               {@const selected = app.selectedLocationId === p.id}
               <li>
                 <Button
+                  {@attach roving}
                   variant={selected ? "default" : "secondary"}
                   size="sm"
                   aria-current={selected || undefined}

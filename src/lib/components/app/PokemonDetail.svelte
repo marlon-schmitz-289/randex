@@ -2,7 +2,7 @@
   import CheckIcon from "@lucide/svelte/icons/check";
   import MapPinIcon from "@lucide/svelte/icons/map-pin";
   import { Textarea } from "$lib/components/ui/textarea/index.js";
-  import { EditRow, EmptyState, Hint, NavRow, Panel } from "$lib/components/kit";
+  import { EditRow, EmptyState, Hint, NavRow, Panel, roving } from "$lib/components/kit";
   import { allLocations, findSightings } from "$lib/encounters.ts";
   import { app, showLocation, updateEntry } from "$lib/runs.svelte.ts";
   import { CATEGORY_LABELS, ENCOUNTER_METHOD_LABELS } from "$lib/types.ts";
@@ -69,6 +69,7 @@
     {#each typeChoices as t (t)}
       {@const selected = types.includes(t)}
       <button
+        {@attach roving}
         type="button"
         aria-pressed={selected}
         disabled={!selected && types.length >= 2}
