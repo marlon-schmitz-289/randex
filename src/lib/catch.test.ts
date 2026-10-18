@@ -23,8 +23,9 @@ test("catchChance: Gen 1 und 2 eigene Formeln, mehr KP-Verlust hilft immer", () 
   near(catchChance(2, 3, 1, "none", poke), 2 / 256);
 });
 
-test("ballsFor: Netzball nur bei Wasser/Käfer, Flott-/Finsterball ab Gen 4", () => {
-  assert.deepEqual(ballsFor(3, ["water"]).map((b) => b.id), ["poke", "great", "ultra", "net"]);
-  assert.deepEqual(ballsFor(5, ["fire"]).map((b) => b.id), ["poke", "great", "ultra", "dusk", "quick"]);
+test("ballsFor: Netzball nur bei Wasser/Käfer, Flott-/Finsterball ab Gen 4, Timerball ab Gen 3", () => {
+  assert.deepEqual(ballsFor(3, ["water"]).map((b) => b.id), ["poke", "great", "ultra", "net", "timer"]);
+  assert.deepEqual(ballsFor(5, ["fire"]).map((b) => b.id), ["poke", "great", "ultra", "dusk", "quick", "timer"]);
   assert.equal(ballsFor(5, []).find((b) => b.id === "quick")?.factor, 5);
+  assert.equal(ballsFor(3, []).find((b) => b.id === "timer")?.when, "ab Runde 31");
 });

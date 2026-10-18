@@ -11,7 +11,7 @@ export const CATCH_STATUS_LABELS: Record<CatchStatus, string> = {
 };
 
 export interface Ball {
-  id: "poke" | "great" | "ultra" | "net" | "dusk" | "quick";
+  id: "poke" | "great" | "ultra" | "net" | "dusk" | "quick" | "timer";
   name: string;
   /** Wann der Bonus gilt; ohne = immer */
   when?: string;
@@ -31,6 +31,10 @@ export function ballsFor(gen: number, types: readonly TypeId[]): Ball[] {
   if (gen >= 4) {
     balls.push({ id: "dusk", name: "Finsterball", when: "nachts/Höhle", factor: gen >= 7 ? 3 : 3.5 });
     balls.push({ id: "quick", name: "Flottball", when: "1. Runde", factor: gen >= 5 ? 5 : 4 });
+  }
+  if (gen >= 3) {
+    // Faktor steigt je Runde bis ×4: Gen 3/4 um 0,1, ab Gen 5 um 1229/4096 ≈ 0,3
+    balls.push({ id: "timer", name: "Timerball", when: gen >= 5 ? "ab Runde 11" : "ab Runde 31", factor: 4 });
   }
   return balls;
 }
