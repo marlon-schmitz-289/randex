@@ -61,15 +61,16 @@
     </dl>
   </div>
 
-  <!-- Balken relativ zum höchsten Wert; flex-1 verteilt freie Höhe auf die Zeilen -->
+  <!-- Balken relativ zum höchsten Wert; flex-1 verteilt freie Höhe auf die Zeilen.
+       Balkenspalte w-full drückt die Zahlenspalten auf Inhaltsbreite: Abstand nur über pl-2 je Zelle. -->
   <table class="w-full flex-1 text-xs leading-4 tabular-nums @lg:text-sm">
     <thead class="text-muted-foreground">
       <tr>
         <th class="text-left font-normal"><span class="sr-only">Wert</span></th>
         <th class="w-full"><span class="sr-only">Balken</span></th>
-        <th class="w-11 pl-2 text-right font-normal">Wert</th>
-        <th class="w-9 pl-2 text-right font-normal">{gb ? "DV" : "IV"}</th>
-        <th class="w-11 pl-2 text-right font-normal">{gb ? "EP" : "EV"}</th>
+        <th class="pl-2 text-right font-normal">Wert</th>
+        <th class="pl-2 text-right font-normal">{gb ? "DV" : "IV"}</th>
+        <th class="pl-2 text-right font-normal">{gb ? "EP" : "EV"}</th>
       </tr>
     </thead>
     <tbody>
@@ -84,9 +85,9 @@
           <td>
             {#if stats}<StatBar value={stats[s.key]} max={top} class={s.bar} />{/if}
           </td>
-          <td class="text-right text-sm font-semibold @lg:text-base">{stats?.[s.key] ?? "–"}</td>
-          <td class="text-right text-muted-foreground">{mon.ivs[s.key]}</td>
-          <td class="text-right text-muted-foreground">{mon.evs[s.key]}</td>
+          <td class="pl-2 text-right text-sm font-semibold @lg:text-base">{stats?.[s.key] ?? "–"}</td>
+          <td class="pl-2 text-right text-muted-foreground">{mon.ivs[s.key]}</td>
+          <td class="pl-2 text-right text-muted-foreground">{mon.evs[s.key]}</td>
         </tr>
       {/each}
     </tbody>
